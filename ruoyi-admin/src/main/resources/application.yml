@@ -199,28 +199,28 @@ sip:
 media:
   # WVP内部使用的ZLM节点唯一标识，必须与ZLM的general.mediaServerId一致；它不是网络地址。
   id: zlmediakit-local
-  # ZLMEDIAKIT_HOST：WVP访问ZLM HTTP API时使用的主机名或IP。
+  # ZLM_HOST：WVP访问ZLM HTTP API时使用的主机名或IP。
   # 只填写主机，例如127.0.0.1、192.168.1.10或zlmediakit；不要填写http://、路径或端口。
   # 本地联调默认访问本机Docker映射出来的ZLM端口，因此主机默认为127.0.0.1。
-  ip: ${ZLMEDIAKIT_HOST:127.0.0.1}
-  # ZLMEDIAKIT_HOOK_HOST：ZLM向WVP发送启动、心跳和流状态Hook时使用的WVP主机名或IP。
+  ip: ${ZLM_HOST:${ZLMEDIAKIT_HOST:127.0.0.1}}
+  # ZLM_HOOK_IP：ZLM向WVP发送启动、心跳和流状态Hook时使用的WVP主机名或IP。
   # 该地址必须从ZLM运行环境可达；本地ZLM运行在Docker中，所以默认使用host.docker.internal访问宿主机WVP。
   # 只填写主机，不填写协议、端口或/index/hook路径，协议、WVP端口和Hook路径由后端自动拼接。
-  hook-ip: ${ZLMEDIAKIT_HOOK_HOST:host.docker.internal}
-  # ZLMEDIAKIT_HTTP_PORT：WVP访问ZLM HTTP API的端口。
-  # 本地Docker将容器80端口映射为宿主机8090，因此默认值为8090；不要把该端口重复写入ZLMEDIAKIT_HOST。
-  http-port: ${ZLMEDIAKIT_HTTP_PORT:8090}
-  # ZLMEDIAKIT_SECRET：调用ZLM /index/api/* 管理接口时使用的鉴权密钥。
+  hook-ip: ${ZLM_HOOK_IP:${ZLMEDIAKIT_HOOK_HOST:host.docker.internal}}
+  # ZLM_HTTP_PORT：WVP访问ZLM HTTP API的端口。
+  # 容器网络中使用ZLMediaKit内部端口8080；不要把该端口重复写入ZLM_HOST。
+  http-port: ${ZLM_HTTP_PORT:${ZLMEDIAKIT_HTTP_PORT:8090}}
+  # ZLM_SECRET：调用ZLM /index/api/* 管理接口时使用的鉴权密钥。
   # 必须与ZLM配置中的api.secret完全一致；WVP与VLS连接同一ZLM时应使用相同值。
-  secret: ${ZLMEDIAKIT_SECRET:su6TiedN2rVAmBbIDX0aa0QTiBJLBdcf}
+  secret: ${ZLM_SECRET:${ZLMEDIAKIT_SECRET:su6TiedN2rVAmBbIDX0aa0QTiBJLBdcf}}
   # 启用多端口模式, 多端口模式使用端口区分每路流，兼容性更好。 单端口使用流的ssrc区分， 点播超时建议使用多端口测试
   rtp:
     # [可选] 是否启用多端口模式, 开启后会在portRange范围内选择端口用于媒体流传输
     enable: true
     # [可选] 在此范围内选择端口用于媒体流传输, 必须提前在zlm上配置该属性，不然自动配置此属性可能不成功
-    port-range: 40000,40300 # 端口范围
+    port-range: ${ZLM_RTP_PORT_RANGE:40000,40300} # 端口范围
     # [可选] 国标级联在此范围内选择端口发送媒体流,
-    send-port-range: 40000,40300 # 端口范围
+    send-port-range: ${ZLM_RTP_SEND_PORT_RANGE:40000,40300} # 端口范围
 
 # [根据业务需求配置]
 user-settings:
