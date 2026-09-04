@@ -1,4 +1,11 @@
-# APaaS WVP Server v1.0.3
+# VLStream WVP Lite v1.0.4
+
+## Release highlights
+
+- Publish the public container image as `ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.4`.
+- Rename the Compose project and release archive to VLStream WVP Lite.
+- Keep the established Java module identifiers and `ry-wvp` database schema for runtime compatibility.
+- Deploy MySQL, Redis, EMQX, ZLMediaKit, and the WVP backend as independent services.
 
 - Patch release for the current MQTT, Flyway, local/SSO authentication, device
   playback, and OTA improvements.

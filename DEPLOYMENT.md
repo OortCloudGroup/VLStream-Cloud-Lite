@@ -1,4 +1,4 @@
-# APaaS WVP Server deployment
+# VLStream WVP Lite deployment
 
 ## Requirements
 
@@ -22,7 +22,7 @@ The default Compose file starts five independent services: MySQL, Redis, EMQX
 service image. The WVP image
 also contains the compiled browser UI, so no separate frontend service is
 needed. The backend image is
-`ghcr.io/oortcloudgroup/apaas-wvp-server:1.0.3`.
+`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.4`.
 
 Use an existing MySQL, Redis, ZLMediaKit, and MQTT Broker installation with:
 
@@ -102,7 +102,7 @@ migrations must never be edited, deleted, or renamed.
 
 ## Protocols and native SDKs
 
-GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.3 base deployment.
+GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.4 base deployment.
 ISUP and Dahua integrations are optional/experimental: their native SDK shared
 libraries, dependency completeness, and redistribution terms have not been
 verified for this public Linux image. They are not enabled by the default

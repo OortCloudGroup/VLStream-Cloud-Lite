@@ -1,8 +1,8 @@
-name: apaas-wvp-server
+name: vlstream-wvp-lite
 
 services:
   wvp-backend:
-    image: ${WVP_IMAGE:-ghcr.io/oortcloudgroup/apaas-wvp-server:1.0.3}
+    image: ${WVP_IMAGE:-ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.4}
     restart: unless-stopped
     extra_hosts: ["host.docker.internal:host-gateway"]
     environment:

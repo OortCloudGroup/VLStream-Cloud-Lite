@@ -1,4 +1,4 @@
-name: apaas-wvp-server
+name: vlstream-wvp-lite
 
 services:
   mysql:
@@ -52,7 +52,7 @@ services:
       retries: 30
 
   zlmediakit:
-    image: ${ZLM_RELEASE_IMAGE:-apaas-wvp-zlmediakit:1.0.3}
+    image: ${ZLM_RELEASE_IMAGE:-vlstream-wvp-lite-zlmediakit:1.0.4}
     build:
       context: ./deploy/release/zlm
       args:
@@ -77,7 +77,7 @@ services:
       retries: 30
 
   wvp-backend:
-    image: ${WVP_IMAGE:-ghcr.io/oortcloudgroup/apaas-wvp-server:1.0.3}
+    image: ${WVP_IMAGE:-ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.4}
     restart: unless-stopped
     extra_hosts: ["host.docker.internal:host-gateway"]
     depends_on:

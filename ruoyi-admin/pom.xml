@@ -56,6 +56,13 @@
             <version>9.22.3</version>
         </dependency>
 
+        <!-- Fastjson2 Redis serializer used by RuoYiApplication on Spring Boot 2.x. -->
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2-extension-spring5</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+
         <!-- 核心模块-->
         <dependency>
             <groupId>com.ruoyi</groupId>
