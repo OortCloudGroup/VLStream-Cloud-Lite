@@ -44,6 +44,9 @@ public class VlStreamDeviceStateService {
         if (payload == null) {
             return VlStreamProtocol.reply(message, 400, "payload不能为空");
         }
+        if (!(payload.get("online") instanceof Boolean) || !validSnapshots(payload)) {
+            return VlStreamProtocol.reply(message, 400, "online必须为布尔值，capabilities和models必须符合状态快照格式");
+        }
 
         Date receivedAt = new Date();
         Date reportedAt = parseDate(message.getString("sentAt"), receivedAt);
@@ -67,12 +70,19 @@ public class VlStreamDeviceStateService {
         device.setFaceVersion(payload.getString("deviceFaceVer"));
         device.setIpAddr(payload.getString("ipAddr"));
         device.setMac(payload.getString("mac"));
-        device.setOnline(Boolean.TRUE.equals(payload.getBoolean("online")));
+        boolean online = Boolean.TRUE.equals(payload.getBoolean("online"));
+        if (online && (!Boolean.TRUE.equals(device.getOnline()) || device.getLastOnlineTime() == null)) {
+            device.setLastOnlineTime(receivedAt);
+        }
+        device.setOnline(online);
         device.setOnlineReason(payload.getString("reason"));
         device.setHeartbeatIndex(payload.getLong("heartbeatIndex"));
         device.setLastMessageId(messageId);
         device.setLastReportedAt(reportedAt);
-        device.setLastHeartbeatTime(receivedAt);
+        if (online) device.setLastHeartbeatTime(receivedAt);
+        // Offline wills may contain old snapshots prepared when MQTT connected.
+        if (online && payload.containsKey("capabilities")) device.setCapabilitiesJson(json(payload.get("capabilities")));
+        if (online && payload.containsKey("models")) device.setModelsJson(json(payload.get("models")));
         device.setTelemetryJson(json(payload.get("telemetry")));
         device.setServiceStatusJson(json(payload.get("serviceStatus")));
         device.setUpdateTime(receivedAt);
@@ -122,6 +132,27 @@ public class VlStreamDeviceStateService {
 
     private Date parseDate(String value, Date fallback) {
         try { return Date.from(Instant.parse(value)); } catch (Exception ignored) { return fallback; }
+    }
+
+    private boolean validSnapshots(JSONObject payload) {
+        if (payload.containsKey("capabilities")) {
+            if (!(payload.get("capabilities") instanceof JSONArray)) return false;
+            for (Object capability : payload.getJSONArray("capabilities")) {
+                if (!(capability instanceof String) || StringUtils.isBlank((String) capability)) return false;
+            }
+        }
+        if (payload.containsKey("models")) {
+            if (!(payload.get("models") instanceof JSONArray)) return false;
+            for (Object model : payload.getJSONArray("models")) {
+                if (!(model instanceof JSONObject)) return false;
+                JSONObject item = (JSONObject) model;
+                if (!(item.get("modelId") instanceof String) || StringUtils.isBlank(item.getString("modelId"))) return false;
+                for (String field : new String[]{"modelName", "version", "format", "status"}) {
+                    if (item.containsKey(field) && !(item.get(field) instanceof String)) return false;
+                }
+            }
+        }
+        return true;
     }
 
     private String json(Object value) { return value == null ? null : JSON.toJSONString(value); }

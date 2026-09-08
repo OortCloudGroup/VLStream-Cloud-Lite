@@ -19,6 +19,72 @@ import static org.mockito.Mockito.when;
 
 public class VlStreamDeviceStateServiceTest {
     @Test
+    public void tracksOnlineTransitionsAndPreservesSnapshotsAcrossLegacyHeartbeatsAndWills() {
+        VlStreamDeviceMapper devices = mock(VlStreamDeviceMapper.class);
+        VlStreamDeviceStreamMapper streams = mock(VlStreamDeviceStreamMapper.class);
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        when(messages.insertIgnore(any(), any(), any(), any())).thenReturn(1);
+        VlStreamDevice device = new VlStreamDevice();
+        device.setId(1L);
+        device.setOnline(false);
+        when(devices.selectByDeviceId("test")).thenReturn(device);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(devices, streams, messages);
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"test\",\"messageId\":\"one\",\"payload\":{\"online\":true,\"capabilities\":[\"aiInfer\"],\"models\":[{\"modelId\":\"2096927699258966018\",\"status\":\"running\"}]}}");
+        service.handle(message);
+        org.junit.Assert.assertNotNull(device.getLastOnlineTime());
+        assertEquals("2096927699258966018", JSON.parseArray(device.getModelsJson()).getJSONObject(0).getString("modelId"));
+        java.util.Date original = new java.util.Date(1L);
+        device.setLastOnlineTime(original);
+        message.getJSONObject("payload").remove("models");
+        message.getJSONObject("payload").remove("capabilities");
+        service.handle(message);
+        assertEquals(original, device.getLastOnlineTime());
+        org.junit.Assert.assertNotNull(device.getModelsJson());
+        java.util.Date heartbeat = device.getLastHeartbeatTime();
+        message.getJSONObject("payload").put("online", false);
+        message.getJSONObject("payload").put("models", new com.alibaba.fastjson2.JSONArray());
+        service.handle(message);
+        assertEquals(original, device.getLastOnlineTime());
+        assertEquals(heartbeat, device.getLastHeartbeatTime());
+        org.junit.Assert.assertNotEquals("[]", device.getModelsJson());
+        message.getJSONObject("payload").put("online", true);
+        service.handle(message);
+        org.junit.Assert.assertNotEquals(original, device.getLastOnlineTime());
+        assertEquals("[]", device.getModelsJson());
+    }
+
+    @Test
+    public void rejectsMalformedSnapshotsBeforeRecordingMessage() {
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(
+                mock(VlStreamDeviceMapper.class), mock(VlStreamDeviceStreamMapper.class), messages);
+        for (String payload : new String[]{"{\"online\":true,\"models\":{}}", "{\"online\":true,\"models\":[{\"modelId\":123}]}",
+                "{\"online\":true,\"capabilities\":[false]}", "{\"online\":\"false\"}"}) {
+            JSONObject message = JSON.parseObject("{\"deviceId\":\"test\",\"messageId\":\"bad\"}");
+            message.put("payload", JSON.parseObject(payload));
+            assertEquals(400, service.handle(message).getJSONObject("payload").getIntValue("code"));
+        }
+        org.mockito.Mockito.verifyNoInteractions(messages);
+    }
+
+    @Test
+    public void ignoresDuplicateAndOlderSnapshots() {
+        VlStreamDeviceMapper devices = mock(VlStreamDeviceMapper.class);
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(devices, mock(VlStreamDeviceStreamMapper.class), messages);
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"test\",\"messageId\":\"old\",\"sentAt\":\"2026-01-01T00:00:00Z\",\"payload\":{\"online\":true,\"models\":[]}}");
+        service.handle(message);
+        org.mockito.Mockito.verifyNoInteractions(devices);
+        when(messages.insertIgnore(any(), any(), any(), any())).thenReturn(1);
+        VlStreamDevice device = new VlStreamDevice();
+        device.setLastReportedAt(java.util.Date.from(java.time.Instant.parse("2026-09-08T00:00:00Z")));
+        when(devices.selectByDeviceId("test")).thenReturn(device);
+        service.handle(message);
+        org.mockito.Mockito.verify(devices, org.mockito.Mockito.never()).update(any());
+        org.junit.Assert.assertNull(device.getLastOnlineTime());
+    }
+
+    @Test
     public void persistsReportedHttpCameraRtcStream() {
         VlStreamDeviceMapper deviceMapper = mock(VlStreamDeviceMapper.class);
         VlStreamDeviceStreamMapper streamMapper = mock(VlStreamDeviceStreamMapper.class);

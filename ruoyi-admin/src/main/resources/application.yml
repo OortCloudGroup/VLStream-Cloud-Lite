@@ -354,7 +354,7 @@ just-auth:
 vlstream:
   mqtt:
     # 本地默认不消费测试环境设备消息；设备中心部署必须显式设置为 true。
-    enabled: ${VLSTREAM_MQTT_ENABLED:false}
+    enabled: ${VLSTREAM_MQTT_ENABLED:true}
     host: ${VLSTREAM_MQTT_HOST:192.168.60.79}
     port: ${VLSTREAM_MQTT_PORT:32570}
     username: ${VLSTREAM_MQTT_USERNAME:VLStream}

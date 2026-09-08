@@ -23,6 +23,9 @@ public class VlStreamDevice extends BaseEntity {
     private String lastMessageId;
     private Date lastReportedAt;
     private Date lastHeartbeatTime;
+    private Date lastOnlineTime;
+    private String capabilitiesJson;
+    private String modelsJson;
     private String telemetryJson;
     private String serviceStatusJson;
     private String keyword;
@@ -59,6 +62,12 @@ public class VlStreamDevice extends BaseEntity {
     public Date getLastReportedAt() { return lastReportedAt; }
     public void setLastReportedAt(Date lastReportedAt) { this.lastReportedAt = lastReportedAt; }
     public Date getLastHeartbeatTime() { return lastHeartbeatTime; }
+    public Date getLastOnlineTime() { return lastOnlineTime; }
+    public void setLastOnlineTime(Date lastOnlineTime) { this.lastOnlineTime = lastOnlineTime; }
+    public String getCapabilitiesJson() { return capabilitiesJson; }
+    public void setCapabilitiesJson(String capabilitiesJson) { this.capabilitiesJson = capabilitiesJson; }
+    public String getModelsJson() { return modelsJson; }
+    public void setModelsJson(String modelsJson) { this.modelsJson = modelsJson; }
     public void setLastHeartbeatTime(Date lastHeartbeatTime) { this.lastHeartbeatTime = lastHeartbeatTime; }
     public String getTelemetryJson() { return telemetryJson; }
     public void setTelemetryJson(String telemetryJson) { this.telemetryJson = telemetryJson; }
