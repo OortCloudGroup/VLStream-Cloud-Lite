@@ -17,12 +17,18 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -47,6 +53,7 @@ public class TokenServiceAuthModeTest
         ReflectionTestUtils.setField(tokenService, "authModeProperties", authModeProperties);
         ReflectionTestUtils.setField(tokenService, "header", TOKEN_HEADER);
         ReflectionTestUtils.setField(tokenService, "secret", TOKEN_SECRET);
+        ReflectionTestUtils.setField(tokenService, "expireTime", 30);
     }
 
     @Test
@@ -112,6 +119,22 @@ public class TokenServiceAuthModeTest
         request.addHeader("X-VLStream-Token", "local-vlstream-token");
 
         assertEquals("platform-token", tokenService.resolveAccessToken(request));
+    }
+
+    @Test
+    public void neverExpireUsesPersistentRedisEntry()
+    {
+        ReflectionTestUtils.setField(tokenService, "expireTime", -1);
+        LoginUser loginUser = new LoginUser();
+        loginUser.setToken("permanent-token");
+
+        tokenService.refreshToken(loginUser);
+        tokenService.verifyToken(loginUser);
+
+        String userKey = CacheConstants.LOGIN_TOKEN_KEY + "permanent-token";
+        assertEquals(Long.valueOf(Long.MAX_VALUE), loginUser.getExpireTime());
+        verify(redisCache).setCacheObject(userKey, loginUser);
+        verify(redisCache, never()).setCacheObject(eq(userKey), eq(loginUser), anyInt(), any(TimeUnit.class));
     }
 
     @Test

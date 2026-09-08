@@ -131,8 +131,8 @@ token:
   header: accessToken
   # 令牌密钥
   secret: abcdefghijklmnopqrstuvwxyz
-  # 令牌有效期（默认30分钟）
-  expireTime: 30
+  # WVP 本地及 VLStream 联邦身份缓存有效期（分钟），-1 表示永不过期
+  expireTime: ${WVP_TOKEN_EXPIRE_MINUTES:-1}
   #校验token地址 http://apaas-sso.p-lvgemgroup/sso/v1/verifyToken
   verifyTokenAddress: ${SSO_VERIFY_TOKEN:http://oort.oortcloudsmart.com:21410/bus/apaas-sso/sso/v1/verifyToken}
   # VLStream/SpringBlade token校验地址，仅X-WVP-Auth-Source=vlstream时使用；部署环境必须显式配置，避免127.0.0.1误指向WVP自身

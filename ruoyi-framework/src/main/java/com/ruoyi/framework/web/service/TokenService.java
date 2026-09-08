@@ -85,7 +85,7 @@ public class TokenService
     @Value("${token.vlstreamDefaultDeptId:${VLSTREAM_DEFAULT_DEPT_ID:}}")
     private String vlstreamDefaultDeptId;
 
-    // 令牌有效期（默认30分钟）
+    // 令牌有效期（分钟），负数表示永不过期
     @Value("${token.expireTime}")
     private int expireTime;
 
@@ -167,10 +167,7 @@ public class TokenService
 
         LoginUser loginUser = new LoginUser(sysUser.getUserId(), sysUser.getDeptId(), sysUser, permissionService.getMenuPermission(sysUser));
         loginUser.setToken(accessToken);
-        long loginTime = System.currentTimeMillis();
-        loginUser.setLoginTime(loginTime);
-        loginUser.setExpireTime(loginTime + expireTime * MILLIS_MINUTE);
-        redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
+        cacheLoginUser(userKey, loginUser);
         return loginUser;
     }
 
@@ -220,10 +217,7 @@ public class TokenService
         LoginUser loginUser = new LoginUser(userId, deptId, sysUser, new HashSet<>(VLSTREAM_PROTOCOL_PERMISSIONS));
         loginUser.setFederated(true);
         loginUser.setToken(accessToken);
-        long loginTime = System.currentTimeMillis();
-        loginUser.setLoginTime(loginTime);
-        loginUser.setExpireTime(loginTime + expireTime * MILLIS_MINUTE);
-        redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
+        cacheLoginUser(userKey, loginUser);
         return loginUser;
     }
 
@@ -451,6 +445,10 @@ public class TokenService
      */
     public void verifyToken(LoginUser loginUser)
     {
+        if (isNeverExpire())
+        {
+            return;
+        }
         long expireTime = loginUser.getExpireTime();
         long currentTime = System.currentTimeMillis();
         if (expireTime - currentTime <= MILLIS_MINUTE_TEN)
@@ -466,11 +464,27 @@ public class TokenService
      */
     public void refreshToken(LoginUser loginUser)
     {
-        loginUser.setLoginTime(System.currentTimeMillis());
-        loginUser.setExpireTime(loginUser.getLoginTime() + expireTime * MILLIS_MINUTE);
-        // 根据uuid将loginUser缓存
         String userKey = getTokenKey(loginUser.getToken());
+        cacheLoginUser(userKey, loginUser);
+    }
+
+    private void cacheLoginUser(String userKey, LoginUser loginUser)
+    {
+        long loginTime = System.currentTimeMillis();
+        loginUser.setLoginTime(loginTime);
+        if (isNeverExpire())
+        {
+            loginUser.setExpireTime(Long.MAX_VALUE);
+            redisCache.setCacheObject(userKey, loginUser);
+            return;
+        }
+        loginUser.setExpireTime(loginTime + expireTime * MILLIS_MINUTE);
         redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
+    }
+
+    private boolean isNeverExpire()
+    {
+        return expireTime < 0;
     }
 
     /**
