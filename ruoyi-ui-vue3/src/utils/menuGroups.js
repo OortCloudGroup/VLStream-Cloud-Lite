@@ -37,8 +37,33 @@ const DEVICE_PROTOCOLS = [
 ]
 
 const DEVICE_MANAGE_ICON = 'device'
+const DEVICE_LEAF_TITLES = ['设备管理', '设备列表']
 /** settings.svg 为内嵌 PNG，无法跟随主题色，改用矢量 system */
 const FALLBACK_ICON = 'system'
+
+function normalizeDeviceLeaves(route) {
+  if (!route) return route
+  const cloned = {
+    ...route,
+    meta: route.meta ? { ...route.meta } : {}
+  }
+  if (!Array.isArray(route.children) || !route.children.length) {
+    return cloned
+  }
+  cloned.children = route.children.map(child => {
+    const next = normalizeDeviceLeaves(child)
+    const title = String(next.meta?.title || '')
+    if (DEVICE_LEAF_TITLES.includes(title)) {
+      next.meta = {
+        ...(next.meta || {}),
+        title: '设备管理',
+        icon: DEVICE_MANAGE_ICON
+      }
+    }
+    return next
+  })
+  return cloned
+}
 
 const WORKBENCH_PATHS = WORKBENCH_KEYS.map(i => i.key)
 const VIDEO_MAP_PATHS = VIDEO_MAP_KEYS.map(i => i.key)
@@ -299,7 +324,8 @@ export function buildSidebarByGroup(allRoutes, groupKey) {
     for (const proto of DEVICE_PROTOCOLS) {
       const found = findRouteBySpec(visible, proto)
       if (!found) continue
-      const node = shallowCloneRoute(found, proto.title, proto.icon || DEVICE_MANAGE_ICON)
+      let node = shallowCloneRoute(found, proto.title, proto.icon || DEVICE_MANAGE_ICON)
+      node = normalizeDeviceLeaves(node)
       if (node.path && node.path !== '/' && !String(node.path).startsWith('/')) {
         node.path = '/' + node.path
       }

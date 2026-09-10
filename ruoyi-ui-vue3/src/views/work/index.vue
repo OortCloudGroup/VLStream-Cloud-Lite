@@ -1,37 +1,26 @@
 <template>
-  <div class="app-container">
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-switch v-model="closeDevice" active-text="开启" inactive-text="关闭"/>
-      </el-col>
+  <div class="app-container workbench-page">
+    <el-tabs v-model="activeName" class="work-tabs" @tab-click="handleClick">
+      <el-tab-pane label="GB2818" name="GB"></el-tab-pane>
+      <el-tab-pane label="ONVIF" name="ONVIF"></el-tab-pane>
+      <el-tab-pane label="RTSP" name="RTSP"></el-tab-pane>
+      <el-tab-pane label="ISUP" name="ISUP"></el-tab-pane>
+      <el-tab-pane label="大华" name="DAHUA"></el-tab-pane>
+    </el-tabs>
 
-      <el-col :span="1.5">
-        <el-button
-            type="success"
-            plain
-            @click="handleSave"
-        >保存
-        </el-button>
-      </el-col>
-      <el-button
-          type="danger"
-          plain
-          @click="handleCleanUp"
-      >清除
-      </el-button>
-    </el-row>
-    <el-row :gutter="20">
-      <el-col :span="24" :xs="24" :sm="24" :md="5" :lg="5" :xl="5" v-show="closeDevice">
-        <el-card>
-          <template #header>
-            <div class="card-header">
-              <span>监控列表</span>
-            </div>
-          </template>
-          <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-            <el-tab-pane label="国标" name="GB">
+    <div class="workbench-layout">
+      <aside v-yResize class="workbench-aside">
+        <div class="aside-header">
+          <div class="aside-title">设备列表</div>
+          <div class="aside-actions">
+            <el-button type="primary" link @click="handleSave">保存</el-button>
+            <el-button type="danger" link @click="handleCleanUp">清除</el-button>
+          </div>
+        </div>
+
+        <div v-show="activeName === 'GB'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
                           style="margin-bottom: 20px"/>
               </div>
               <div class="top">
@@ -238,11 +227,10 @@
                   </div>
                 </div>
               </div>
-            </el-tab-pane>
-
-            <el-tab-pane label="ONVIF" name="ONVIF">
+        </div>
+        <div v-show="activeName === 'ONVIF'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
 
@@ -312,11 +300,10 @@
               </div>
 
               <el-empty v-if="listDevice.length === 0" :image-size="50" description="暂无数据"/>
-            </el-tab-pane>
-
-            <el-tab-pane label="RTSP" name="RTSP">
+        </div>
+        <div v-show="activeName === 'RTSP'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
               <InfiniteList
@@ -337,11 +324,10 @@
               </InfiniteList>
 
               <el-empty v-if="listDevice.length === 0" :image-size="50" description="暂无数据"/>
-            </el-tab-pane>
-
-            <el-tab-pane label="海康" name="ISUP">
+        </div>
+        <div v-show="activeName === 'ISUP'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
 
@@ -420,11 +406,10 @@
 
 
               <el-empty v-if="listDevice.length === 0" :image-size="50" description="暂无数据"/>
-            </el-tab-pane>
-
-            <el-tab-pane label="大华" name="DAHUA">
+        </div>
+        <div v-show="activeName === 'DAHUA'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
 
@@ -531,73 +516,78 @@
               </div>
 
               <el-empty v-if="listDevice.length === 0" :image-size="50" description="暂无数据"/>
-            </el-tab-pane>
+        </div>
+      </aside>
 
-          </el-tabs>
-        </el-card>
-      </el-col>
-      <el-col :span="24" :xs="24" :sm="24" :md="!closeDevice? 24:19" :lg="!closeDevice? 24:19"
-              :xl="!closeDevice? 24:19">
-        <el-card>
-          <template #header>
-            <div class="flex">
-              分屏:
-              <svg-icon :class="['flex-icon', { active: model === 1 }]"
-                        icon-class="splitOne" @click="spiltIndex(1)" class="flex-icon"/>
-              <svg-icon :class="['flex-icon', { active: model === 4 }]"
-                        icon-class="splitFour" @click="spiltIndex(4)" class="flex-icon"/>
-              <svg-icon :class="['flex-icon', { active: model === 6 }]"
-                        icon-class="splitSix" @click="spiltIndex(6)" class="flex-icon"/>
-              <svg-icon :class="['flex-icon', { active: model === 9 }]"
-                        icon-class="splitNine" @click="spiltIndex(9)" class="flex-icon"/>
-            </div>
-          </template>
-          <div style="display: flex; flex-wrap: wrap;position: relative">
+      <main class="workbench-main">
+        <div class="workbench-toolbar">
+          <svg-icon :class="['flex-icon', { active: model === 1 }]" icon-class="screen1" @click="spiltIndex(1)" />
+          <svg-icon :class="['flex-icon', { active: model === 4 }]" icon-class="screen4" @click="spiltIndex(4)" />
+          <svg-icon :class="['flex-icon', { active: model === 6 }]" icon-class="screen6" @click="spiltIndex(6)" />
+          <svg-icon :class="['flex-icon', { active: model === 9 }]" icon-class="screen9" @click="spiltIndex(9)" />
+          <el-dropdown trigger="click" @command="handleScreenMore">
+            <span class="flex-icon more-trigger">
+              <svg-icon icon-class="screen-more" />
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="8">
+                  <svg-icon icon-class="screen8" class="dropdown-screen-icon" /> 八画面
+                </el-dropdown-item>
+                <el-dropdown-item command="16">
+                  <svg-icon icon-class="screen16" class="dropdown-screen-icon" /> 十六画面
+                </el-dropdown-item>
+                <el-dropdown-item command="17">
+                  <svg-icon icon-class="screen17" class="dropdown-screen-icon" /> 十七画面
+                </el-dropdown-item>
+                <el-dropdown-item command="21">
+                  <svg-icon icon-class="screen21" class="dropdown-screen-icon" /> 二十一画面
+                </el-dropdown-item>
+                <el-dropdown-item command="23">
+                  <svg-icon icon-class="screen23" class="dropdown-screen-icon" /> 二十三画面
+                </el-dropdown-item>
+                <el-dropdown-item command="24">
+                  <svg-icon icon-class="screen24" class="dropdown-screen-icon" /> 二十四画面
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <el-button size="small" @click="handleCustomScreen">自定义</el-button>
+          <svg-icon class="flex-icon" icon-class="screen-full" @click="toggleWorkbenchFullscreen" />
+        </div>
+        <div class="workbench-players" ref="workbenchPlayersRef">
+          <div class="players-grid">
             <div
                 :id="'video' + index"
                 v-for="(item, index) in splitLayouts[splitShow]"
                 :key="index"
                 :style="getCellStyle(splitShow)"
-                style="border: 3px solid #409EFF;margin: 1px;"
                 :class="['player-cell', { active: activePlayerIndex === index }]"
                 @click="setActivePlayer(index)">
-              <div v-if="item.data" style="position: absolute;z-index: 999;top: 5px;right: 10px;color: #F56C6C;">
-                <el-tooltip
-                    effect="dark"
-                    content="删除"
-                    placement="top"
-                >
-                  <el-icon @click="deleteVideo(index)">
-                    <Delete/>
-                  </el-icon>
+              <div v-if="item.data" class="player-delete">
+                <el-tooltip effect="dark" content="删除" placement="top">
+                  <el-icon @click.stop="deleteVideo(index)"><Delete/></el-icon>
                 </el-tooltip>
               </div>
 
-              <div v-if="item.type === 'GB'" style="width: 100%;height: 100%">
-                <Jessibuca v-show="vUrls[index]" :ref="'video' + index" :videoUrl="vUrls[index]" fluent autoplay live
-                           :key="'jessibuca-'+index"/>
-              </div>
-
-              <div v-else style="width: 100%;height: 100%">
-                <div v-if="item.data" style="width: 100%;height: 100%">
-                  <div v-if="item.data.playType === '2'" style="width: 100%;height: 100%">
-                    <Jessibuca :videoUrl="vUrls[index]" fluent autoplay live
-                               :key="'jessibuca-'+index"/>
-                  </div>
-                  <video v-else :id="'rtspVideo' + index"
-                         muted
-                         playsinline
-                         controls
-                         style="width: 100%;height: 100%"
-                  ></video>
+              <template v-if="item.data">
+                <div v-if="item.type === 'GB'" class="player-fill">
+                  <Jessibuca v-show="vUrls[index]" :ref="'video' + index" :videoUrl="vUrls[index]" fluent autoplay live
+                             :key="'jessibuca-'+index"/>
                 </div>
-              </div>
+                <div v-else class="player-fill">
+                  <div v-if="item.data.playType === '2'" class="player-fill">
+                    <Jessibuca :videoUrl="vUrls[index]" fluent autoplay live :key="'jessibuca-'+index"/>
+                  </div>
+                  <video v-else :id="'rtspVideo' + index" muted playsinline controls class="player-fill"></video>
+                </div>
+              </template>
+              <div v-else class="player-empty">无效信号</div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
+        </div>
+      </main>
+    </div>
 
     <el-popover
         ref="popover"
@@ -991,24 +981,29 @@ function getCellStyle(splitMode) {
     alignItems: "center",
     backgroundColor: "#000000",
     boxSizing: "border-box",
+    color: "#fff",
+    fontSize: "14px",
   };
 
-  if (splitMode === 1) {
-    style.width = "100%";
-    style.height = "800px";
-  } else if (splitMode === 4) {
-    style.width = "49.5%";
-    style.height = "400px";
-    style.margin = "-2px";
-  } else if (splitMode === 6) {
-    style.width = "33%";
-    style.height = "400px";
-    style.margin = "-2px";
-  } else if (splitMode === 9) {
-    style.width = "33%";
-    style.height = "300px";
-    style.margin = "-2px";
+  const colsMap = {
+    1: 1,
+    4: 2,
+    6: 3,
+    8: 4,
+    9: 3,
+    16: 4,
+    17: 5,
+    21: 5,
+    23: 5,
+    24: 6
   }
+  const cols = colsMap[splitMode] || 2
+  const rows = Math.ceil(splitMode / cols)
+  style.width = `calc(${100 / cols}% - 4px)`
+  style.height = `calc(${100 / rows}% - 4px)`
+  style.minHeight = splitMode === 1 ? '640px' : '160px'
+  style.margin = '2px'
+  style.flex = `0 0 calc(${100 / cols}% - 4px)`
 
   return style;
 }
@@ -1237,10 +1232,36 @@ async function getGroupQueryForTree() {
 }
 
 function spiltIndex(index) {
+  const key = Number(index)
+  if (!layouts[key]) {
+    ElMessage.warning('暂不支持该分屏')
+    return
+  }
   splitLayouts.value = JSON.parse(JSON.stringify(layouts));
-  splitShow.value = index;
+  splitShow.value = key;
+  model.value = key;
   activePlayerIndex.value = null;
   selectDeviceId.value = null;
+}
+
+function handleScreenMore(command) {
+  spiltIndex(command)
+}
+
+function handleCustomScreen() {
+  ElMessage.info('自定义分屏功能开发中')
+}
+
+const workbenchPlayersRef = ref(null)
+
+function toggleWorkbenchFullscreen() {
+  const el = workbenchPlayersRef.value
+  if (!el) return
+  if (!document.fullscreenElement) {
+    el.requestFullscreen?.()
+  } else {
+    document.exitFullscreen?.()
+  }
 }
 
 const handleClick = (tab, event) => {
@@ -1674,6 +1695,186 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+
+.app-container.workbench-page {
+  background: #fff;
+  border-radius: 10px;
+  min-height: calc(100vh - 84px);
+  box-sizing: border-box;
+  padding: 16px 20px;
+}
+
+:deep(.work-tabs) {
+  --el-tabs-header-height: 32px;
+
+  .el-tabs__header {
+    margin: 0 0 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .el-tabs__nav-wrap::after {
+    display: none;
+  }
+
+  .el-tabs__item {
+    width: 96px;
+    height: 32px;
+    padding: 0;
+    line-height: 32px;
+    text-align: center;
+    color: #333;
+    font-size: 14px;
+    font-weight: 400;
+    box-sizing: border-box;
+  }
+
+  .el-tabs__item.is-active {
+    color: var(--el-color-primary);
+  }
+
+  .el-tabs__item:hover {
+    color: var(--el-color-primary);
+  }
+
+  .el-tabs__active-bar {
+    height: 2px;
+    background-color: var(--el-color-primary);
+  }
+
+  .el-tabs__content {
+    display: none;
+  }
+}
+
+.workbench-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  min-height: calc(100vh - 160px);
+  background: #fff;
+}
+
+.workbench-aside {
+  width: 300px;
+  flex-shrink: 0;
+  padding-right: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+.aside-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.aside-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  padding-left: 8px;
+  border-left: 3px solid var(--el-color-primary);
+  line-height: 1;
+}
+
+.aside-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.aside-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.workbench-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.workbench-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.workbench-players {
+  flex: 1;
+  min-height: 640px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.players-grid {
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 640px;
+  align-content: flex-start;
+}
+
+.player-fill {
+  width: 100%;
+  height: 100%;
+}
+
+.player-empty {
+  color: #fff;
+  font-size: 14px;
+  user-select: none;
+}
+
+.player-delete {
+  position: absolute;
+  z-index: 999;
+  top: 5px;
+  right: 10px;
+  color: #F56C6C;
+}
+
+.player-cell {
+  position: relative;
+  transition: border-color 0.3s ease;
+  border: 2px solid transparent;
+  overflow: hidden;
+}
+
+.player-cell:hover {
+  cursor: pointer;
+}
+
+.player-cell.active {
+  border-color: var(--el-color-primary) !important;
+}
+
+.more-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.dropdown-screen-icon {
+  margin-right: 8px;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
 .el-tree {
   min-width: 100%;
   display: inline-block;
@@ -1697,33 +1898,26 @@ onMounted(async () => {
   align-items: center;
 }
 
-.player-cell {
-  position: relative;
-  transition: border-color 0.3s ease;
-}
-
-.player-cell:hover {
-  cursor: pointer;
-}
-
-.player-cell.active {
-  border-color: #67C23A !important;
-}
-
 .flex-icon {
-  margin-left: 10px;
-}
-
-.flex-icon {
-  margin-left: 10px;
   cursor: pointer;
-  font-size: 20px;
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
   transition: color 0.3s ease, transform 0.3s ease;
+  color: #666;
 }
 
 .flex-icon.active {
-  color: #409EFF;
-  transform: scale(1.2);
+  color: var(--el-color-primary);
+  transform: scale(1.1);
+}
+
+.workbench-toolbar .flex-icon,
+.workbench-toolbar .svg-icon,
+.workbench-toolbar .more-trigger .svg-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
 }
 
 .custom-tree-node {
@@ -1956,5 +2150,4 @@ onMounted(async () => {
   line-height: 64px; /* 4rem * 16 = 64px */
 }
 </style>
-
 

@@ -1,113 +1,22 @@
-const layouts = {
-    1: [{
-        index: 1,
-        type:'',
-        data:null
-    }],
-    4: [
-        {
-            index: 1,
-            type:'',
-            data:null
-        },
-        {
-            index: 2,
-            type:'',
-            data:null
-        },
-        {
-            index: 3,
-            type:'',
-            data:null
-        },
-        {
-            index: 4,
-            type:'',
-            data:null
-        }
-    ],
-    6: [
-        {
-            index: 1,
-            type:'',
-            data:null
-        },
-        {
-            index: 2,
-            type:'',
-            data:null
-        },
-        {
-            index: 3,
-            type:'',
-            data:null
-        },
-        {
-            index: 4,
-            type:'',
-            data:null
-        },
-        {
-            index: 5,
-            type:'',
-            data:null
-        },
-        {
-            index: 6,
-            type:'',
-            data:null
-        },
-    ],
-    9: [
-        {
-            index: 1,
-            type:'',
-            data:null
-        },
-        {
-            index: 2,
-            type:'',
-            data:null
-        },
-        {
-            index: 3,
-            type:'',
-            data:null
-        },
-        {
-            index: 4,
-            type:'',
-            data:null
-        },
-        {
-            index: 5,
-            type:'',
-            data:null
-        },
-        {
-            index: 6,
-            type:'',
-            data:null
-        },
-        {
-            index: 7,
-            type:'',
-            data:null
-        },
-        {
-            index: 8,
-            type:'',
-            data:null
-        },
-        {
-            index: 9,
-            type:'',
-            data:null
-        },
-    ],
+function cells(count) {
+  return Array.from({ length: count }, (_, i) => ({
+    index: i + 1,
+    type: '',
+    data: null
+  }))
 }
 
-export default layouts;
+const layouts = {
+  1: cells(1),
+  4: cells(4),
+  6: cells(6),
+  8: cells(8),
+  9: cells(9),
+  16: cells(16),
+  17: cells(17),
+  21: cells(21),
+  23: cells(23),
+  24: cells(24)
+}
 
-
-
+export default layouts
