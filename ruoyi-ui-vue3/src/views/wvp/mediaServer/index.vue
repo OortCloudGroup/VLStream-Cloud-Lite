@@ -45,7 +45,7 @@
         </el-card>
       </el-col>
     </el-row>
-    <el-dialog title="媒体节点" v-model="openView" width="1000px" append-to-body>
+    <el-dialog title="媒体节点" v-model="openView" width="65%" append-to-body>
       <el-descriptions border>
         <el-descriptions-item label="媒体服务IP">
           {{ rowData.ip }}

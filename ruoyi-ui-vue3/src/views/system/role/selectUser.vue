@@ -1,6 +1,6 @@
 <template>
    <!-- 授权用户 -->
-   <el-dialog title="选择用户" v-model="visible" width="800px" top="5vh" append-to-body>
+   <el-dialog title="选择用户" v-model="visible" width="50%" top="5vh" append-to-body>
       <div class="searchHeight_out flexRowAC" style="margin-bottom: 12px; justify-content: flex-end;">
          <search-height-box keyword="userName" placeholder="请输入用户名称等关键词" :data="searchData" @handle="searchResetFn" />
          <export-excel-pdf />

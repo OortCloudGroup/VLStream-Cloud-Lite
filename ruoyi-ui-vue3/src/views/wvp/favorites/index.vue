@@ -83,7 +83,7 @@
       @pagination="getList"
     />
 
-    <el-dialog title="收藏设备" v-model="openCamera" width="1000px" append-to-body>
+    <el-dialog title="收藏设备" v-model="openCamera" width="65%" append-to-body>
       <el-table v-loading="loadingCamera" :data="listCamera" border>
         <el-table-column label="序号" align="center" width="60">
           <template #default="scope">
@@ -112,7 +112,7 @@
       />
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="1000px" append-to-body>
+    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body>
       <div class="player" v-if="openPlay">
         <Jessibuca v-if="openPlay" ref="flv" :visible.sync="showVideoDialog"
                    :videoUrl="flv" :error="videoError" :message="videoError" height="100px"
@@ -121,7 +121,7 @@
     </el-dialog>
 
     <!-- 添加或修改国标通道收藏对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
       <el-form ref="favoritesRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="收藏夹名称" prop="favoritesName">
           <el-input v-model="form.favoritesName" placeholder="请输入收藏夹名称" maxlength="30" show-word-limit />

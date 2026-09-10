@@ -129,7 +129,7 @@
     <HandleAdd ref="handleAddRef" @success="addSuccess"></HandleAdd>
     <EquipmentSupport ref="equipmentSupportRef"></EquipmentSupport>
 
-    <el-dialog :title="`【${deviceInfoData.deviceName}】设备信息`" v-model="deviceInfoOpen" width="1000px" append-to-body>
+    <el-dialog :title="`【${deviceInfoData.deviceName}】设备信息`" v-model="deviceInfoOpen" width="65%" append-to-body>
       <el-descriptions :column="3" border>
         <el-descriptions-item label="设备IP地址">{{ deviceInfoData.netAddress }}</el-descriptions-item>
         <el-descriptions-item label="设备序列号">{{ deviceInfoData.deviceSerial }}</el-descriptions-item>
@@ -179,7 +179,7 @@
       </el-descriptions>
     </el-dialog>
 
-    <el-dialog title="修改加密密码" v-model="devicePasswordUpdateOpen" width="500px" append-to-body>
+    <el-dialog title="修改加密密码" v-model="devicePasswordUpdateOpen" width="32%" append-to-body>
       <el-form ref="devicePasswordUpdateRef" :model="devicePasswordUpdateForm" :rules="devicePasswordUpdateRules" label-width="70px">
         <el-form-item label="注意">
           <el-text type="warning">修改后，请牢记您的新密码，若密码丢失，将不能被找回，需要重置设备恢复初始值。</el-text>
@@ -199,7 +199,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog title="设备版本信息" v-model="deviceVersionInfoOpen" width="600px" append-to-body>
+    <el-dialog title="设备版本信息" v-model="deviceVersionInfoOpen" width="40%" append-to-body>
       <el-descriptions :column="2" border>
         <el-descriptions-item label="最新版本">{{ deviceVersionInfoData.latestVersion }}</el-descriptions-item>
         <el-descriptions-item label="当前版本">{{ deviceVersionInfoData.currentVersion }}</el-descriptions-item>
@@ -233,7 +233,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="设置设备撤/布防" v-model="deviceDefenceSetOpen" width="600px" append-to-body>
+    <el-dialog title="设置设备撤/布防" v-model="deviceDefenceSetOpen" width="40%" append-to-body>
       <el-form ref="deviceDefenceSetRef" :model="deviceDefenceSetForm" :rules="deviceDefenceSetRules" label-width="100px">
         <el-form-item label="注意">
           <el-text type="warning">具有防护能力设备布撤防状态：0-睡眠，8-在家，16-外出，普通IPC设备布撤防状态：0-撤防，1-布防。</el-text>
@@ -255,7 +255,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog title="设置布撤防时间计划" v-model="deviceDefencePlanOpen" width="600px" append-to-body>
+    <el-dialog title="设置布撤防时间计划" v-model="deviceDefencePlanOpen" width="40%" append-to-body>
       <el-form ref="deviceDefencePlanRef" :model="deviceDefencePlanForm" :rules="deviceDefencePlanRules" label-width="100px">
         <el-form-item label="开始时间" prop="startTime">
           <el-time-picker

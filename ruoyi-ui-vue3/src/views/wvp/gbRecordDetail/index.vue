@@ -50,7 +50,7 @@
     </table-self>
     <div style="margin-top: 20px; display: flex; justify-content: flex-end;">总条数： {{detailFiles.length}}</div>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="1000px" append-to-body>
+    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body>
       <div class="player">
         <easy-player class="player" :video-url="videoUrl" autoplay :live="true"></easy-player>
       </div>

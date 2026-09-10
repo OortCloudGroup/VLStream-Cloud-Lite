@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="dialog.title" v-model="dialog.visible" width="500px" append-to-body>
+  <el-dialog :title="dialog.title" v-model="dialog.visible" width="32%" append-to-body>
     <el-form ref="equipmentSupportFormRef" :model="form" :rules="rules" label-width="100px">
       <el-form-item label="设备型号" prop="model">
         <el-input v-model="form.model" show-word-limit :maxlength="50" placeholder="请输入设备型号"/>

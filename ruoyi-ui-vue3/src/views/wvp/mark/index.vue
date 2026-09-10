@@ -79,7 +79,7 @@
       @pagination="getList"
     />
 
-    <el-dialog title="收藏设备" v-model="openCamera" width="1000px" append-to-body>
+    <el-dialog title="收藏设备" v-model="openCamera" width="65%" append-to-body>
       <el-table v-loading="loadingCamera" :data="listCamera" border>
         <el-table-column label="序号" align="center" width="60">
           <template #default="scope">
@@ -108,7 +108,7 @@
       />
     </el-dialog>
 
-    <el-dialog title="标记设备" v-model="openCamera" width="1000px" append-to-body>
+    <el-dialog title="标记设备" v-model="openCamera" width="65%" append-to-body>
       <el-table v-loading="loadingCamera" :data="listCamera" border>
         <el-table-column label="序号" align="center" width="60">
           <template #default="scope">
@@ -137,7 +137,7 @@
       />
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="1000px" append-to-body>
+    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body>
       <div class="player" v-if="openPlay">
         <Jessibuca v-if="openPlay" ref="flv" :visible.sync="showVideoDialog"
                    :videoUrl="flv" :error="videoError" :message="videoError" height="100px"
@@ -147,7 +147,7 @@
 
 
     <!-- 添加或修改wvp通道标记对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
       <el-form ref="markRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="标记名称" prop="markName">
           <el-input v-model="form.markName" placeholder="请输入标记名称" maxlength="30" show-word-limit />

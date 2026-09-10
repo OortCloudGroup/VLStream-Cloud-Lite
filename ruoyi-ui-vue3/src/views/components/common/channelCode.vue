@@ -1,7 +1,7 @@
 <template>
   <el-dialog
       v-model="showVideoDialog"
-      width="1200px"
+      width="75%"
       append-to-body
       title="生成国标编码"
       top="2rem"

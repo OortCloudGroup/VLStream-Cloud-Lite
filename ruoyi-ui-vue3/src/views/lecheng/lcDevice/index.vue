@@ -149,7 +149,7 @@
         @pagination="getList"
     />
 
-    <el-dialog title="绑定设备" v-model="open" width="500px" append-to-body>
+    <el-dialog title="绑定设备" v-model="open" width="32%" append-to-body>
       <el-form ref="lcDeviceBindRef" :model="form" :rules="rules" label-width="150px">
         <el-form-item label="设备序列号" prop="deviceId">
           <el-input v-model="form.deviceId" placeholder="请输入设备序列号" maxlength="32" show-word-limit/>
@@ -179,7 +179,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog title="设备在线状态" v-model="openDeviceOnline" width="500px" append-to-body>
+    <el-dialog title="设备在线状态" v-model="openDeviceOnline" width="32%" append-to-body>
       设备在线状态
       <el-descriptions
           style="margin-top: 10px"
@@ -211,7 +211,7 @@
       </el-table>
     </el-dialog>
 
-    <el-dialog title="未绑定设备信息获取" v-model="openUnBindDeviceInfo" width="900px" append-to-body>
+    <el-dialog title="未绑定设备信息获取" v-model="openUnBindDeviceInfo" width="60%" append-to-body>
       <el-form :model="unBindDeviceInfoForm" ref="unBindDeviceInfoRef" :inline="true" label-width="120px"
                :rules="unBindDeviceInfoRules">
         <el-form-item label="设备序列号" prop="deviceId">
@@ -290,7 +290,7 @@
       </el-descriptions>
     </el-dialog>
 
-    <el-dialog title="查询设备绑定情况" v-model="openCheckDeviceBindOrNot" width="500px" append-to-body>
+    <el-dialog title="查询设备绑定情况" v-model="openCheckDeviceBindOrNot" width="32%" append-to-body>
       <el-descriptions
           :column="2"
           border
@@ -306,7 +306,7 @@
       </el-descriptions>
     </el-dialog>
 
-    <el-dialog title="设备升级" v-model="openUpgradeDevice" width="800px" append-to-body>
+    <el-dialog title="设备升级" v-model="openUpgradeDevice" width="50%" append-to-body>
       <el-button type="primary" @click="upgradeDeviceFun" v-hasPermi="['lecheng:lc:upgradeDevice']">升 级</el-button>
       <el-button type="primary" @click="upgradeProcessDeviceFun" v-hasPermi="['lecheng:lc:upgradeProcessDevice']">
         升级状态和进度
@@ -332,7 +332,7 @@
       </el-descriptions>
     </el-dialog>
 
-    <el-dialog title="修改密码" v-model="openModifyPassword" width="500px" append-to-body>
+    <el-dialog title="修改密码" v-model="openModifyPassword" width="32%" append-to-body>
       <el-form ref="modifyPasswordRef" :model="modifyPasswordForm" :rules="modifyPasswordRules" label-width="80px">
         <el-form-item label="原密码" prop="oldPassword">
           <el-input v-model="modifyPasswordForm.oldPassword" placeholder="请输入原密码" maxlength="32" show-password/>
@@ -349,7 +349,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog title="设备控制" v-model="deviceControlOpen" width="500px" append-to-body>
+    <el-dialog title="设备控制" v-model="deviceControlOpen" width="32%" append-to-body>
       <div>
         <el-button type="primary" @click="calibrationDeviceTimeFun">设置设备时间</el-button>
         <el-button type="primary" @click="getDeviceTimeFun">查询设备时间</el-button>
@@ -359,7 +359,7 @@
       <el-button type="primary" @click="restartDeviceFun">重启设备</el-button>
     </el-dialog>
 
-    <el-dialog title="设备SD卡" v-model="deviceSdOpen" width="500px" append-to-body>
+    <el-dialog title="设备SD卡" v-model="deviceSdOpen" width="32%" append-to-body>
       <div v-if="deviceStorageFrom.totalBytes && deviceStorageFrom.usedBytes">
         总容量：{{ formatBytes(deviceStorageFrom.totalBytes) }} <br/>
         已使用容量：{{ formatBytes(deviceStorageFrom.usedBytes) }}

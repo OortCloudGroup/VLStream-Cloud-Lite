@@ -55,18 +55,29 @@
   padding: 24px 40px 0 40px !important;
 }
 
+/* 底部按钮：右对齐；.dialog-footer 内为「确定在前」DOM 顺序，用 row-reverse 显示成 取消|确定 */
+.el-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
 .dialog-footer {
   display: flex;
   flex-direction: row-reverse;
   justify-content: flex-start;
   align-items: center;
   gap: 16px;
+  width: 100%;
 }
 
 .dialog-footer > .el-button,
+.el-dialog__footer > .el-button,
 .el-dialog__footer > div > .el-button,
 .el-dialog__body .dialog-footer > .el-button,
 .el-dialog__body .subBtnsBox > .el-button {
+  min-width: 170px;
   width: 170px;
   height: 48px;
   padding: 0;
@@ -75,23 +86,27 @@
   font-size: 14px;
 }
 
-.dialog-footer > .el-button--default,
-.el-dialog__footer > div > .el-button--default {
+.dialog-footer > .el-button:not(.el-button--primary),
+.el-dialog__footer > .el-button:not(.el-button--primary),
+.el-dialog__footer > div > .el-button:not(.el-button--primary) {
   background: #fff;
   border: 1px solid #dcdfe6;
   color: #606266;
 }
 
-.dialog-footer > .el-button--default:hover,
-.dialog-footer > .el-button--default:focus,
-.el-dialog__footer > div > .el-button--default:hover,
-.el-dialog__footer > div > .el-button--default:focus {
+.dialog-footer > .el-button:not(.el-button--primary):hover,
+.dialog-footer > .el-button:not(.el-button--primary):focus,
+.el-dialog__footer > .el-button:not(.el-button--primary):hover,
+.el-dialog__footer > .el-button:not(.el-button--primary):focus,
+.el-dialog__footer > div > .el-button:not(.el-button--primary):hover,
+.el-dialog__footer > div > .el-button:not(.el-button--primary):focus {
   color: var(--el-color-primary);
   border-color: var(--el-color-primary-light-3) !important;
   background-color: var(--el-color-primary-light-8) !important;
 }
 
 .dialog-footer > .el-button--primary,
+.el-dialog__footer > .el-button--primary,
 .el-dialog__footer > div > .el-button--primary {
   background: var(--el-color-primary);
   border-color: var(--el-color-primary);
@@ -100,6 +115,8 @@
 
 .dialog-footer > .el-button--primary:hover,
 .dialog-footer > .el-button--primary:focus,
+.el-dialog__footer > .el-button--primary:hover,
+.el-dialog__footer > .el-button--primary:focus,
 .el-dialog__footer > div > .el-button--primary:hover,
 .el-dialog__footer > div > .el-button--primary:focus {
   background-color: var(--el-color-primary-light-3) !important;

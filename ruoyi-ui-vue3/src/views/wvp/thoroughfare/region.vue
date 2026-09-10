@@ -87,7 +87,7 @@
             @pagination="getList"
         />
 
-        <el-dialog :title="title" v-model="open" width="1100px" append-to-body>
+        <el-dialog :title="title" v-model="open" width="70%" append-to-body>
           <el-form :model="queryParamsSelect" ref="querySelectRef" :inline="true" v-show="showSearchSelect"
                    label-width="68px">
             <el-form-item label="关键字" prop="query">
@@ -162,7 +162,7 @@
         </el-dialog>
     </main>
 
-    <el-dialog title="修改地址" v-model="showMap" width="800px" append-to-body>
+    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="formMap.gbAddress"/>
     </el-dialog>
   </div>

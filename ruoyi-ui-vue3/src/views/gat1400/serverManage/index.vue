@@ -80,7 +80,7 @@
           @pagination="getList"
       />
 
-      <el-dialog :title="title" v-model="open" width="800px" append-to-body>
+      <el-dialog :title="title" v-model="open" width="50%" append-to-body>
         <el-form ref="ServerManageRef" :model="form" :rules="rules" label-width="120px">
           <el-form-item label="视图库编号" prop="serverId">
             <el-input v-model="form.serverId" placeholder="请输入视图库编号" :disabled="openServerId"/>

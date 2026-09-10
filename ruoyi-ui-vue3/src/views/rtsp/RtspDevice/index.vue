@@ -100,7 +100,7 @@
     />
 
     <!-- 添加或修改rtsp设备对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
       <el-form ref="RtspDeviceRef" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="所属部门" prop="deptId">
           <el-tree-select v-model="form.deptId" :data="enabledDeptOptions"
@@ -161,7 +161,7 @@
     </el-dialog>
 
     <!-- 播放弹窗 对话框 -->
-    <el-dialog :title="title" v-model="showPaly" width="835px">
+    <el-dialog :title="title" v-model="showPaly" width="55%">
       <div>
         <Hikvision :rtsp="rtspURL" v-if="showPaly && (playType === '1' || playType === '3') "/>
 
@@ -240,7 +240,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="选择时间" v-model="showAlarmClock" width="505px" append-to-body>
+    <el-dialog title="选择时间" v-model="showAlarmClock" width="32%" append-to-body>
       <el-form :model="alarmClockOptions" :rules="rulesAlarm" ref="alarmClockFormRef" label-width="100px">
         <el-form-item label="开始时间" prop="startTime">
           <el-date-picker
@@ -268,7 +268,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog title="选择ai模式" v-model="showAI" width="505px">
+    <el-dialog title="选择ai模式" v-model="showAI" width="32%">
       <div>
         <el-button type="primary" style="width: 100%;" @click="handlDetection('detection')">目标检测</el-button>
       </div>
@@ -277,7 +277,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="目标检测算法" v-model="showAIPaly" width="835px" @close="closeAI">
+    <el-dialog title="目标检测算法" v-model="showAIPaly" width="55%" @close="closeAI">
       <div style="width: 800px; height: 600px;">
         <el-row>
           <el-col :span="24">
@@ -289,7 +289,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="修改地址" v-model="showMap" width="800px" append-to-body>
+    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
 

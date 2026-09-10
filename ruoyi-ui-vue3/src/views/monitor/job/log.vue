@@ -73,7 +73,7 @@
     </div>
     <!--  底部  -->
 
-    <!--    <el-dialog title="关注公众号" v-model="open" width="500px" append-to-body>-->
+    <!--    <el-dialog title="关注公众号" v-model="open" width="32%" append-to-body>-->
     <!--      <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="120px">-->
     <!--        <el-form-item label="公众号二维码">-->
     <!--          <el-image style="width: 150px" :src="gzhImage" :preview-src-list="[gzhImage]"></el-image>-->

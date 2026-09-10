@@ -85,7 +85,7 @@
         @pagination="getPushList"
     />
 
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="应用名" prop="app">
           <el-input v-model="form.app" placeholder="请输入应用名"></el-input>
@@ -105,7 +105,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog title="编辑通道" v-model="openChannel" width="1000px" append-to-body>
+    <el-dialog title="编辑通道" v-model="openChannel" width="65%" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
         <el-row>
           <el-col :span="12">
@@ -435,7 +435,7 @@
 
     <ChooseGroup ref="chooseGroupRef" @onSubmit="gbParentOnSubmit"></ChooseGroup>
 
-    <el-dialog title="播放视频" v-model="openView" width="1000px" append-to-body>
+    <el-dialog title="播放视频" v-model="openView" width="65%" append-to-body>
       <el-tabs v-model="activeName" type="card" :stretch="true">
         <el-tab-pane label="flv播放" name="flv">
           <el-row>

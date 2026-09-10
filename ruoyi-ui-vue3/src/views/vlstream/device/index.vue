@@ -59,7 +59,7 @@
     <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
                 v-model:limit="queryParams.pageSize" @pagination="getList" />
 
-    <el-dialog v-model="previewOpen" :title="previewTitle" width="820px" append-to-body destroy-on-close>
+    <el-dialog v-model="previewOpen" :title="previewTitle" width="55%" append-to-body destroy-on-close>
       <el-select v-if="streams.length > 1" v-model="selectedStreamId" style="width: 100%; margin-bottom: 12px"
                  @change="playSelected">
         <el-option v-for="stream in streams" :key="stream.id" :value="stream.id"

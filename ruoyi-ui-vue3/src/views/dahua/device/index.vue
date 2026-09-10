@@ -96,7 +96,7 @@
     />
 
     <!-- 添加或修改大华设备对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
       <el-form ref="deviceRef" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="所属部门" prop="deptId">
           <el-tree-select v-model="form.deptId" :data="enabledDeptOptions"
@@ -167,7 +167,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog title="选择设备" v-model="openDevice" width="600px" append-to-body>
+    <el-dialog title="选择设备" v-model="openDevice" width="40%" append-to-body>
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
           <el-button
@@ -195,11 +195,11 @@
       </el-table>
     </el-dialog>
 
-    <el-dialog title="修改地址" v-model="showMap" width="800px" append-to-body>
+    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="835px" append-to-body  @close="closeProxyPlay">
+    <el-dialog title="播放视频" v-model="openPlay" width="55%" append-to-body  @close="closeProxyPlay">
       <div>
         <Hikvision :rtsp="videoUrl" v-if="openPlay && (playType === '1' || playType === '3' || playType === '4') "/>
         <div>
@@ -444,7 +444,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="`【${screenshotQueryParams.name}】设备抓图列表`" v-model="openSnapPicture" width="600px"
+    <el-dialog :title="`【${screenshotQueryParams.name}】设备抓图列表`" v-model="openSnapPicture" width="40%"
                append-to-body>
       <el-row :gutter="10" class="mb8">
         <right-toolbar :search="false" @queryTable="getListScreenshotFun"></right-toolbar>
@@ -475,7 +475,7 @@
       />
     </el-dialog>
 
-    <el-dialog :title="`【${controlQueryParams.name}】设备控制`" v-model="openControl" width="600px" append-to-body>
+    <el-dialog :title="`【${controlQueryParams.name}】设备控制`" v-model="openControl" width="40%" append-to-body>
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
           <el-button
@@ -523,7 +523,7 @@
       </el-row>
     </el-dialog>
 
-<!--    <el-dialog title="播放视频" v-model="openProxyPlay" width="835px" append-to-body @close="closeProxyPlay">-->
+<!--    <el-dialog title="播放视频" v-model="openProxyPlay" width="55%" append-to-body @close="closeProxyPlay">-->
 <!--      <Hikvision :rtsp="videoUrl"/>-->
 <!--    </el-dialog>-->
 

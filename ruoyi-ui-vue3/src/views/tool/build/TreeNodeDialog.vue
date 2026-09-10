@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog title="添加选项" v-model="open" width="800px" :close-on-click-modal="false" :modal-append-to-body="false"
+    <el-dialog title="添加选项" v-model="open" width="50%" :close-on-click-modal="false" :modal-append-to-body="false"
       @open="onOpen" @close="onClose">
       <el-form ref="treeNodeForm" :model="formData" :rules="rules" label-width="100px">
         <el-col :span="24">

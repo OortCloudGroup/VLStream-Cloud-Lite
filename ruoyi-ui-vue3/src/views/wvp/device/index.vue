@@ -167,7 +167,7 @@
     />
 
     <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="设备编号" prop="deviceId">
           <el-input v-model="form.deviceId" disabled></el-input>
@@ -221,7 +221,7 @@
 
     <el-dialog
         title="国标服务信息"
-        width="1000px"
+        width="65%"
         v-model="showDialog"
         append-to-body
     >
@@ -240,7 +240,7 @@
 
     <el-dialog
         title="刷新设备"
-        width="250px"
+        width="20%"
         v-model="showProgress"
         append-to-body
     >
@@ -253,7 +253,7 @@
     </el-dialog>
 
 
-    <el-dialog title="修改地址" v-model="showMap" width="800px" append-to-body>
+    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
   </div>

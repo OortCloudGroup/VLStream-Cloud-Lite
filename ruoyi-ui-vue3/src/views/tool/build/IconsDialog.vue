@@ -1,6 +1,6 @@
 <template>
   <div class="icon-dialog">
-    <el-dialog v-model="value" width="980px" :close-on-click-modal="false" :modal-append-to-body="false" @open="onOpen"
+    <el-dialog v-model="value" width="65%" :close-on-click-modal="false" :modal-append-to-body="false" @open="onOpen"
       @close="onClose">
       <template #header="{ close, titleId, titleClass }">
         选择图标

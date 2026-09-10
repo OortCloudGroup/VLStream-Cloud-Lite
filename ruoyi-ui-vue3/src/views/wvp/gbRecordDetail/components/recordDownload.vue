@@ -3,7 +3,7 @@
     <el-dialog
         :title="title"
         v-if="showDialog"
-        width="45rem"
+        width="55%"
         :append-to-body="true"
         :close-on-click-modal="false"
         :model-value="showDialog"

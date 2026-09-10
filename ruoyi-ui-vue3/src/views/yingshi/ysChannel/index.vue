@@ -62,7 +62,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog title="播放" v-model="visible" width="800px" append-to-body @close="playClose">
+    <el-dialog title="播放" v-model="visible" width="50%" append-to-body @close="playClose">
       <div style="width: 770px;height: 500px;">
         <div id="containerId"></div>
       </div>
@@ -198,7 +198,7 @@
       </el-tabs>
 
     </el-dialog>
-    <el-dialog title="播放参数选择" v-model="visibleParameter" width="500px" append-to-body>
+    <el-dialog title="播放参数选择" v-model="visibleParameter" width="32%" append-to-body>
       <el-form ref="playParameterFormRef" :model="form" label-width="120px">
         <el-form-item label="设备序列号" prop="model">
           <el-input v-model="form.deviceSerial" disabled show-word-limit :maxlength="50" placeholder="请输入设备序列号"/>

@@ -63,7 +63,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog title="播放视频参数" v-model="openGetKitToken" width="500px" append-to-body>
+    <el-dialog title="播放视频参数" v-model="openGetKitToken" width="32%" append-to-body>
       <el-form ref="getKitTokenRef" :model="getKitTokenForm" :rules="getKitTokenRules" label-width="120px">
         <el-form-item label="播放类型" prop="type">
           <el-radio-group v-model="getKitTokenForm.type">
@@ -123,7 +123,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlayer" width="835px" append-to-body @close="playClose">
+    <el-dialog title="播放视频" v-model="openPlayer" width="55%" append-to-body @close="playClose">
       <iframe ref="iframeRef" :src="lechengPlayAddress" style="width: 800px; height: 400px" scrolling="auto"
               frameborder="no" @load="handleIframeLoad"></iframe>
       <el-tabs v-model="tabActiveName" type="card" :stretch="true" style="margin-top: 10px;"

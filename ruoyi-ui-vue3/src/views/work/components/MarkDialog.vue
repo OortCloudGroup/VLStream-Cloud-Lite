@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="添加标记" v-model="visible" width="800px" append-to-body>
+  <el-dialog title="添加标记" v-model="visible" width="50%" append-to-body>
     <el-form ref="markRef" :model="form" :rules="rules" label-width="120px">
       <el-form-item label="国标通道id" prop="channelId">
         <el-input v-model="form.channelId" placeholder="请输入通道id" maxlength="30" disabled show-word-limit />

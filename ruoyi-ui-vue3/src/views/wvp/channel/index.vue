@@ -181,7 +181,7 @@
         @pagination="initData"
     />
 
-    <el-dialog title="编辑通道" v-model="open" width="1000px" append-to-body>
+    <el-dialog title="编辑通道" v-model="open" width="65%" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
         <el-row>
           <el-col :span="12">
@@ -512,7 +512,7 @@
 
     <ChooseGroup ref="chooseGroupRef" @onSubmit="gbParentOnSubmit"></ChooseGroup>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="1000px" append-to-body @close="initData">
+    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body @close="initData">
       <el-tabs v-model="activeName" type="card" :stretch="true">
         <el-tab-pane label="flv播放" name="flv">
           <el-row>

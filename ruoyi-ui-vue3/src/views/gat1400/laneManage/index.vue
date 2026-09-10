@@ -56,7 +56,7 @@
 
     </el-card>
 
-    <el-dialog :title="title" v-model="open" width="800px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="50%" append-to-body>
       <el-form ref="laneManageRef" :model="form" :rules="rules" label-width="120px">
         <el-tooltip class="item" effect="dark" content="国标格式卡口编号(6位地区编码+0000121+7位随机数)设备唯一不可重复" placement="top">
           <el-form-item label="卡口编号" prop="tollgateId">

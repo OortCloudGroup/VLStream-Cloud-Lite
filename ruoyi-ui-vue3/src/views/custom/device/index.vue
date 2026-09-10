@@ -60,7 +60,7 @@
       </table-self>
       <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum" v-model:limit="queryParams.pageSize" @pagination="getList"/>
 
-      <el-dialog v-model="formOpen" :title="formTitle" width="640px" append-to-body>
+      <el-dialog v-model="formOpen" :title="formTitle" width="42%" append-to-body>
         <el-form ref="deviceFormRef" :model="form" :rules="rules" label-width="100px">
           <el-row :gutter="16">
             <el-col :span="12"><el-form-item label="设备名称" prop="deviceName"><el-input v-model="form.deviceName"/></el-form-item></el-col>
@@ -74,17 +74,22 @@
             <el-col :span="24"><el-form-item label="备注" prop="remark"><el-input v-model="form.remark" type="textarea" :rows="3"/></el-form-item></el-col>
           </el-row>
         </el-form>
-        <template #footer><el-button @click="formOpen=false">取消</el-button><el-button type="primary" :loading="submitting" @click="submitForm">保存</el-button></template>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button type="primary" :loading="submitting" @click="submitForm">保存</el-button>
+            <el-button @click="formOpen=false">取消</el-button>
+          </div>
+        </template>
       </el-dialog>
 
-      <el-dialog v-model="previewOpen" :title="previewTitle" width="820px" append-to-body destroy-on-close @closed="cleanupPreviewPlayer">
+      <el-dialog v-model="previewOpen" :title="previewTitle" width="55%" append-to-body destroy-on-close @closed="cleanupPreviewPlayer">
         <div v-loading="previewLoading" class="player-box">
           <rtc-player v-if="rtcUrl" :video-url="rtcUrl" :hasaudio="true"/>
           <div v-else ref="oplayerContainer" class="oplayer-container"/>
         </div>
       </el-dialog>
 
-      <el-dialog v-model="recordOpen" :title="`${recordDevice.deviceName || ''} - 录像管理`" width="560px" append-to-body>
+      <el-dialog v-model="recordOpen" :title="`${recordDevice.deviceName || ''} - 录像管理`" width="36%" append-to-body>
         <el-alert title="录像由 WVP 的 ZLM 媒体服务器真实执行；计划跨午夜时按开始日归属。" type="info" :closable="false" class="mb16"/>
         <el-form :model="recordPlan" label-width="100px">
           <el-form-item label="当前状态"><el-tag :type="recording ? 'danger' : 'info'">{{ recording ? '录像中' : '未录像' }}</el-tag><el-button v-if="!recording" link type="primary" :disabled="!mediaAvailable" @click="startRecord">立即开始</el-button><el-button v-else link type="danger" @click="stopRecord">立即停止</el-button></el-form-item>
@@ -92,7 +97,12 @@
           <el-form-item label="录像星期"><el-checkbox-group v-model="selectedDays"><el-checkbox v-for="day in weekOptions" :key="day.value" :label="day.value">{{ day.label }}</el-checkbox></el-checkbox-group></el-form-item>
           <el-form-item label="录像时段"><el-time-picker v-model="timeRange" is-range value-format="HH:mm" format="HH:mm" start-placeholder="开始" end-placeholder="结束"/></el-form-item>
         </el-form>
-        <template #footer><el-button @click="recordOpen=false">取消</el-button><el-button type="primary" @click="saveRecordPlanForm">保存计划</el-button></template>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button type="primary" @click="saveRecordPlanForm">保存计划</el-button>
+            <el-button @click="recordOpen=false">取消</el-button>
+          </div>
+        </template>
       </el-dialog>
     </div>
   </DeviceClassificationLayout>

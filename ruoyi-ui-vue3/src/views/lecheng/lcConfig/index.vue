@@ -86,7 +86,7 @@
     />
 
     <!-- 添加或修改乐橙监控配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
       <el-form ref="lcConfigRef" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="应用名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入应用名称" />

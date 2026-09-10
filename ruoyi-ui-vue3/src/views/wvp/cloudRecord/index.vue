@@ -72,7 +72,7 @@
         @pagination="getRecordList"
     />
 
-    <el-dialog title="播放视频" v-model="openPlay" width="1000px" append-to-body>
+    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body>
       <div class="player">
         <easy-player class="player" :video-url="videoUrl" autoplay :live="true"></easy-player>
       </div>

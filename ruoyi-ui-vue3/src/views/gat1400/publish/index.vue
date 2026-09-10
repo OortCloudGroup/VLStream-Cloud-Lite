@@ -63,7 +63,7 @@
         </el-table-column>
       </el-table>
 
-      <el-dialog :title="title" v-model="open" width="800px" append-to-body>
+      <el-dialog :title="title" v-model="open" width="50%" append-to-body>
         <el-form ref="SubscribeRef" :model="form" :rules="rules" label-width="120px">
           <el-form-item label="订阅节点" prop="serverId">
             <el-select v-model="form.serverId" placeholder="请选择订阅节点">

@@ -52,7 +52,7 @@
       <slot />
     </main>
 
-    <el-dialog v-model="categoryDialog.visible" :title="categoryDialog.mode === 'add' ? `新增${activeLabel}` : `修改${activeLabel}`" width="460px" append-to-body>
+    <el-dialog v-model="categoryDialog.visible" :title="categoryDialog.mode === 'add' ? `新增${activeLabel}` : `修改${activeLabel}`" width="30%" append-to-body>
       <el-form ref="categoryFormRef" :model="categoryForm" :rules="categoryRules" label-width="90px">
         <el-form-item label="上级节点" prop="parentId">
           <el-tree-select
@@ -73,12 +73,14 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="categoryDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="categoryDialog.saving" @click="submitCategory">确定</el-button>
+        <div class="dialog-footer">
+          <el-button type="primary" :loading="categoryDialog.saving" @click="submitCategory">确定</el-button>
+          <el-button @click="categoryDialog.visible = false">取消</el-button>
+        </div>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="assignmentDialog.visible" title="设置设备分类" width="520px" append-to-body>
+    <el-dialog v-model="assignmentDialog.visible" title="设置设备分类" width="34%" append-to-body>
       <el-alert
         v-if="normalizedDeviceKeys.length > 1"
         title="批量设置会用本次选择覆盖这些设备原有的区域、分组和标签"
@@ -99,8 +101,10 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="assignmentDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="assignmentDialog.saving" @click="submitAssignment">保存</el-button>
+        <div class="dialog-footer">
+          <el-button type="primary" :loading="assignmentDialog.saving" @click="submitAssignment">保存</el-button>
+          <el-button @click="assignmentDialog.visible = false">取消</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>

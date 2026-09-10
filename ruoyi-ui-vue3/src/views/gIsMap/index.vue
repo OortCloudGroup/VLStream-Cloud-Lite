@@ -244,7 +244,7 @@
 
     </el-card>
 
-    <el-dialog v-model="dialogVisible" title="播放视频" width="835px" append-to-body draggable>
+    <el-dialog v-model="dialogVisible" title="播放视频" width="55%" append-to-body draggable>
       <div v-if="playType === '2'" style="width: 100%;height: 100%">
         <Jessibuca :videoUrl="flvUrl" fluent autoplay live
                    :key="'jessibuca'"/>
@@ -455,7 +455,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="dialogChannel" title="通道列表" width="835px" append-to-body draggable>
+    <el-dialog v-model="dialogChannel" title="通道列表" width="55%" append-to-body draggable>
       <el-table v-loading="loading" :data="channelList" ref="channelListTable" border>
         <el-table-column prop="name" label="名称" min-width="180" align="center"/>
         <el-table-column prop="deviceId" label="编号" min-width="180" align="center"/>
@@ -492,7 +492,7 @@
       />
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="1000px" append-to-body draggable>
+    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body draggable>
       <el-tabs v-model="activeName" type="card" :stretch="true">
         <el-tab-pane label="flv播放" name="flv">
           <el-row>

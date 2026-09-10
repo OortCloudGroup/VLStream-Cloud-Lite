@@ -95,7 +95,7 @@
     />
 
     <!-- 修改onvif 设备对话框 -->
-    <el-dialog :title="title" v-model="open" width="1000px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="65%" append-to-body>
       <el-form ref="deviceRef" :model="form" :rules="rules" label-width="120px">
 
         <el-row :gutter="20">
@@ -227,14 +227,14 @@
     </el-dialog>
 
     <!-- 查看直播流地址 对话框 -->
-    <el-dialog :title="title" v-model="showUrl" width="800px" append-to-body>
+    <el-dialog :title="title" v-model="showUrl" width="50%" append-to-body>
       <div v-for="(item,index) in urls" :key="index" style="margin-bottom: 10px;">
         <el-text type="primary" style="cursor: pointer;" @click="copyToClipboard(item)">{{ item }}</el-text>
       </div>
     </el-dialog>
 
     <!-- 播放弹窗 对话框 -->
-    <el-dialog :title="title" v-model="showPaly" width="835px" @opened="openedPaly" @close="closePaly">
+    <el-dialog :title="title" v-model="showPaly" width="55%" @opened="openedPaly" @close="closePaly">
       <div style="background: #000000">
         <Hikvision :rtsp="rtspUrl" v-if="showPaly && (playType === '1' || playType === '3') "/>
       </div>
@@ -377,7 +377,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="title" v-model="openAdd" width="800px" append-to-body>
+    <el-dialog :title="title" v-model="openAdd" width="50%" append-to-body>
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form ref="probeRef" :model="probeForm" :rules="rules" label-width="120px">
@@ -476,12 +476,12 @@
       </el-row>
     </el-dialog>
 
-    <el-dialog title="修改地址" v-model="showMap" width="800px" append-to-body>
+    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
 
     <!--发现设备-->
-    <el-dialog title="WSDiscovery" v-model="showWS" width="1000px" append-to-body>
+    <el-dialog title="WSDiscovery" v-model="showWS" width="65%" append-to-body>
       <el-steps :active="stepsName" finish-status="success" align-center>
         <el-step title="设备认证" />
         <el-step title="添加设备" />

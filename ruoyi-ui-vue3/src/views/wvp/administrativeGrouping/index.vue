@@ -43,7 +43,7 @@
           </el-table-column>
         </table-self>
 
-        <el-dialog :title="title" v-model="openRegion" width="1000px" append-to-body>
+        <el-dialog :title="title" v-model="openRegion" width="65%" append-to-body>
           <el-tabs v-model="activeKeyRegion" style="padding: 0 1rem; margin: auto 0" @tab-click="getRegionList">
             <el-tab-pane name="0">
               <template #label>
@@ -167,7 +167,7 @@
           </el-table-column>
         </table-self>
 
-        <el-dialog :title="title" v-model="openGroup" width="1000px" append-to-body>
+        <el-dialog :title="title" v-model="openGroup" width="65%" append-to-body>
           <el-form ref="formGroupRef" :model="formGroup" :rules="rulesGroup" label-width="80px">
             <el-form-item label="节点编号" prop="deviceId">
               <el-input v-model="formGroup.deviceId" placeholder="请输入编码">

@@ -25,6 +25,13 @@ const handleClick = () => {
 </script>
 
 <style scoped lang="scss">
+.app-container {
+  background: #fff;
+  border-radius: 10px;
+  min-height: calc(100vh - 84px);
+  box-sizing: border-box;
+}
+
 :deep(.work-tabs) {
   --el-tabs-header-height: 32px;
 

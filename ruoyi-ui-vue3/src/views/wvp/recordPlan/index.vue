@@ -56,7 +56,7 @@
         @pagination="getList"
     />
 
-    <el-dialog :title="title" v-model="open" width="800px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="50%" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="50px">
         <el-form-item label="名称" prop="name">
           <el-input type="text" v-model="form.name" placeholder="请输入名称"></el-input>
