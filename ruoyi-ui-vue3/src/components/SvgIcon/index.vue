@@ -1,6 +1,6 @@
 <template>
   <svg :class="svgClass" aria-hidden="true">
-    <use :xlink:href="iconName" :fill="color" />
+    <use :xlink:href="iconName" v-bind="color ? { fill: color } : {}" />
   </svg>
 </template>
 
@@ -9,7 +9,7 @@ export default defineComponent({
   props: {
     iconClass: {
       type: String,
-      required: true
+      default: 'system'
     },
     className: {
       type: String,
@@ -22,7 +22,10 @@ export default defineComponent({
   },
   setup(props) {
     return {
-      iconName: computed(() => `#icon-${props.iconClass}`),
+      iconName: computed(() => {
+        const name = props.iconClass && props.iconClass !== '#' ? props.iconClass : 'system'
+        return `#icon-${name}`
+      }),
       svgClass: computed(() => {
         if (props.className) {
           return `svg-icon ${props.className}`

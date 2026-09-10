@@ -4,6 +4,7 @@ import { getRouters } from '@/api/menu'
 import Layout from '@/layout/index'
 import ParentView from '@/components/ParentView'
 import InnerLink from '@/layout/components/InnerLink'
+import { buildSidebarByGroup, resolveGroupByPath } from '@/utils/menuGroups'
 
 // 匹配views里面所有的.vue文件
 const modules = import.meta.glob('./../../views/**/*.vue')
@@ -16,7 +17,10 @@ const usePermissionStore = defineStore(
       addRoutes: [],
       defaultRoutes: [],
       topbarRouters: [],
-      sidebarRouters: []
+      sidebarRouters: [],
+      /** 全量侧栏源（常量 + 后端），供产品顶栏分组过滤 */
+      menuSourceRoutes: [],
+      currentGroup: 'workbench'
     }),
     actions: {
       setRoutes(routes) {
@@ -32,6 +36,28 @@ const usePermissionStore = defineStore(
       setSidebarRouters(routes) {
         this.sidebarRouters = routes
       },
+      setMenuSourceRoutes(routes) {
+        this.menuSourceRoutes = routes
+      },
+      setCurrentGroup(groupKey) {
+        this.currentGroup = groupKey
+      },
+      /**
+       * 按顶栏分组刷新左侧菜单
+       */
+      applyMenuGroup(groupKey) {
+        const key = groupKey || 'workbench'
+        this.setCurrentGroup(key)
+        this.setSidebarRouters(buildSidebarByGroup(this.menuSourceRoutes, key))
+      },
+      /**
+       * 根据当前 path 同步顶栏组与侧栏
+       */
+      syncMenuGroupByPath(path) {
+        const group = resolveGroupByPath(path)
+        this.applyMenuGroup(group)
+        return group
+      },
       generateRoutes(roles) {
         return new Promise(resolve => {
           // 向后端请求路由数据
@@ -45,9 +71,12 @@ const usePermissionStore = defineStore(
             const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
             asyncRoutes.forEach(route => { router.addRoute(route) })
             this.setRoutes(rewriteRoutes)
-            this.setSidebarRouters(constantRoutes.concat(sidebarRoutes))
+            const menuSource = constantRoutes.concat(sidebarRoutes)
+            this.setMenuSourceRoutes(menuSource)
             this.setDefaultRoutes(sidebarRoutes)
             this.setTopbarRoutes(defaultRoutes)
+            // 按当前路径同步顶栏分组（深链进入协议页时落在「视频汇聚」）
+            this.syncMenuGroupByPath(router.currentRoute.value?.path || '/index')
             resolve(rewriteRoutes)
           })
         })

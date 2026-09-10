@@ -1,13 +1,17 @@
 <template>
   <div :class="classObj" class="app-wrapper" :style="{ '--current-color': theme }">
-    <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
-    <sidebar v-if="!sidebar.hide" class="sidebar-container" />
-    <div :class="{ sidebarHide: sidebar.hide }" class="main-container">
-      <div :class="{ 'fixed-header': fixedHeader }">
-        <navbar @setLayout="setLayout" />
+    <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside" />
+
+    <div class="layout-header">
+      <navbar @setLayout="setLayout" />
+    </div>
+
+    <div class="layout-body">
+      <sidebar v-if="!sidebar.hide" class="sidebar-container" />
+      <div :class="{ sidebarHide: sidebar.hide }" class="main-container">
+        <app-main />
+        <settings ref="settingRef" />
       </div>
-      <app-main />
-      <settings ref="settingRef" />
     </div>
   </div>
 </template>
@@ -24,7 +28,6 @@ const settingsStore = useSettingsStore()
 const theme = computed(() => settingsStore.theme);
 const sidebar = computed(() => useAppStore().sidebar);
 const device = computed(() => useAppStore().device);
-const fixedHeader = computed(() => settingsStore.fixedHeader);
 
 const classObj = computed(() => ({
   hideSidebar: !sidebar.value.opened,
@@ -33,8 +36,8 @@ const classObj = computed(() => ({
   mobile: device.value === 'mobile'
 }))
 
-const { width, height } = useWindowSize();
-const WIDTH = 992; // refer to Bootstrap's responsive design
+const { width } = useWindowSize();
+const WIDTH = 992;
 
 watch(() => device.value, () => {
   if (device.value === 'mobile' && sidebar.value.opened) {
@@ -62,8 +65,8 @@ function setLayout() {
 </script>
 
 <style lang="scss" scoped>
-  @import "@/assets/styles/mixin.scss";
-  @import "@/assets/styles/variables.module.scss";
+@import "@/assets/styles/mixin.scss";
+@import "@/assets/styles/variables.module.scss";
 
 .app-wrapper {
   @include clearfix;
@@ -71,11 +74,34 @@ function setLayout() {
   height: 100%;
   width: 100%;
   background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
 
   &.mobile.openSidebar {
     position: fixed;
     top: 0;
   }
+}
+
+/* unifiedUser: 顶栏透明，无白底 */
+.layout-header {
+  flex-shrink: 0;
+  width: 100%;
+  z-index: 1002;
+  background: transparent;
+}
+
+/* unifiedUser: gap 20px，右侧留白 20px */
+.layout-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  position: relative;
+  gap: 20px;
+  padding: 0 20px 0 0;
+  box-sizing: border-box;
 }
 
 .drawer-bg {
@@ -89,28 +115,14 @@ function setLayout() {
 }
 
 .main-container {
-  background: #f0f2f5;
-  padding-right: 8px;
-}
-
-.fixed-header {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 9;
-  width: calc(100% - #{$base-sidebar-width});
-  transition: width 0.28s;
-}
-
-.hideSidebar .fixed-header {
-  width: calc(100% - 54px);
-}
-
-.sidebarHide .fixed-header {
-  width: 100%;
-}
-
-.mobile .fixed-header {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  padding: 0;
+  margin: 20px 0 0 0 !important;
+  height: calc(100% - 20px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 </style>

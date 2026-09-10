@@ -13,7 +13,7 @@ export default {
   showSettings: true,
 
   /**
-   * 是否显示顶部导航
+   * 是否显示顶部导航（产品顶栏由 ProductNav 固定实现，勿开旧 TopNav）
    */
   topNav: false,
 
@@ -28,9 +28,9 @@ export default {
   fixedHeader: false,
 
   /**
-   * 是否显示logo
+   * 是否显示侧栏 logo（已迁至顶栏）
    */
-  sidebarLogo: true,
+  sidebarLogo: false,
 
   /**
    * 是否显示动态标题

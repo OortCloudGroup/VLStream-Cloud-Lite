@@ -5,12 +5,13 @@
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse"
-        :background-color="getMenuBackground"
-        :text-color="getMenuTextColor"
+        background-color="transparent"
+        text-color="rgba(0, 0, 0, 0.65)"
         :unique-opened="true"
         :active-text-color="theme"
         :collapse-transition="false"
         mode="vertical"
+        class="sidebar-el-menu"
         :class="sideTheme"
       >
         <sidebar-item
@@ -42,17 +43,6 @@ const sideTheme = computed(() => settingsStore.sideTheme);
 const theme = computed(() => settingsStore.theme);
 const isCollapse = computed(() => !appStore.sidebar.opened);
 
-// 获取菜单背景色（透明，与页面背景一致）
-const getMenuBackground = computed(() => 'transparent');
-
-// 获取菜单文字颜色
-const getMenuTextColor = computed(() => {
-  if (settingsStore.isDark) {
-    return 'var(--sidebar-text)';
-  }
-  return sideTheme.value === 'theme-dark' ? '#bfcbd9' : 'rgba(0, 0, 0, 0.85)';
-});
-
 const activeMenu = computed(() => {
   const { meta, path } = route;
   if (meta.activeMenu) {
@@ -63,42 +53,29 @@ const activeMenu = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+/* unifiedUser: 左侧透明，无白底卡片 */
 .sidebar-container {
   background-color: transparent !important;
-  
-  .scrollbar-wrapper {
-    background-color: transparent !important;
-  }
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
 
+  .scrollbar-wrapper,
   :deep(.el-scrollbar),
   :deep(.el-scrollbar__view) {
     background-color: transparent !important;
   }
 
-  .el-menu {
-    border: none;
+  .sidebar-el-menu.el-menu {
+    border: none !important;
+    border-right: 0 !important;
     height: 100%;
     width: 100% !important;
     background-color: transparent !important;
-    
-    .el-menu-item, .el-sub-menu__title {
-      &:hover {
-        background-color: var(--menu-hover, rgba(0, 0, 0, 0.06)) !important;
-      }
-    }
-
-    .el-menu-item {
-      color: v-bind(getMenuTextColor);
-      
-      &.is-active {
-        color: var(--menu-active-text, #409eff);
-        background-color: var(--menu-hover, rgba(0, 0, 0, 0.06)) !important;
-      }
-    }
-
-    .el-sub-menu__title {
-      color: v-bind(getMenuTextColor);
-    }
+    --el-menu-bg-color: transparent;
+    --el-menu-hover-bg-color: var(--el-color-primary-light-9, rgba(64, 158, 255, 0.1));
+    --el-menu-text-color: rgba(0, 0, 0, 0.65);
+    --el-menu-active-color: var(--el-color-primary);
   }
 }
 </style>

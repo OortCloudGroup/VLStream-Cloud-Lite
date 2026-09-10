@@ -89,6 +89,7 @@ import usePermissionStore from '@/store/modules/permission'
 import { handleThemeStyle } from '@/utils/theme'
 
 const { proxy } = getCurrentInstance();
+const router = useRouter()
 const appStore = useAppStore()
 const settingsStore = useSettingsStore()
 const permissionStore = usePermissionStore()
@@ -98,11 +99,11 @@ const sideTheme = ref(settingsStore.sideTheme);
 const storeSettings = computed(() => settingsStore);
 const predefineColors = ref(["#409EFF", "#ff4500", "#ff8c00", "#ffd700", "#90ee90", "#00ced1", "#1e90ff", "#c71585"]);
 
-/** 是否需要topnav */
+/** 是否需要topnav（关闭旧 TopNav 时恢复产品分组侧栏） */
 function topNavChange(val) {
   if (!val) {
     appStore.toggleSideBarHide(false);
-    permissionStore.setSidebarRouters(permissionStore.defaultRoutes);
+    permissionStore.syncMenuGroupByPath(router.currentRoute.value.path);
   }
 }
 

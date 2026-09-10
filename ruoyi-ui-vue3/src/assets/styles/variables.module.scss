@@ -20,9 +20,9 @@ $menuLightHover: #f0f1f5;
 $menuLightText: #303133;
 $menuLightActiveText: #409EFF;
 
-// 基础变量
-$base-sidebar-width: 256px;
-$sideBarWidth: 256px;
+// 基础变量（对齐 unifiedUser 左侧 260px）
+$base-sidebar-width: 260px;
+$sideBarWidth: 260px;
 
 // 菜单暗色变量
 $base-menu-color: #bfcbd9;
@@ -68,11 +68,11 @@ $--color-info: #909399;
 // CSS变量定义
 :root {
   /* 亮色模式变量 */
-  --sidebar-bg: #{$menuBg};
-  --sidebar-text: #{$menuText};
-  --menu-hover: #{$menuHover};
+  --sidebar-bg: transparent;
+  --sidebar-text: rgba(0, 0, 0, 0.65);
+  --menu-hover: transparent;
   
-  --navbar-bg: #ffffff;
+  --navbar-bg: transparent;
   --navbar-text: #303133;
   
   /* splitpanes default-theme 变量 */

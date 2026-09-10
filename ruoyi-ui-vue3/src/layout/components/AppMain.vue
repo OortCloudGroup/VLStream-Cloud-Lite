@@ -22,7 +22,7 @@ onMounted(() => {
   addIframe()
 })
 
-watch((route) => {
+watch(() => route, () => {
   addIframe()
 })
 
@@ -34,24 +34,19 @@ function addIframe() {
 </script>
 
 <style lang="scss" scoped>
+/* unifiedUser .subMenu_content */
 .app-main {
-  /* 64 = navbar height */
-  min-height: calc(100vh - 64px);
+  flex: 1;
+  min-height: 0;
   width: 100%;
   position: relative;
-  overflow: hidden;
-  background: #fff;
-  border-radius: 6px 6px 0px 0px;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-}
-
-.fixed-header + .app-main {
-  padding-top: 64px;
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 10px 10px 0 0;
 }
 </style>
 
 <style lang="scss">
-// fix css style bug in open el-dialog
 .el-popup-parent--hidden {
   .fixed-header {
     padding-right: 6px;
@@ -72,4 +67,3 @@ function addIframe() {
   border-radius: 3px;
 }
 </style>
-

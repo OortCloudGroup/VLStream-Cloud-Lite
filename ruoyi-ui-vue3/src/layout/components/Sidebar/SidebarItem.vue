@@ -3,7 +3,7 @@
     <template v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path, onlyOneChild.query)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
-          <svg-icon :icon-class="onlyOneChild.meta.icon || (item.meta && item.meta.icon)"/>
+          <svg-icon :icon-class="resolveIcon(onlyOneChild.meta?.icon || item.meta?.icon)"/>
           <template #title><span class="menu-title" :title="hasTitle(onlyOneChild.meta.title)">{{ onlyOneChild.meta.title }}</span></template>
         </el-menu-item>
       </app-link>
@@ -11,7 +11,7 @@
 
     <el-sub-menu v-else ref="subMenu" :index="resolvePath(item.path)" teleported>
       <template v-if="item.meta" #title>
-        <svg-icon :icon-class="item.meta && item.meta.icon" />
+        <svg-icon :icon-class="resolveIcon(item.meta?.icon)" />
         <span class="menu-title" :title="hasTitle(item.meta.title)">{{ item.meta.title }}</span>
       </template>
 
@@ -83,11 +83,15 @@ function resolvePath(routePath, routeQuery) {
   if (isExternal(props.basePath)) {
     return props.basePath
   }
+  // 虚拟「设备管理」下挂载的协议树使用绝对 path，避免拼成 /device-manage/xxx
+  const absolutePath = typeof routePath === 'string' && routePath.startsWith('/')
+    ? getNormalPath(routePath)
+    : getNormalPath(props.basePath + '/' + routePath)
   if (routeQuery) {
     let query = JSON.parse(routeQuery);
-    return { path: getNormalPath(props.basePath + '/' + routePath), query: query }
+    return { path: absolutePath, query: query }
   }
-  return getNormalPath(props.basePath + '/' + routePath)
+  return absolutePath
 }
 
 function hasTitle(title){
@@ -96,5 +100,10 @@ function hasTitle(title){
   } else {
     return "";
   }
+}
+
+function resolveIcon(icon) {
+  if (!icon || icon === '#') return 'system'
+  return icon
 }
 </script>

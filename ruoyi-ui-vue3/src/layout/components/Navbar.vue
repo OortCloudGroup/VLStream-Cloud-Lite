@@ -1,13 +1,27 @@
 <template>
   <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="appStore.sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <div class="navbar-left" :class="{ 'is-collapse': !appStore.sidebar.opened }">
+      <router-link to="/" class="brand" :class="{ 'is-collapse': !appStore.sidebar.opened }">
+        <span class="brand-mark" v-html="brandMark" aria-hidden="true" />
+        <span v-if="appStore.sidebar.opened" class="brand-title-img" v-html="brandTitle" aria-hidden="true" />
+      </router-link>
+    </div>
+    <hamburger
+      id="hamburger-container"
+      :is-active="appStore.sidebar.opened"
+      class="hamburger-container"
+      @toggleClick="toggleSideBar"
+    />
+
+    <product-nav class="navbar-center" />
 
     <div class="right-menu">
       <div class="avatar-container">
         <el-dropdown @command="handleCommand" class="right-menu-item hover-effect" trigger="click">
           <div class="avatar-wrapper">
             <img :src="userStore.avatar" class="user-avatar" />
-            <el-icon><caret-bottom /></el-icon>
+            <span v-if="userStore.name" class="user-name">{{ userStore.name }}</span>
+            <el-icon class="caret-icon"><caret-bottom /></el-icon>
           </div>
           <template #dropdown>
             <el-dropdown-menu>
@@ -31,6 +45,9 @@
 <script setup>
 import { ElMessageBox } from 'element-plus'
 import Hamburger from '@/components/Hamburger'
+import ProductNav from '@/components/ProductNav/index.vue'
+import brandMark from '@/assets/logo/brand-mark.svg?raw'
+import brandTitle from '@/assets/logo/brand-title.svg?raw'
 import useAppStore from '@/store/modules/app'
 import useUserStore from '@/store/modules/user'
 import useSettingsStore from '@/store/modules/settings'
@@ -77,78 +94,145 @@ function setLayout() {
 <style lang='scss' scoped>
 .navbar {
   height: 64px;
-  overflow: hidden;
-  position: relative;
+  min-height: 64px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
   background: transparent;
+  box-sizing: border-box;
+}
 
-  .hamburger-container {
-    line-height: 64px;
-    height: 100%;
-    float: left;
-    cursor: pointer;
-    transition: background 0.3s;
-    -webkit-tap-highlight-color: transparent;
-    display: flex;
+.navbar-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 260px;
+  transition: min-width 0.28s;
+
+  &.is-collapse {
+    min-width: 40px;
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+  text-decoration: none;
+  color: var(--el-color-primary);
+
+  &.is-collapse {
+    min-width: auto;
+    width: 40px;
+  }
+
+  .brand-mark,
+  .brand-title-img {
+    flex-shrink: 0;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    color: inherit;
+    line-height: 0;
 
-    &:hover {
-      background: rgba(0, 0, 0, 0.025);
+    :deep(svg) {
+      width: 100%;
+      height: 100%;
+      display: block;
+      fill: currentColor;
     }
   }
 
-  .right-menu {
-    float: right;
-    height: 100%;
-    line-height: 64px;
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .brand-title-img {
+    width: 153px;
+    height: 32px;
+  }
+}
+
+.hamburger-container {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  color: var(--el-color-primary);
+  transition: background 0.2s;
+  padding: 0 8px;
+  margin-right: 8px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  :deep(.hamburger) {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.navbar-center {
+  flex: 1;
+  min-width: 0;
+}
+
+.right-menu {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex-shrink: 0;
+  margin-left: auto;
+  min-width: 160px;
+  justify-content: flex-end;
+
+  .right-menu-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    height: auto;
+    font-size: 16px;
+    color: var(--el-color-primary);
+
+    &.hover-effect {
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.2s;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.08);
+      }
+    }
+  }
+
+  .avatar-wrapper {
     display: flex;
     align-items: center;
+    gap: 8px;
 
-    &:focus {
-      outline: none;
+    .user-avatar {
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
     }
 
-    .right-menu-item {
-      display: inline-block;
-      padding: 0 8px;
-      height: 100%;
-      font-size: 18px;
-      color: var(--navbar-text);
-      vertical-align: text-bottom;
-
-      &.hover-effect {
-        cursor: pointer;
-        transition: background 0.3s;
-
-        &:hover {
-          background: rgba(0, 0, 0, 0.025);
-        }
-      }
+    .user-name {
+      font-size: 16px;
+      color: var(--el-color-primary);
+      max-width: 96px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .avatar-container {
-      margin-right: 40px;
-
-      .avatar-wrapper {
-        margin-top: 0;
-        position: relative;
-        display: flex;
-        align-items: center;
-
-        .user-avatar {
-          cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-        }
-
-        i {
-          cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
-          font-size: 12px;
-        }
-      }
+    .caret-icon {
+      font-size: 12px;
+      color: var(--el-color-primary);
     }
   }
 }
