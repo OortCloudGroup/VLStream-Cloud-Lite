@@ -1,15 +1,9 @@
 <template>
   <div class="classification-layout">
-    <aside class="classification-sidebar">
+    <aside v-yResize class="classification-sidebar">
       <el-tabs v-model="activeType" stretch @tab-change="handleTabChange">
         <el-tab-pane v-for="tab in tabs" :key="tab.value" :label="tab.label" :name="tab.value" />
       </el-tabs>
-
-      <div class="classification-actions">
-        <el-button link type="primary" :icon="Plus" @click="openCategoryDialog('add')">新增</el-button>
-        <el-button link type="primary" :icon="Edit" :disabled="!selectedCategory" @click="openCategoryDialog('edit')">修改</el-button>
-        <el-button link type="danger" :icon="Delete" :disabled="!selectedCategory" @click="removeCategory">删除</el-button>
-      </div>
 
       <el-scrollbar class="classification-tree-scroll">
         <el-tree
@@ -22,13 +16,28 @@
           @node-click="handleNodeClick"
         >
           <template #default="{ data }">
-            <span class="classification-node">
-              <span class="classification-node-name">
+            <div class="custom-tree-node">
+              <span class="tree-node-label">
                 <el-icon><Folder /></el-icon>
-                {{ data.categoryName }}
+                <span class="tree-node-name">{{ data.categoryName }}</span>
+                <span class="classification-count">{{ data.deviceCount }}</span>
               </span>
-              <span class="classification-count">{{ data.deviceCount }}</span>
-            </span>
+              <span
+                v-if="selectedCategory && String(selectedCategory.id) === String(data.id)"
+                class="tree-node-actions"
+                @click.stop
+              >
+                <el-tooltip content="新增" placement="top">
+                  <el-icon class="tree-action-icon" @click.stop="openCategoryDialog('add', data)"><Plus /></el-icon>
+                </el-tooltip>
+                <el-tooltip content="修改" placement="top">
+                  <el-icon class="tree-action-icon" @click.stop="openCategoryDialog('edit', data)"><Edit /></el-icon>
+                </el-tooltip>
+                <el-tooltip content="删除" placement="top">
+                  <el-icon class="tree-action-icon danger" @click.stop="removeCategory(data)"><Delete /></el-icon>
+                </el-tooltip>
+              </span>
+            </div>
           </template>
         </el-tree>
       </el-scrollbar>
@@ -175,13 +184,22 @@ const parentOptions = computed(() => [
   { id: '0', categoryName: '顶级节点', children: cloneWithoutNode(treeCache[activeType.value].tree, categoryDialog.mode === 'edit' ? categoryForm.id : null) }
 ])
 
-function openCategoryDialog(mode) {
+function openCategoryDialog(mode, node) {
+  const target = node || selectedCategory.value
+  if (mode === 'edit' && !target) return
   categoryDialog.mode = mode
-  categoryForm.id = mode === 'edit' ? String(selectedCategory.value.id) : undefined
+  categoryForm.id = mode === 'edit' ? String(target.id) : undefined
   categoryForm.categoryType = activeType.value
-  categoryForm.parentId = mode === 'edit' ? String(selectedCategory.value.parentId || 0) : (selectedCategory.value ? String(selectedCategory.value.id) : '0')
-  categoryForm.categoryName = mode === 'edit' ? selectedCategory.value.categoryName : ''
-  categoryForm.sortNum = mode === 'edit' ? (selectedCategory.value.sortNum || 0) : 0
+  if (mode === 'edit') {
+    categoryForm.parentId = String(target.parentId || 0)
+    categoryForm.categoryName = target.categoryName
+    categoryForm.sortNum = target.sortNum || 0
+  } else {
+    // add under clicked node, or root if null
+    categoryForm.parentId = target ? String(target.id) : '0'
+    categoryForm.categoryName = ''
+    categoryForm.sortNum = 0
+  }
   categoryDialog.visible = true
   nextTick(() => categoryFormRef.value?.clearValidate())
 }
@@ -202,12 +220,15 @@ async function submitCategory() {
   }
 }
 
-async function removeCategory() {
-  await ElMessageBox.confirm(`确认删除“${selectedCategory.value.categoryName}”吗？`, '提示', { type: 'warning' })
-  await deleteClassificationCategory(String(selectedCategory.value.id))
+async function removeCategory(node) {
+  const target = node || selectedCategory.value
+  if (!target) return
+  await ElMessageBox.confirm(`确认删除“${target.categoryName}”吗？`, '提示', { type: 'warning' })
+  await deleteClassificationCategory(String(target.id))
   ElMessage.success('删除成功')
   selectedCategory.value = null
   await loadTree(activeType.value)
+  emit('filter-change', { categoryType: undefined, categoryId: undefined, unclassified: undefined })
 }
 
 const assignmentDialog = reactive({ visible: false, saving: false })
@@ -254,17 +275,113 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.classification-layout { display: flex; min-height: calc(100vh - 84px); background: #f5f7fa; }
-.classification-sidebar { width: 300px; flex: 0 0 300px; margin: 16px 0 16px 16px; padding: 0 16px 16px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; }
-.classification-actions { display: flex; justify-content: center; padding: 0 0 10px; border-bottom: 1px solid #ebeef5; }
-.classification-tree-scroll { flex: 1; min-height: 360px; margin: 10px -6px; }
-.classification-node { display: flex; align-items: center; justify-content: space-between; width: 100%; padding-right: 8px; }
-.classification-node-name { display: inline-flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; }
-.classification-count { color: #909399; font-size: 12px; }
-.assign-button { width: 100%; margin-top: 8px; }
-.selection-hint { color: #909399; font-size: 12px; line-height: 18px; text-align: center; margin-top: 8px; }
-.classification-content { flex: 1; min-width: 0; }
-.assignment-alert { margin-bottom: 18px; }
-:deep(.el-tree-node__content) { height: 34px; }
-:deep(.el-tree-node__content > .classification-node) { flex: 1; min-width: 0; }
+.classification-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  min-height: calc(100vh - 84px);
+  padding: 16px 20px;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.classification-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  padding: 0 20px 16px 0;
+  background: transparent;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.classification-tree-scroll {
+  flex: 1;
+  min-height: 360px;
+  margin: 10px -6px;
+}
+
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-right: 8px;
+  min-width: 0;
+}
+
+.tree-node-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tree-node-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-node-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.tree-action-icon {
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--el-color-primary);
+}
+
+.tree-action-icon.danger {
+  color: var(--el-color-danger);
+}
+
+.classification-count {
+  color: #909399;
+  font-size: 12px;
+}
+
+.assign-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.selection-hint {
+  color: #909399;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.classification-content {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border-radius: 0;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.assignment-alert {
+  margin-bottom: 18px;
+}
+
+:deep(.el-tree-node__content) {
+  height: 34px;
+}
+
+:deep(.el-tree-node__content > .custom-tree-node) {
+  flex: 1;
+  min-width: 0;
+}
 </style>

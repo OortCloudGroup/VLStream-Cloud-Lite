@@ -218,14 +218,15 @@
       margin-top: 0 !important;
       margin-bottom: 0 !important;
 
+      // 仅叶子菜单显示激活胶囊背景，父级展开/激活时不加背景
       &.is-active > .el-sub-menu__title {
-        color: var(--el-color-primary) !important;
-        background-color: var(--el-color-primary-light-9, rgba(64, 158, 255, 0.1)) !important;
-        background: var(--el-color-primary-light-9, rgba(64, 158, 255, 0.1)) !important;
-        border-radius: 167px !important;
+        color: inherit !important;
+        background-color: transparent !important;
+        background: transparent !important;
+        border-radius: 0 !important;
 
         .svg-icon {
-          color: var(--el-color-primary) !important;
+          color: inherit !important;
         }
       }
 

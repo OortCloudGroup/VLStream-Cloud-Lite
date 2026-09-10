@@ -1,98 +1,81 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="关键字" prop="query">
-        <el-input
-            v-model="queryParams.query"
-            placeholder="请输入关键字"
-            clearable
-            style="width: 240px"
-            @keyup.enter="handleQuery"
+    <div class="toolbar-with-search">
+      <div class="toolbar-left">
+        <button type="button" class="exportBtn newBtn flexRowAC" @click="handleAdd" v-hasPermi="['wvp:push:add']">
+          <el-icon class="BtnImg"><Plus /></el-icon>新增
+        </button>
+      </div>
+      <div class="searchHeight_out flexRowAC">
+        <search-height-box
+          keyword="query"
+          placeholder="请输入关键字"
+          :data="searchData"
+          @handle="searchResetFn"
         />
-      </el-form-item>
-      <el-form-item label="流媒体" prop="query">
-        <el-select @change="getPushList" style="width: 250px" v-model="queryParams.mediaServerId"
-                   placeholder="请选择流媒体" default-first-option>
-          <el-option
-              v-for="item in mediaServerList"
-              :key="item.id"
-              :label="item.id"
-              :value="item.id">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="推流状态" prop="query">
-        <el-select @change="getPushList" style="width: 250px" v-model="queryParams.pushing"
-                   placeholder="请选择推流状态" default-first-option>
-          <el-option label="推流中" value="true"></el-option>
-          <el-option label="已停止" value="false"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+        <export-excel-pdf />
+      </div>
+    </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-            type="primary"
-            plain
-            icon="Plus"
-            @click="handleAdd"
-            v-hasPermi="['wvp:push:add']"
-        >新增
-        </el-button>
-      </el-col>
-      <right-toolbar v-model:showSearch="showSearch" @queryTable="getPushList"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="pushList" border :row-key="(row)=> row.app + row.stream">
-      <el-table-column prop="gbName" label="名称" min-width="150" align="center"/>
-      <el-table-column prop="app" label="应用名" min-width="100" align="center"/>
-      <el-table-column prop="stream" label="流ID" min-width="100" align="center"/>
-      <el-table-column label="推流状态" min-width="100" align="center">
+    <table-self
+      class="new_table"
+      header-cell-class-name="header_tenant_cell"
+      stripe
+      v-loading="loading"
+      :data="pushList"
+      :row-key="(row) => row.app + row.stream"
+    >
+      <el-table-column prop="gbName" label="名称" align="center" show-overflow-tooltip/>
+      <el-table-column prop="app" label="应用名" align="center" show-overflow-tooltip/>
+      <el-table-column prop="stream" label="流ID" align="center" show-overflow-tooltip/>
+      <el-table-column label="推流状态" :width="clacPXToVW(100)" align="center">
         <template #default="scope">
           <el-tag v-if="scope.row.pushing">推流中</el-tag>
-          <el-tag type="info" v-if="!scope.row.pushing">已停止</el-tag>
+          <el-tag type="info" v-else>已停止</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="gbDeviceId" label="国标编码" min-width="150" align="center"/>
-      <el-table-column label="位置信息" min-width="150" align="center">
+      <el-table-column prop="gbDeviceId" label="国标编码" align="center" show-overflow-tooltip/>
+      <el-table-column label="位置信息" :width="clacPXToVW(150)" align="center">
         <template #default="scope">
-          <span
-              v-if="scope.row.gbLongitude && scope.row.gbLatitude">{{
-              scope.row.gbLongitude
-            }}<br/>{{ scope.row.gbLatitude }}</span>
-          <span v-if="!scope.row.gbLongitude || !scope.row.gbLatitude">无</span>
+          <span v-if="scope.row.gbLongitude && scope.row.gbLatitude">{{ scope.row.gbLongitude }}<br/>{{ scope.row.gbLatitude }}</span>
+          <span v-else>无</span>
         </template>
       </el-table-column>
-      <el-table-column prop="mediaServerId" label="流媒体" min-width="150" align="center"/>
-      <el-table-column label="开始时间" min-width="200" align="center">
+      <el-table-column prop="mediaServerId" label="流媒体" align="center" show-overflow-tooltip/>
+      <el-table-column label="开始时间" :width="clacPXToVW(180)" align="center" show-overflow-tooltip>
         <template #default="scope">
-          <el-button-group v-if="scope.row.pushTime && scope.row.pushTime">
-            {{ scope.row.pushTime == null ? "-" : scope.row.pushTime }}
-          </el-button-group>
+          {{ scope.row.pushTime == null ? "-" : scope.row.pushTime }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width" fixed="right">
+      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(260)">
         <template #default="scope">
-          <el-button @click="playPush(scope.row)" type="text" v-hasPermi="['wvp:push:play']">播放</el-button>
-          <el-button type="text" @click="handleChannelConfiguration(scope.row)" v-hasPermi="['wvp:channel:edit']">
-            通道配置
-          </el-button>
-          <el-button type="text" @click="handleEdit(scope.row)" v-hasPermi="['wvp:push:edit']">
-            编辑
-          </el-button>
-          <el-button type="text" @click="handleDelete(scope.row)" v-hasPermi="['wvp:push:remove']">
-            删除
-          </el-button>
-          <el-button type="text" @click="queryCloudRecords(scope.row)" v-hasPermi="['wvp:record:list']">云端录像
-          </el-button>
+          <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+            <div class="new_table_svg_group" @click.stop="playPush(scope.row)" v-hasPermi="['wvp:push:play']">
+              <span>播放</span>
+            </div>
+            <div class="new_table_svg_group" @click.stop="handleChannelConfiguration(scope.row)" v-hasPermi="['wvp:channel:edit']">
+              <span>通道配置</span>
+            </div>
+            <el-dropdown
+              @command="(command) => { pushMoreClick(command, scope.row) }"
+              v-if="checkPermi(['wvp:push:edit', 'wvp:push:remove', 'wvp:record:list'])"
+            >
+              <div class="new_table_svg_group" @click.stop>
+                <span>更多</span>
+                <el-icon><ArrowDown /></el-icon>
+              </div>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="handleEdit" v-if="checkPermi(['wvp:push:edit'])">编辑</el-dropdown-item>
+                  <el-dropdown-item command="handleDelete" style="color: #f56c6c" v-if="checkPermi(['wvp:push:remove'])">删除</el-dropdown-item>
+                  <el-dropdown-item command="queryCloudRecords" v-if="checkPermi(['wvp:record:list'])">云端录像</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
         </template>
       </el-table-column>
-    </el-table>
+    </table-self>
 
     <pagination
         v-show="total > 0"
@@ -526,7 +509,9 @@ import RtcPlayer from "@/components/rtcPlayer/index.vue";
 import H265web from "@/components/H265web/index.vue";
 import StreamDropdown from "@/views/wvp/channel/components/streamDropdown.vue";
 import MediaInfo from "@/views/wvp/channel/components/mediaInfo.vue";
-import {DocumentCopy, Microphone} from '@element-plus/icons-vue'
+import {ArrowDown, DocumentCopy, Microphone, Plus} from '@element-plus/icons-vue'
+import { checkPermi } from "@/utils/permission";
+import { clacPXToVW } from "@/utils/index";
 import useClipboard from "vue-clipboard3";
 const { toClipboard } = useClipboard()
 
@@ -539,8 +524,26 @@ const loading = ref(false);
 const openView = ref(false);
 const showVideoDialog = ref(false);
 const hasAudio = ref(false);
-const showSearch = ref(true);
 const total = ref(0);
+const searchData = computed(() => [
+  {
+    label: '流媒体',
+    value: 'mediaServerId',
+    type: 'select',
+    option: (mediaServerList.value || []).map(item => ({ label: item.id, value: item.id })),
+    default: undefined
+  },
+  {
+    label: '推流状态',
+    value: 'pushing',
+    type: 'select',
+    option: [
+      { label: '推流中', value: 'true' },
+      { label: '已停止', value: 'false' }
+    ],
+    default: undefined
+  }
+]);
 const title = ref("");
 const rtcUrl = ref("");
 const flvUrl = ref("");
@@ -613,10 +616,18 @@ function handleQuery() {
   getPushList();
 }
 
-/** 重置按钮操作 */
-function resetQuery() {
-  proxy.resetForm("queryRef");
-  handleQuery();
+function searchResetFn(val) {
+  queryParams.value.pageNum = 1;
+  queryParams.value.query = val.query || undefined;
+  queryParams.value.mediaServerId = val.mediaServerId || undefined;
+  queryParams.value.pushing = val.pushing || undefined;
+  getPushList();
+}
+
+function pushMoreClick(command, row) {
+  if (command === 'handleEdit') handleEdit(row);
+  else if (command === 'handleDelete') handleDelete(row);
+  else if (command === 'queryCloudRecords') queryCloudRecords(row);
 }
 
 /** 表单重置 */

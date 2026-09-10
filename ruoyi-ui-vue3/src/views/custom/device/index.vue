@@ -2,33 +2,38 @@
   <DeviceClassificationLayout protocol-type="CUSTOM" :selected-device-keys="classificationDeviceKeys"
     @filter-change="handleClassificationFilter" @assigned="getList">
     <div class="app-container">
-      <el-form ref="queryRef" :model="queryParams" :inline="true" v-show="showSearch">
-        <el-form-item label="设备名称" prop="deviceName">
-          <el-input v-model="queryParams.deviceName" placeholder="请输入设备名称" clearable @keyup.enter="handleQuery" />
-        </el-form-item>
-        <el-form-item label="设备ID" prop="deviceCode">
-          <el-input v-model="queryParams.deviceCode" placeholder="请输入设备ID" clearable @keyup.enter="handleQuery" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="queryParams.status" placeholder="全部状态" clearable style="width: 140px">
-            <el-option label="在线" value="ONLINE"/><el-option label="离线" value="OFFLINE"/><el-option label="未知" value="UNKNOWN"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="toolbar-with-search">
+        <div class="toolbar-left">
+          <button type="button" class="exportBtn newBtn flexRowAC" @click="handleAdd" v-hasPermi="['custom:device:add']">
+            <el-icon class="BtnImg"><Plus /></el-icon>新增
+          </button>
+          <button type="button" class="exportBtn newBtn flexRowAC Btn2" :disabled="single" @click="handleEdit()" v-hasPermi="['custom:device:edit']">
+            <el-icon class="BtnImg"><Edit /></el-icon>修改
+          </button>
+          <button type="button" class="exportBtn newBtn flexRowAC Btn2" :disabled="multiple" @click="handleDelete()" v-hasPermi="['custom:device:remove']">
+            <el-icon class="BtnImg"><Delete /></el-icon>删除
+          </button>
+        </div>
+        <div class="searchHeight_out flexRowAC">
+          <search-height-box
+            keyword="deviceName"
+            placeholder="请输入设备名称等关键词"
+            :data="searchData"
+            @handle="searchResetFn"
+          />
+          <export-excel-pdf :item="{ isDisabledExcel: false }" @handle="(type)=>{ if(type==='Excel') handleExport() }" />
+        </div>
+      </div>
 
-      <el-row :gutter="10" class="mb8" align="middle">
-        <el-col :span="1.5"><el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['custom:device:add']">新增</el-button></el-col>
-        <el-col :span="1.5"><el-button type="success" plain icon="Edit" :disabled="single" @click="handleEdit" v-hasPermi="['custom:device:edit']">修改</el-button></el-col>
-        <el-col :span="1.5"><el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['custom:device:remove']">删除</el-button></el-col>
-        <el-col :span="1.5"><el-button type="warning" plain icon="Download" @click="handleExport" v-hasPermi="['custom:device:export']">导出</el-button></el-col>
-        <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" />
-      </el-row>
-
-      <el-table v-loading="loading" :data="deviceList" border @selection-change="handleSelectionChange">
+      <table-self
+        class="new_table"
+        header-cell-class-name="header_tenant_cell"
+        stripe
+        v-loading="loading"
+        :data="deviceList"
+        current-row-key="id"
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" width="55" align="center"/>
         <el-table-column type="index" label="序号" width="70" align="center"/>
         <el-table-column prop="deviceName" label="设备名称" min-width="140" show-overflow-tooltip/>
@@ -42,15 +47,17 @@
         <el-table-column prop="streamUrl" label="视频流路径" min-width="240" show-overflow-tooltip/>
         <el-table-column label="状态" width="85" align="center"><template #default="scope"><el-tag :type="statusType(scope.row.status)">{{ statusText(scope.row.status) }}</el-tag></template></el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="165"/>
-        <el-table-column label="操作" width="240" align="center" fixed="right">
+        <el-table-column label="操作" width="260" align="right" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" @click="handlePreview(scope.row)" v-hasPermi="['custom:device:play']">预览</el-button>
-            <el-button link type="primary" @click="openRecord(scope.row)" v-hasPermi="['custom:device:record']">录像</el-button>
-            <el-button link type="primary" @click="handleEdit(scope.row)" v-hasPermi="['custom:device:edit']">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)" v-hasPermi="['custom:device:remove']">删除</el-button>
+            <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+              <div class="new_table_svg_group" @click.stop="handlePreview(scope.row)" v-hasPermi="['custom:device:play']"><span>预览</span></div>
+              <div class="new_table_svg_group" @click.stop="openRecord(scope.row)" v-hasPermi="['custom:device:record']"><span>录像</span></div>
+              <div class="new_table_svg_group" @click.stop="handleEdit(scope.row)" v-hasPermi="['custom:device:edit']"><span>编辑</span></div>
+              <div class="new_table_svg_group" @click.stop="handleDelete(scope.row)" v-hasPermi="['custom:device:remove']"><span>删除</span></div>
+            </div>
           </template>
         </el-table-column>
-      </el-table>
+      </table-self>
       <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum" v-model:limit="queryParams.pageSize" @pagination="getList"/>
 
       <el-dialog v-model="formOpen" :title="formTitle" width="640px" append-to-body>
@@ -93,6 +100,7 @@
 
 <script setup>
 import { getCurrentInstance, nextTick, onMounted, reactive, ref, shallowRef } from 'vue'
+import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import RtcPlayer from '@/components/rtcPlayer/index.vue'
 import DeviceClassificationLayout from '@/components/DeviceClassificationLayout/index.vue'
 import { addCustomDevice, deleteCustomDevices, getCustomDevice, getCustomMediaStatus, getCustomRecordPlan, getCustomRecordStatus, listCustomDevices, previewCustomDevice, saveCustomRecordPlan, startCustomRecord, stopCustomRecord, updateCustomDevice } from '@/api/custom/device'
@@ -105,6 +113,14 @@ const oplayerContainer=ref(null), oplayerInstance=shallowRef(null)
 const recordOpen=ref(false), recording=ref(false), selectedDays=ref(['1','2','3','4','5','6','7']), timeRange=ref(['00:00','23:59'])
 const previewTitle=ref('视频预览'), formTitle=ref('新增设备'), recordDevice=ref({}), recordPlan=reactive({enabled:false,weekDays:'1,2,3,4,5,6,7',startTime:'00:00',endTime:'23:59'})
 const queryParams=reactive({pageNum:1,pageSize:10,deviceName:'',deviceCode:'',status:undefined})
+const searchData=ref([
+  { label: '设备ID', value: 'deviceCode', type: 'text', default: undefined },
+  { label: '状态', value: 'status', type: 'select', option: [
+    { label: '在线', value: 'ONLINE' },
+    { label: '离线', value: 'OFFLINE' },
+    { label: '未知', value: 'UNKNOWN' }
+  ], default: undefined }
+])
 const form=reactive({id:undefined,deviceName:'',deviceCode:'',streamUrl:'',deviceType:'摄像头',status:'UNKNOWN',longitude:undefined,latitude:undefined,address:'',remark:''})
 const rules={deviceName:[{required:true,message:'设备名称不能为空',trigger:'blur'}],deviceCode:[{required:true,message:'设备ID不能为空',trigger:'blur'}],streamUrl:[{required:true,message:'视频流路径不能为空',trigger:'blur'},{pattern:/^(rtsp|rtmp|https?):\/\//i,message:'请输入有效的视频流地址',trigger:'blur'}]}
 const deviceTypes=['球机','云台','摄像头','枪机','半球','其他']
@@ -112,7 +128,8 @@ const weekOptions=[['1','周一'],['2','周二'],['3','周三'],['4','周四'],[
 
 async function getList(){loading.value=true;try{const [list,media]=await Promise.all([listCustomDevices(queryParams),getCustomMediaStatus()]);deviceList.value=list.rows||[];total.value=list.total||0;mediaAvailable.value=Boolean(media.data?.available)}finally{loading.value=false}}
 function handleQuery(){queryParams.pageNum=1;getList()}
-function resetQuery(){proxy.resetForm('queryRef');handleQuery()}
+function resetQuery(){queryParams.deviceName='';queryParams.deviceCode='';queryParams.status=undefined;handleQuery()}
+function searchResetFn(val){queryParams.pageNum=1;queryParams.deviceName=val.deviceName||'';queryParams.deviceCode=val.deviceCode||'';queryParams.status=val.status||undefined;getList()}
 function handleClassificationFilter(filter){Object.assign(queryParams,filter,{pageNum:1});getList()}
 function handleSelectionChange(selection){ids.value=selection.map(x=>String(x.id));classificationDeviceKeys.value=[...ids.value];single.value=selection.length!==1;multiple.value=!selection.length}
 function resetForm(){Object.assign(form,{id:undefined,deviceName:'',deviceCode:'',streamUrl:'',deviceType:'摄像头',status:'UNKNOWN',longitude:undefined,latitude:undefined,address:'',remark:''});proxy.resetForm('deviceFormRef')}

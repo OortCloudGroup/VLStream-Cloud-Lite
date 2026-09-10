@@ -1,100 +1,82 @@
 <template>
-  <div>
-    <el-row :gutter="20">
-      <el-col :span="4">
-        <div class="head-container">
-          <el-input v-model="groupName" placeholder="请输入分组名称" clearable prefix-icon="Search"
-                    style="margin-bottom: 20px"/>
+  <div class="thoroughfare-layout">
+    <aside v-yResize class="thoroughfare-aside">
+      <div class="head-container">
+        <el-input v-model="groupName" placeholder="请输入分组名称" clearable prefix-icon="Search"
+                  style="margin-bottom: 20px"/>
+      </div>
+      <div class="head-container thoroughfare-tree">
+        <el-tree :data="groupOptions"
+                 :props="{label: 'name', children: 'children'}"
+                 :expand-on-click-node="false"
+                 :filter-node-method="filterNode"
+                 ref="groupTreeRef"
+                 node-key="id"
+                 highlight-current
+                 default-expand-all
+                 @node-click="handleNodeClick"/>
+      </div>
+    </aside>
+    <main class="thoroughfare-content">
+        <div class="toolbar-with-search">
+          <div class="toolbar-left">
+            <button
+              type="button"
+              class="exportBtn newBtn flexRowAC"
+              :disabled="addDisabled"
+              @click="handleAdd"
+              v-hasPermi="['wvp:channel:addGroupChannel']"
+            >
+              <el-icon class="BtnImg"><Plus /></el-icon>新增
+            </button>
+            <button-group :button-list="toolbarButtons" />
+          </div>
+          <div class="searchHeight_out flexRowAC">
+            <search-height-box
+              keyword="query"
+              placeholder="请输入关键字"
+              :data="searchData"
+              @handle="searchResetFn"
+            />
+            <export-excel-pdf />
+          </div>
         </div>
-        <div class="head-container">
-          <el-tree :data="groupOptions"
-                   :props="{label: 'name', children: 'children'}"
-                   :expand-on-click-node="false"
-                   :filter-node-method="filterNode"
-                   ref="groupTreeRef"
-                   node-key="id"
-                   highlight-current
-                   default-expand-all
-                   @node-click="handleNodeClick"/>
-        </div>
-      </el-col>
-      <el-col :span="20">
-        <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-          <el-form-item label="关键字" prop="query">
-            <el-input v-model="queryParams.query" placeholder="请输入关键字" clearable style="width: 240px"
-                      @keyup.enter="handleQuery"/>
-          </el-form-item>
-          <el-form-item label="类型" prop="channelType">
-            <el-select v-model="queryParams.channelType" placeholder="请选择类型" style="width: 250px;"
-                       default-first-option>
-              <el-option label="国标设备" :value="1"></el-option>
-              <el-option label="推流设备" :value="2"></el-option>
-              <el-option label="拉流代理" :value="3"></el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="在线状态" prop="online">
-            <el-select v-model="queryParams.online" placeholder="请选择在线状态" style="width: 250px;"
-                       default-first-option>
-              <el-option label="在线" value="true"></el-option>
-              <el-option label="离线" value="false"></el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-            <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-          </el-form-item>
-        </el-form>
 
-        <el-row :gutter="10" class="mb8">
-          <el-col :span="1.5" v-hasPermi="['wvp:channel:addGroupChannel']">
-            <el-button type="primary"
-                       plain
-                       icon="Plus"
-                       :disabled="addDisabled"
-                       @click="handleAdd">新增
-            </el-button>
-          </el-col>
-          <el-col :span="1.5" v-hasPermi="['wvp:channel:deleteGroupChannel']">
-            <el-button
-                type="danger"
-                plain
-                icon="Delete"
-                :disabled="multiple"
-                @click="handleDelete">
-              删除
-            </el-button>
-          </el-col>
-          <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
-        </el-row>
-
-        <el-table v-loading="loading" :data="channelList" @selection-change="handleSelectionChange">
-          <el-table-column type="selection" width="55" align="center"/>
-          <el-table-column prop="gbName" label="名称" align="center"/>
-          <el-table-column prop="gbDeviceId" label="编号" align="center"/>
-          <el-table-column prop="gbManufacturer" label="厂家" align="center"/>
-          <el-table-column label="类型" align="center">
+        <table-self
+          class="new_table"
+          header-cell-class-name="header_tenant_cell"
+          stripe
+          v-loading="loading"
+          :data="channelList"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column type="selection" :width="clacPXToVW(55)" align="center"/>
+          <el-table-column prop="gbName" label="名称" align="center" show-overflow-tooltip/>
+          <el-table-column prop="gbDeviceId" label="编号" align="center" show-overflow-tooltip/>
+          <el-table-column prop="gbManufacturer" label="厂家" align="center" show-overflow-tooltip/>
+          <el-table-column label="类型" :width="clacPXToVW(110)" align="center">
             <template #default="scope">
-              <div slot="reference" class="name-wrapper">
-                <el-tag effect="plain" v-if="scope.row.dataType === 1">国标设备</el-tag>
-                <el-tag effect="plain" type="success" v-else-if="scope.row.dataType === 2">推流设备</el-tag>
-                <el-tag effect="plain" type="warning" v-else-if="scope.row.dataType === 3">拉流代理</el-tag>
+              <el-tag effect="plain" v-if="scope.row.dataType === 1">国标设备</el-tag>
+              <el-tag effect="plain" type="success" v-else-if="scope.row.dataType === 2">推流设备</el-tag>
+              <el-tag effect="plain" type="warning" v-else-if="scope.row.dataType === 3">拉流代理</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="状态" :width="clacPXToVW(90)" align="center">
+            <template #default="scope">
+              <el-tag v-if="scope.row.gbStatus === 'ON'">在线</el-tag>
+              <el-tag type="info" v-else>离线</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(120)">
+            <template #default="scope">
+              <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+                <div class="new_table_svg_group" @click.stop="onMap(scope.row)">
+                  <span>设置位置</span>
+                </div>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="状态" align="center">
-            <template #default="scope">
-              <div slot="reference" class="name-wrapper">
-                <el-tag v-if="scope.row.gbStatus === 'ON'">在线</el-tag>
-                <el-tag type="info" v-if="scope.row.gbStatus !== 'ON'">离线</el-tag>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width" fixed="right">
-            <template #default="scope">
-              <el-button @click="onMap(scope.row)" type="text">设置位置</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        </table-self>
 
         <pagination
             v-show="total > 0"
@@ -178,8 +160,7 @@
               @pagination="getChannelList"
           />
         </el-dialog>
-      </el-col>
-    </el-row>
+    </main>
 
     <el-dialog title="修改地址" v-model="showMap" width="800px" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="formMap.gbAddress"/>
@@ -196,6 +177,8 @@ import {
   queryListByCivilCode,
   queryListByParentId, updateChannelData
 } from "../../../api/wvp/channel.js";
+import { Plus } from '@element-plus/icons-vue'
+import { clacPXToVW } from "@/utils/index";
 
 const {proxy} = getCurrentInstance();
 
@@ -204,7 +187,6 @@ const groupOptions = ref([]);
 const channelList = ref([]);
 const loading = ref(true);
 const total = ref(0);
-const showSearch = ref(true);
 const groupDeviceId = ref('');
 const businessGroup = ref('');
 const selectionList = ref([]);
@@ -213,6 +195,38 @@ const addDisabled = ref(true);
 const open = ref(false);
 const title = ref("");
 const dataType = ref('group');
+const searchData = ref([
+  {
+    label: '类型',
+    value: 'channelType',
+    type: 'select',
+    option: [
+      { label: '国标设备', value: 1 },
+      { label: '推流设备', value: 2 },
+      { label: '拉流代理', value: 3 }
+    ],
+    default: undefined
+  },
+  {
+    label: '在线状态',
+    value: 'online',
+    type: 'select',
+    option: [
+      { label: '在线', value: 'true' },
+      { label: '离线', value: 'false' }
+    ],
+    default: undefined
+  }
+]);
+const toolbarButtons = computed(() => [
+  {
+    name: '删除',
+    svg: 'delete',
+    disabled: multiple.value,
+    permi: ['wvp:channel:deleteGroupChannel'],
+    clickFn: () => handleDelete()
+  }
+]);
 
 const channelSelectList = ref([]);
 const loadingSelect = ref(true);
@@ -303,10 +317,12 @@ function handleQuery() {
   getList();
 }
 
-/** 重置按钮操作 */
-function resetQuery() {
-  proxy.resetForm("queryRef");
-  handleQuery();
+function searchResetFn(val) {
+  queryParams.value.pageNum = 1;
+  queryParams.value.query = val.query || undefined;
+  queryParams.value.channelType = val.channelType || undefined;
+  queryParams.value.online = val.online || undefined;
+  getList();
 }
 
 /** 选择条数  */
@@ -439,5 +455,35 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.thoroughfare-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  min-height: calc(100vh - 160px);
+  background: #fff;
+}
 
+.thoroughfare-aside {
+  width: 280px;
+  flex-shrink: 0;
+  padding-right: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+.thoroughfare-tree {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: #fff;
+}
+
+.thoroughfare-content {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+}
 </style>

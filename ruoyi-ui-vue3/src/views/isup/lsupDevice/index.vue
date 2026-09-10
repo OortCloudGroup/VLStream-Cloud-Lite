@@ -1,82 +1,36 @@
 <template>
   <DeviceClassificationLayout protocol-type="ISUP" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="所属部门" prop="deptId">
-        <el-tree-select style="width: 202px" v-model="queryParams.deptId" :data="enabledDeptOptions"
-                        :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id"
-                        placeholder="请选择归属部门" check-strictly/>
-      </el-form-item>
-      <el-form-item label="设备ID" prop="deviceId">
-        <el-input
-            v-model="queryParams.deviceId"
-            placeholder="请输入设备ID"
-            clearable
-            @keyup.enter="handleQuery"
+    <div class="toolbar-with-search">
+      <div class="toolbar-left">
+        <button-group :button-list="toolbarButtons" />
+      </div>
+      <div class="searchHeight_out flexRowAC">
+        <search-height-box
+          keyword="name"
+          placeholder="请输入设备名称、设备ID、IP等关键词"
+          :data="searchData"
+          @handle="searchResetFn"
         />
-      </el-form-item>
-      <el-form-item label="设备名称" prop="name">
-        <el-input
-            v-model="queryParams.name"
-            placeholder="请输入设备名称"
-            clearable
-            @keyup.enter="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="IP地址" prop="ipAddress">
-        <el-input
-            v-model="queryParams.ipAddress"
-            placeholder="请输入设备的IP地址"
-            clearable
-            @keyup.enter="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择在线状态" style="width: 196px;"
-                   default-first-option>
-          <el-option label="在线" value="ON"></el-option>
-          <el-option label="离线" value="OFFLINE"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+        <export-excel-pdf />
+      </div>
+    </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-            type="success"
-            plain
-            icon="Edit"
-            :disabled="single"
-            @click="handleUpdate"
-            v-hasPermi="['isup:lsupDevice:edit']"
-        >修改
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-            type="danger"
-            plain
-            icon="Delete"
-            :disabled="multiple"
-            @click="handleDelete"
-            v-hasPermi="['isup:lsupDevice:remove']"
-        >删除
-        </el-button>
-      </el-col>
-      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="lsupDeviceList" @selection-change="handleSelectionChange" border>
-      <el-table-column type="selection" width="55" align="center"/>
-      <el-table-column label="所属部门" align="center" prop="deptName"/>
-      <el-table-column label="设备ID" align="center" prop="deviceId"/>
-      <el-table-column label="设备名称" align="center" prop="name"/>
-      <el-table-column label="地址" align="center" prop="addressMap"/>
-      <el-table-column label="IP地址" align="center" prop="ipAddress"/>
+    <table-self
+      class="new_table"
+      header-cell-class-name="header_tenant_cell"
+      stripe
+      v-loading="loading"
+      :data="lsupDeviceList"
+      current-row-key="id"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection" :width="clacPXToVW(55)" align="center"/>
+      <el-table-column label="所属部门" align="center" prop="deptName" show-overflow-tooltip/>
+      <el-table-column label="设备ID" align="center" prop="deviceId" show-overflow-tooltip/>
+      <el-table-column label="设备名称" align="center" prop="name" show-overflow-tooltip/>
+      <el-table-column label="地址" align="center" prop="addressMap" show-overflow-tooltip/>
+      <el-table-column label="IP地址" align="center" prop="ipAddress" show-overflow-tooltip/>
       <el-table-column label="用户名" align="center" prop="userName"/>
       <el-table-column label="密码" align="center" prop="password">
         <template #default="scope">
@@ -89,54 +43,48 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status">
+      <el-table-column label="状态" align="center" prop="status" :width="clacPXToVW(90)">
         <template #default="scope">
           <el-tag v-if="scope.row.status === 'ON'" type="success">在线</el-tag>
           <el-tag v-if="scope.row.status === 'OFFLINE'" type="danger">离线</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="播放类型" align="center" prop="playType">
+      <el-table-column label="播放类型" align="center" prop="playType" :width="clacPXToVW(100)">
         <template #default="scope">
           <dict-tag :options="play_type" :value="scope.row.playType"/>
         </template>
       </el-table-column>
-      <el-table-column key="streamId" label="流id" prop="streamId" min-width="150" align="center"/>
-      <el-table-column label="备注" align="center" prop="remark"/>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="300">
+      <el-table-column key="streamId" label="流id" prop="streamId" min-width="150" align="center" show-overflow-tooltip/>
+      <el-table-column label="备注" align="center" prop="remark" show-overflow-tooltip/>
+      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(260)">
         <template #default="scope">
-          <div style="display:flex; align-items: center;justify-content: center">
-            <el-button link type="primary" icon="View" @click="handleSDKPlay(scope.row)"
-                       v-hasPermi="['isup:lsupDevice:start']">SDK播放
-            </el-button>
-            <el-button link type="primary" icon="View" @click="handleStartPlay(scope.row)"
-                       v-hasPermi="['isup:lsupDevice:start']">播放
-            </el-button>
-            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                       v-hasPermi="['isup:lsupDevice:edit']">修改
-            </el-button>
-            <el-dropdown @command="(command)=>{moreClick(command, scope.row)}"
-                         v-if="checkPermi(['isup:lsupDevice:edit'])">
-             <span class="el-dropdown-link">
-              <el-button type="text">
-                更多
-                <el-icon>
-                  <arrow-down/>
-                </el-icon>
-              </el-button>
-            </span>
+          <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+            <div class="new_table_svg_group" @click.stop="handleSDKPlay(scope.row)" v-hasPermi="['isup:lsupDevice:start']">
+              <span>SDK播放</span>
+            </div>
+            <div class="new_table_svg_group" @click.stop="handleStartPlay(scope.row)" v-hasPermi="['isup:lsupDevice:start']">
+              <span>播放</span>
+            </div>
+            <el-dropdown
+              @command="(command)=>{moreClick(command, scope.row)}"
+              v-if="checkPermi(['isup:lsupDevice:edit', 'isup:lsupDevice:remove'])"
+            >
+              <div class="new_table_svg_group" @click.stop>
+                <span>更多</span>
+                <el-icon><ArrowDown /></el-icon>
+              </div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="handleMap" v-if="checkPermi(['isup:lsupDevice:edit'])">修改位置
-                  </el-dropdown-item>
-                  <el-dropdown-item command="handleDelete" v-if="checkPermi(['isup:lsupDevice:remove'])">删除
-                  </el-dropdown-item>
+                  <el-dropdown-item command="handleUpdate" v-if="checkPermi(['isup:lsupDevice:edit'])">修改</el-dropdown-item>
+                  <el-dropdown-item command="handleMap" v-if="checkPermi(['isup:lsupDevice:edit'])">修改位置</el-dropdown-item>
+                  <el-dropdown-item command="handleDelete" style="color: #f56c6c" v-if="checkPermi(['isup:lsupDevice:remove'])">删除</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
           </div>
         </template>
       </el-table-column>
-    </el-table>
+    </table-self>
 
     <pagination
         v-show="total>0"
@@ -424,11 +372,12 @@ import RtcPlayer from "@/components/rtcPlayer/index.vue";
 import H265web from "@/components/H265web/index.vue";
 import StreamDropdown from "@/views/wvp/channel/components/streamDropdown.vue";
 import MediaInfo from "@/views/wvp/channel/components/mediaInfo.vue";
-import {DocumentCopy} from '@element-plus/icons-vue'
+import {ArrowDown, DocumentCopy} from '@element-plus/icons-vue'
 import {ElLoading, ElMessage} from "element-plus";
 import {startPlay} from "../../../api/wvp/push.js";
 import useClipboard from "vue-clipboard3";
 import DeviceClassificationLayout from '@/components/DeviceClassificationLayout/index.vue'
+import { clacPXToVW } from "@/utils/index";
 const { toClipboard } = useClipboard()
 
 const {proxy} = getCurrentInstance();
@@ -438,7 +387,6 @@ const {play_type} = proxy.useDict('play_type');
 const lsupDeviceList = ref([]);
 const open = ref(false);
 const loading = ref(true);
-const showSearch = ref(true);
 const ids = ref([]);
 const classificationDeviceKeys = ref([]);
 function handleClassificationFilter(filter) { Object.assign(queryParams.value, filter, { pageNum: 1 }); getList(); }
@@ -460,6 +408,31 @@ const controSpeedFocus = ref(0);
 
 const deptOptions = ref(undefined);
 const enabledDeptOptions = ref(undefined);
+const searchData = ref([
+  {
+    label: '所属部门',
+    value: 'deptId',
+    type: 'tree-select',
+    option: [],
+    default: undefined
+  },
+  { label: '设备ID', value: 'deviceId', type: 'text', default: undefined },
+  { label: 'IP地址', value: 'ipAddress', type: 'text', default: undefined },
+  {
+    label: '状态',
+    value: 'status',
+    type: 'select',
+    option: [
+      { label: '在线', value: 'ON' },
+      { label: '离线', value: 'OFFLINE' }
+    ],
+    default: undefined
+  }
+]);
+const toolbarButtons = computed(() => [
+  { name: '修改', svg: 'edit', disabled: single.value, permi: ['isup:lsupDevice:edit'], clickFn: () => handleUpdate() },
+  { name: '删除', svg: 'delete', disabled: multiple.value, permi: ['isup:lsupDevice:remove'], clickFn: () => handleDelete() }
+]);
 
 const position = ref(null);
 const MapContainer = ref(null);
@@ -595,6 +568,10 @@ function getDeptTree() {
   deptTreeSelect().then(response => {
     deptOptions.value = response.data;
     enabledDeptOptions.value = filterDisabledDept(JSON.parse(JSON.stringify(response.data)));
+    const deptField = searchData.value.find(item => item.value === 'deptId');
+    if (deptField) {
+      deptField.option = enabledDeptOptions.value || [];
+    }
   });
 };
 
@@ -671,6 +648,18 @@ function handleQuery() {
   getAllDigitalChannelStatusFun();
 }
 
+/** 高级搜索 */
+function searchResetFn(val) {
+  queryParams.value.pageNum = 1;
+  queryParams.value.name = val.name || undefined;
+  queryParams.value.deptId = val.deptId || undefined;
+  queryParams.value.deviceId = val.deviceId || undefined;
+  queryParams.value.ipAddress = val.ipAddress || undefined;
+  queryParams.value.status = val.status || undefined;
+  getList();
+  getAllDigitalChannelStatusFun();
+}
+
 /** 重置按钮操作 */
 function resetQuery() {
   daterangeCreateTime.value = [];
@@ -688,7 +677,9 @@ function handleSelectionChange(selection) {
 }
 
 function moreClick(command, itemData) {
-  if (command === "handleMap") {
+  if (command === "handleUpdate") {
+    handleUpdate(itemData)
+  } else if (command === "handleMap") {
     handleMap(itemData)
   } else if (command === "handleDelete") {
     handleDelete(itemData)

@@ -1,51 +1,60 @@
 <template>
   <DeviceClassificationLayout protocol-type="VLSTREAM" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
   <div class="app-container">
-    <el-form ref="queryRef" :model="queryParams" :inline="true">
-      <el-form-item label="设备" prop="keyword">
-        <el-input v-model="queryParams.keyword" placeholder="设备名称 / ID / 序列号" clearable
-                  @keyup.enter="handleQuery" style="width: 260px" />
-      </el-form-item>
-      <el-form-item label="状态" prop="online">
-        <el-select v-model="queryParams.online" placeholder="全部状态" clearable style="width: 140px">
-          <el-option label="在线" :value="true" />
-          <el-option label="离线" :value="false" />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="toolbar-with-search">
+      <div class="toolbar-left">
+        <el-tag :type="mediaAvailable ? 'success' : 'danger'">
+          {{ mediaAvailable ? 'ZLM 可用' : 'ZLM 不可用' }}
+        </el-tag>
+      </div>
+      <div class="searchHeight_out flexRowAC">
+        <search-height-box
+          keyword="keyword"
+          placeholder="请输入设备名称 / ID / 序列号"
+          :data="searchData"
+          @handle="searchResetFn"
+        />
+        <export-excel-pdf />
+      </div>
+    </div>
 
-    <el-row class="mb8" align="middle">
-      <el-tag :type="mediaAvailable ? 'success' : 'danger'">
-        {{ mediaAvailable ? 'ZLM 可用' : 'ZLM 不可用' }}
-      </el-tag>
-      <right-toolbar :show-search="false" @queryTable="getList" />
-    </el-row>
-
-    <el-table v-loading="loading" :data="deviceList" border @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column type="index" label="序号" width="70" align="center" />
+    <table-self
+      class="new_table"
+      header-cell-class-name="header_tenant_cell"
+      stripe
+      v-loading="loading"
+      :data="deviceList"
+      current-row-key="deviceId"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection" :width="clacPXToVW(55)" align="center" />
+      <el-table-column type="index" label="序号" :width="clacPXToVW(70)" align="center" />
       <el-table-column prop="deviceName" label="设备名称" min-width="150" show-overflow-tooltip />
       <el-table-column prop="deviceId" label="设备 ID" min-width="220" show-overflow-tooltip />
       <el-table-column prop="deviceSerial" label="序列号" min-width="150" show-overflow-tooltip />
-      <el-table-column label="状态" width="90" align="center">
+      <el-table-column label="状态" :width="clacPXToVW(90)" align="center">
         <template #default="scope">
           <el-tag :type="scope.row.online ? 'success' : 'info'">{{ scope.row.online ? '在线' : '离线' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="ipAddr" label="IP" min-width="130" />
-      <el-table-column prop="firmwareVersion" label="固件版本" min-width="120" />
-      <el-table-column prop="lastHeartbeatTime" label="最后心跳" min-width="170" />
-      <el-table-column label="操作" width="100" align="center" fixed="right">
+      <el-table-column prop="ipAddr" label="IP" min-width="130" show-overflow-tooltip />
+      <el-table-column prop="firmwareVersion" label="固件版本" min-width="120" show-overflow-tooltip />
+      <el-table-column prop="lastHeartbeatTime" label="最后心跳" min-width="170" show-overflow-tooltip />
+      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(100)">
         <template #default="scope">
-          <el-button link type="primary" :disabled="!mediaAvailable" @click="preview(scope.row)"
-                     v-hasPermi="['vlstream:device:play']">预览</el-button>
+          <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+            <div
+              class="new_table_svg_group"
+              :class="{ 'is-disabled': !mediaAvailable }"
+              @click.stop="mediaAvailable && preview(scope.row)"
+              v-hasPermi="['vlstream:device:play']"
+            >
+              <span>预览</span>
+            </div>
+          </div>
         </template>
       </el-table-column>
-    </el-table>
+    </table-self>
 
     <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
                 v-model:limit="queryParams.pageSize" @pagination="getList" />
@@ -70,6 +79,7 @@ import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import RtcPlayer from '@/components/rtcPlayer/index.vue'
 import { getMediaStatus, listDevices, listStreams, startPreview } from '@/api/vlstream/device'
 import DeviceClassificationLayout from '@/components/DeviceClassificationLayout/index.vue'
+import { clacPXToVW } from '@/utils/index'
 
 const { proxy } = getCurrentInstance()
 const loading = ref(false)
@@ -85,6 +95,18 @@ const streams = ref([])
 const selectedStreamId = ref('')
 const rtcUrl = ref('')
 const queryParams = reactive({ pageNum: 1, pageSize: 10, keyword: '', online: undefined })
+const searchData = ref([
+  {
+    label: '状态',
+    value: 'online',
+    type: 'select',
+    option: [
+      { label: '在线', value: true },
+      { label: '离线', value: false }
+    ],
+    default: undefined
+  }
+])
 
 function getList() {
   loading.value = true
@@ -96,9 +118,20 @@ function getList() {
 }
 
 function handleQuery() { queryParams.pageNum = 1; getList() }
-function resetQuery() { proxy.resetForm('queryRef'); handleQuery() }
+function resetQuery() {
+  queryParams.keyword = ''
+  queryParams.online = undefined
+  handleQuery()
+}
 function handleSelectionChange(selection) { classificationDeviceKeys.value = selection.map(item => String(item.id)) }
 function handleClassificationFilter(filter) { Object.assign(queryParams, filter, { pageNum: 1 }); getList() }
+
+function searchResetFn(val) {
+  queryParams.pageNum = 1
+  queryParams.keyword = val.keyword || ''
+  queryParams.online = val.online === undefined || val.online === '' || val.online === null ? undefined : val.online
+  getList()
+}
 
 async function preview(row) {
   currentDevice.value = row

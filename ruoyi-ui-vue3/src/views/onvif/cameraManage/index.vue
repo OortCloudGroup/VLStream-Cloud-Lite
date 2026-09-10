@@ -1,165 +1,98 @@
 <template>
   <DeviceClassificationLayout protocol-type="ONVIF" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
   <div class="app-container">
-    <el-alert title="ONVIF协议 16的设备可以使用Digest/WS,2.20版本使用WS" type="success" style="margin-bottom: 10px;" />
-    <el-card>
-      <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
-        <el-form-item label="所属部门" prop="deptId">
-          <el-tree-select style="width: 202px" v-model="queryParams.deptId" :data="enabledDeptOptions"
-                          :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id"
-                          placeholder="请选择归属部门" check-strictly/>
-        </el-form-item>
-        <el-form-item label="ip" prop="ip">
-          <el-input
-              v-model="queryParams.ip"
-              placeholder="请输入ip"
-              clearable
-              @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item label="名称" prop="name">
-          <el-input
-              v-model="queryParams.name"
-              placeholder="请输入名称"
-              clearable
-              @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item label="设备厂商" prop="firm">
-          <el-input
-              v-model="queryParams.firm"
-              placeholder="请输入设备厂商"
-              clearable
-              @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+    <el-alert title="ONVIF协议 16的设备可以使用Digest/WS,2.20版本使用WS" type="success" style="margin-bottom: 10px;" :closable="false" />
+    <div class="toolbar-with-search">
+      <div class="toolbar-left">
+        <button type="button" class="exportBtn newBtn flexRowAC" @click="handleWSDiscovery" v-hasPermi="['onvif:device:WSDiscovery']">
+          <el-icon class="BtnImg"><Search /></el-icon>发现设备
+        </button>
+        <button-group :button-list="toolbarButtons" />
+      </div>
+      <div class="searchHeight_out flexRowAC">
+        <search-height-box
+          keyword="name"
+          placeholder="请输入设备名称、IP等关键词"
+          :data="searchData"
+          @handle="searchResetFn"
+        />
+        <export-excel-pdf :item="{ isDisabledExcel: false }" @handle="handleExportType" />
+      </div>
+    </div>
 
-    <el-card class="m-1">
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
-          <el-button
-              type="primary"
-              plain
-              icon="Search"
-              @click="handleWSDiscovery"
-              v-hasPermi="['onvif:device:WSDiscovery']"
-          >发现设备
-          </el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button
-              type="success"
-              plain
-              icon="Edit"
-              :disabled="single"
-              @click="handleUpdate"
-              v-hasPermi="['onvif:device:edit']"
-          >修改
-          </el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button
-              type="danger"
-              plain
-              icon="Delete"
-              :disabled="multiple"
-              @click="handleDelete"
-              v-hasPermi="['onvif:device:remove']"
-          >删除
-          </el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button
-              type="warning"
-              plain
-              icon="Download"
-              @click="handleExport"
-              v-hasPermi="['onvif:device:export']"
-          >导出
-          </el-button>
-        </el-col>
-        <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
-      </el-row>
-
-      <el-table v-loading="loading" :data="deviceList" @selection-change="handleSelectionChange" border>
-        <el-table-column type="selection" width="55" align="center"/>
-        <el-table-column label="所属部门" align="center" prop="deptName"/>
-        <el-table-column label="名称" align="center" prop="name"/>
-        <el-table-column label="ip" align="center" prop="ip"/>
-        <el-table-column label="地址" align="center" prop="addressMap"/>
-        <el-table-column label="设备厂商" align="center" prop="firm"/>
-        <el-table-column label="设备型号" align="center" prop="model"/>
-        <el-table-column label="用户名" align="center" prop="userName" width="100"/>
-        <el-table-column label="密码" align="center" prop="password" width="150">
-          <template #default="scope">
-            <div class="password-container">
-              <span v-if="!passwordVisibility[scope.row.id]">******</span>
-              <span v-else>{{ scope.row.password }}</span>
-              <el-icon class="eye-icon" @click="togglePasswordVisibility(scope.row.id)">
-                <component :is="passwordVisibility[scope.row.id] ? 'Hide' : 'View'"/>
-              </el-icon>
+    <table-self
+      class="new_table"
+      header-cell-class-name="header_tenant_cell"
+      stripe
+      v-loading="loading"
+      :data="deviceList"
+      current-row-key="id"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection" :width="clacPXToVW(55)" align="center"/>
+      <el-table-column label="所属部门" align="center" prop="deptName" show-overflow-tooltip/>
+      <el-table-column label="名称" align="center" prop="name" show-overflow-tooltip/>
+      <el-table-column label="ip" align="center" prop="ip" show-overflow-tooltip/>
+      <el-table-column label="地址" align="center" prop="addressMap" show-overflow-tooltip/>
+      <el-table-column label="设备厂商" align="center" prop="firm" show-overflow-tooltip/>
+      <el-table-column label="设备型号" align="center" prop="model" show-overflow-tooltip/>
+      <el-table-column label="用户名" align="center" prop="userName" :width="clacPXToVW(100)"/>
+      <el-table-column label="密码" align="center" prop="password" :width="clacPXToVW(150)">
+        <template #default="scope">
+          <div class="password-container">
+            <span v-if="!passwordVisibility[scope.row.id]">******</span>
+            <span v-else>{{ scope.row.password }}</span>
+            <el-icon class="eye-icon" @click="togglePasswordVisibility(scope.row.id)">
+              <component :is="passwordVisibility[scope.row.id] ? 'Hide' : 'View'"/>
+            </el-icon>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="播放类型" align="center" prop="playType" :width="clacPXToVW(100)">
+        <template #default="scope">
+          <el-tag type="primary" v-if="scope.row.playType === '1'">本地</el-tag>
+          <el-tag type="primary" v-if="scope.row.playType === '2'">推流</el-tag>
+          <el-tag type="primary" v-if="scope.row.playType === '3'">EasyNTS</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column key="streamId" label="流id" prop="streamId" min-width="150" align="center" show-overflow-tooltip/>
+      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+        <template #default="scope">
+          <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+            <div class="new_table_svg_group" @click.stop="handleView(scope.row)" v-hasPermi="['onvif:device:play']">
+              <span>播放</span>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="播放类型" align="center" prop="playType">
-          <template #default="scope">
-            <el-tag type="primary" v-if="scope.row.playType === '1'">本地</el-tag>
-            <el-tag type="primary" v-if="scope.row.playType === '2'">推流</el-tag>
-            <el-tag type="primary" v-if="scope.row.playType === '3'">EasyNTS</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column key="streamId" label="流id" prop="streamId" min-width="150" align="center"/>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="250">
-          <template #default="scope">
-            <div style="display:flex; align-items: center;justify-content: center">
-              <el-button link type="primary" icon="View" @click="handleView(scope.row)"
-                         v-hasPermi="['onvif:device:play']">播放
-              </el-button>
-
-              <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                         v-hasPermi="['onvif:device:edit']">修改
-              </el-button>
-              <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                         v-hasPermi="['onvif:device:remove']">删除
-              </el-button>
-
-              <el-dropdown @command="(command)=>{moreClick(command, scope.row)}"
-                           v-if="checkPermi(['onvif:device:edit'])">
-             <span class="el-dropdown-link">
-              <el-button type="text">
-                更多
-                <el-icon>
-                  <arrow-down/>
-                </el-icon>
-              </el-button>
-            </span>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="viewUrls">全部地址</el-dropdown-item>
-                    <el-dropdown-item command="handleMap" v-if="checkPermi(['onvif:device:edit'])">修改位置
-                    </el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
+            <div class="new_table_svg_group" @click.stop="handleUpdate(scope.row)" v-hasPermi="['onvif:device:edit']">
+              <span>修改</span>
             </div>
-          </template>
-        </el-table-column>
-      </el-table>
+            <el-dropdown
+              @command="(command)=>{moreClick(command, scope.row)}"
+              v-if="checkPermi(['onvif:device:edit', 'onvif:device:remove'])"
+            >
+              <div class="new_table_svg_group" @click.stop>
+                <span>更多</span>
+                <el-icon><ArrowDown /></el-icon>
+              </div>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="viewUrls">全部地址</el-dropdown-item>
+                  <el-dropdown-item command="handleMap" v-if="checkPermi(['onvif:device:edit'])">修改位置</el-dropdown-item>
+                  <el-dropdown-item command="handleDelete" style="color: #f56c6c" v-if="checkPermi(['onvif:device:remove'])">删除</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </template>
+      </el-table-column>
+    </table-self>
 
-      <pagination
-          v-show="total>0"
-          :total="total"
-          v-model:page="queryParams.pageNum"
-          v-model:limit="queryParams.pageSize"
-          @pagination="getList"
-      />
-    </el-card>
+    <pagination
+        v-show="total>0"
+        :total="total"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getList"
+    />
 
     <!-- 修改onvif 设备对话框 -->
     <el-dialog :title="title" v-model="open" width="1000px" append-to-body>
@@ -706,11 +639,12 @@ import RtcPlayer from "@/components/rtcPlayer/index.vue";
 import H265web from "@/components/H265web/index.vue";
 import StreamDropdown from "@/views/wvp/channel/components/streamDropdown.vue";
 import MediaInfo from "@/views/wvp/channel/components/mediaInfo.vue";
-import {DocumentCopy} from '@element-plus/icons-vue'
+import {ArrowDown, DocumentCopy, Search} from '@element-plus/icons-vue'
 import {startPlay} from "../../../api/wvp/push.js";
 import {onvifPZTEnd, onvifPZTStart} from "../../../api/onvif/device.js";
 import {ptzControlUpEnd} from "../../../api/dahua/device.js";
 import DeviceClassificationLayout from '@/components/DeviceClassificationLayout/index.vue'
+import { clacPXToVW } from "@/utils/index";
 
 const {proxy} = getCurrentInstance();
 
@@ -718,7 +652,6 @@ const deviceList = ref([]);
 const open = ref(false);
 const openAdd = ref(false);
 const loading = ref(true);
-const showSearch = ref(true);
 const ids = ref([]);
 const classificationDeviceKeys = ref([]);
 function handleClassificationFilter(filter) { Object.assign(queryParams.value, filter, { pageNum: 1 }); getList(); }
@@ -727,6 +660,21 @@ const multiple = ref(true);
 const showPresets = ref(false);
 const showWS = ref(false);
 const total = ref(0);
+const searchData = ref([
+  {
+    label: '所属部门',
+    value: 'deptId',
+    type: 'tree-select',
+    option: [],
+    default: undefined
+  },
+  { label: 'ip', value: 'ip', type: 'text', default: undefined },
+  { label: '设备厂商', value: 'firm', type: 'text', default: undefined }
+]);
+const toolbarButtons = computed(() => [
+  { name: '修改', svg: 'edit', disabled: single.value, permi: ['onvif:device:edit'], clickFn: () => handleUpdate() },
+  { name: '删除', svg: 'delete', disabled: multiple.value, permi: ['onvif:device:remove'], clickFn: () => handleDelete() }
+]);
 const title = ref("");
 const brand = ref("");
 const token = ref("");
@@ -758,6 +706,7 @@ const data = reactive({
     pageSize: 10,
     deptId: null,
     ip: null,
+    name: null,
     userName: null,
     password: null,
     url: null,
@@ -860,6 +809,8 @@ function moreClick(command, itemData) {
     viewUrls(itemData.streamUris)
   } else if (command === "handleMap") {
     handleMap(itemData)
+  } else if (command === "handleDelete") {
+    handleDelete(itemData)
   }
 }
 
@@ -904,6 +855,10 @@ function getDeptTree() {
   deptTreeSelect().then(response => {
     deptOptions.value = response.data;
     enabledDeptOptions.value = filterDisabledDept(JSON.parse(JSON.stringify(response.data)));
+    const deptField = searchData.value.find(item => item.value === 'deptId');
+    if (deptField) {
+      deptField.option = enabledDeptOptions.value || [];
+    }
   });
 };
 
@@ -1173,10 +1128,13 @@ function handleQuery() {
   getList();
 }
 
-/** 重置按钮操作 */
-function resetQuery() {
-  proxy.resetForm("queryRef");
-  handleQuery();
+function searchResetFn(val) {
+  queryParams.value.pageNum = 1;
+  queryParams.value.name = val.name || undefined;
+  queryParams.value.deptId = val.deptId || undefined;
+  queryParams.value.ip = val.ip || undefined;
+  queryParams.value.firm = val.firm || undefined;
+  getList();
 }
 
 // 多选框选中数据
@@ -1296,9 +1254,13 @@ function handleDelete(row) {
 
 /** 导出按钮操作 */
 function handleExport() {
-  proxy.download('onvif /device/export', {
+  proxy.download('onvif/device/export', {
     ...queryParams.value
   }, `device_${new Date().getTime()}.xlsx`)
+}
+
+function handleExportType(type) {
+  if (type === 'Excel') handleExport();
 }
 
 /**

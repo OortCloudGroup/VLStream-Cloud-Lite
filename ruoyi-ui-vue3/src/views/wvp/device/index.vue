@@ -1,192 +1,162 @@
 <template>
   <DeviceClassificationLayout protocol-type="GB28181" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="所属部门" prop="deptId">
-        <el-tree-select style="width: 202px" v-model="queryParams.deptId" :data="enabledDeptOptions" :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" placeholder="请选择归属部门" check-strictly />
-      </el-form-item>
-      <el-form-item label="设备名称" prop="name">
-        <el-input
-            v-model="queryParams.name"
-            placeholder="请输入设备名称"
-            clearable
-            style="width: 240px"
-            @keyup.enter="handleQuery"
+    <div class="toolbar-with-search">
+      <div class="toolbar-left">
+        <button type="button" class="exportBtn newBtn flexRowAC" @click="showInfo" v-hasPermi="['wvp:server:configInfo']">
+          <el-icon class="BtnImg"><InfoFilled /></el-icon>平台信息
+        </button>
+        <button
+          type="button"
+          class="exportBtn newBtn flexRowAC Btn2"
+          :disabled="multiple"
+          @click="handleBatchDelete"
+          v-hasPermi="['wvp:device:remove']"
+        >
+          <el-icon class="BtnImg"><Delete /></el-icon>删除
+        </button>
+      </div>
+      <div class="searchHeight_out flexRowAC">
+        <search-height-box
+          keyword="name"
+          placeholder="请输入设备名称等关键词"
+          :data="searchData"
+          @handle="searchResetFn"
         />
-      </el-form-item>
-      <el-form-item label="地址" prop="ip">
-        <el-input
-            v-model="queryParams.ip"
-            placeholder="请输入地址"
-            clearable
-            style="width: 240px"
-            @keyup.enter="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="厂家" prop="manufacturer">
-        <el-input
-            v-model="queryParams.manufacturer"
-            placeholder="请输入厂家"
-            clearable
-            style="width: 240px"
-            @keyup.enter="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="在线状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择在线状态" style="width: 250px;"
-                   default-first-option>
-          <el-option label="在线" value="1"></el-option>
-          <el-option label="离线" value="0"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+        <export-excel-pdf />
+      </div>
+    </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-            type="primary"
-            plain
-            icon="InfoFilled"
-            @click="showInfo"
-            v-hasPermi="['wvp:server:configInfo']"
-        >平台信息
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-            type="danger"
-            plain
-            icon="Delete"
-            :disabled="multiple"
-            @click="handleBatchDelete"
-            v-hasPermi="['wvp:device:remove']"
-        >删除
-        </el-button>
-      </el-col>
-      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="deviceList" border @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center"/>
-      <el-table-column type="index" label="编号" width="80" align="center"/>
-      <el-table-column label="所属部门" align="center" prop="deptName"/>
-      <el-table-column prop="name" label="名称" width="100" align="center"/>
-      <el-table-column prop="deviceId" label="设备编号" align="center" width="150">
-      </el-table-column>
-      <el-table-column label="地址" align="center" prop="addressMap" width="150"/>
-      <el-table-column label="IP地址" width="160" align="center">
+    <table-self
+      class="new_table"
+      header-cell-class-name="header_tenant_cell"
+      stripe
+      v-loading="loading"
+      :data="deviceList"
+      current-row-key="id"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection" :width="clacPXToVW(55)" align="center"/>
+      <el-table-column type="index" label="编号" :width="clacPXToVW(70)" align="center"/>
+      <el-table-column label="所属部门" align="center" prop="deptName" show-overflow-tooltip/>
+      <el-table-column prop="name" label="名称" :width="clacPXToVW(100)" align="center" show-overflow-tooltip/>
+      <el-table-column prop="deviceId" label="设备编号" align="center" :width="clacPXToVW(150)" show-overflow-tooltip/>
+      <el-table-column label="地址" align="center" prop="addressMap" :width="clacPXToVW(150)" show-overflow-tooltip/>
+      <el-table-column label="IP地址" :width="clacPXToVW(160)" align="center" show-overflow-tooltip>
         <template #default="scope">
-          <div slot="reference" class="name-wrapper">
-            <el-tag v-if="scope.row.hostAddress">{{ scope.row.hostAddress }}</el-tag>
-            <el-tag v-if="!scope.row.hostAddress">未知</el-tag>
-          </div>
+          <el-tag v-if="scope.row.hostAddress">{{ scope.row.hostAddress }}</el-tag>
+          <el-tag v-else type="info">未知</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="manufacturer" label="厂家" width="80" align="center">
-      </el-table-column>
-      <el-table-column prop="transport" label="信令传输模式" width="110" align="center">
-      </el-table-column>
-      <el-table-column label="流传输模式" width="150" align="center">
+      <el-table-column prop="manufacturer" label="厂家" :width="clacPXToVW(90)" align="center" show-overflow-tooltip/>
+      <el-table-column prop="transport" label="信令传输模式" :width="clacPXToVW(110)" align="center"/>
+      <el-table-column label="流传输模式" :width="clacPXToVW(150)" align="center">
         <template #default="scope">
-          <el-select @change="transportChange(scope.row)" v-model="scope.row.streamMode"
-                     placeholder="请选择" style="width: 120px" v-if="checkPermi(['wvp:device:updateTransport'])">
-            <el-option key="UDP" label="UDP" value="UDP"></el-option>
-            <el-option key="TCP-ACTIVE" label="TCP主动模式" value="TCP-ACTIVE"></el-option>
-            <el-option key="TCP-PASSIVE" label="TCP被动模式" value="TCP-PASSIVE"></el-option>
+          <el-select
+            v-if="checkPermi(['wvp:device:updateTransport'])"
+            @change="transportChange(scope.row)"
+            v-model="scope.row.streamMode"
+            placeholder="请选择"
+            style="width: 120px"
+          >
+            <el-option key="UDP" label="UDP" value="UDP"/>
+            <el-option key="TCP-ACTIVE" label="TCP主动模式" value="TCP-ACTIVE"/>
+            <el-option key="TCP-PASSIVE" label="TCP被动模式" value="TCP-PASSIVE"/>
           </el-select>
-
-          <div v-else>
+          <template v-else>
             <el-tag v-if="scope.row.streamMode === 'UDP'">UDP</el-tag>
-            <el-tag v-if="scope.row.streamMode === 'TCP-ACTIVE'">TCP主动模式</el-tag>
-            <el-tag v-if="scope.row.streamMode === 'TCP-PASSIVE'">TCP被动模式</el-tag>
+            <el-tag v-else-if="scope.row.streamMode === 'TCP-ACTIVE'">TCP主动模式</el-tag>
+            <el-tag v-else-if="scope.row.streamMode === 'TCP-PASSIVE'">TCP被动模式</el-tag>
+          </template>
+        </template>
+      </el-table-column>
+      <el-table-column label="通道数" :width="clacPXToVW(80)" align="center">
+        <template #default="scope">{{ scope.row.channelCount }}</template>
+      </el-table-column>
+      <el-table-column label="状态" :width="clacPXToVW(80)" align="center">
+        <template #default="scope">
+          <el-tag v-if="scope.row.onLine">在线</el-tag>
+          <el-tag type="info" v-else>离线</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="订阅" :min-width="clacPXToVW(220)" align="center">
+        <template #default="scope">
+          <el-checkbox
+            v-if="checkPermi(['wvp:device:subscribeCatalog'])"
+            label="目录"
+            :checked="scope.row.subscribeCycleForCatalog > 0"
+            @change="(e)=>subscribeForCatalog(scope.row.id, e)"
+          />
+          <el-checkbox
+            v-else
+            label="目录"
+            :checked="scope.row.subscribeCycleForCatalog > 0"
+            disabled
+          />
+          <el-checkbox
+            v-if="checkPermi(['wvp:device:subscribeMobilePosition'])"
+            label="位置"
+            :checked="scope.row.subscribeCycleForMobilePosition > 0"
+            @change="(e)=>subscribeForMobilePosition(scope.row.id, e)"
+          />
+          <el-checkbox
+            v-else
+            label="位置"
+            disabled
+            :checked="scope.row.subscribeCycleForMobilePosition > 0"
+          />
+          <el-checkbox label="报警" disabled :checked="scope.row.subscribeCycleForAlarm > 0"/>
+        </template>
+      </el-table-column>
+      <el-table-column prop="keepaliveTime" label="最近心跳" :width="clacPXToVW(150)" align="center" show-overflow-tooltip/>
+      <el-table-column prop="registerTime" label="最近注册" :width="clacPXToVW(150)" align="center" show-overflow-tooltip/>
+      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(240)">
+        <template #default="scope">
+          <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+            <div
+              class="new_table_svg_group"
+              :class="{ 'is-disabled': scope.row.online === 0 }"
+              @click.stop="scope.row.online !== 0 && refDevice(scope.row)"
+              v-hasPermi="['wvp:device:sync']"
+            >
+              <span>刷新</span>
+            </div>
+            <div
+              class="new_table_svg_group"
+              @click.stop="showChannelList(scope.row)"
+              v-if="checkPermi(['wvp:device:channels'])"
+            >
+              <span>通道</span>
+            </div>
+            <div
+              class="new_table_svg_group"
+              @click.stop="handleUpdate(scope.row)"
+              v-if="checkPermi(['wvp:device:edit'])"
+            >
+              <span>修改</span>
+            </div>
+            <el-dropdown
+              @command="(command)=>{moreClick(command, scope.row)}"
+              v-if="checkPermi(['wvp:device:remove','wvp:control:guardApi','wvp:config:cdownloadApi','wvp:device:edit'])"
+            >
+              <div class="new_table_svg_group" @click.stop>
+                <span>更多</span>
+                <el-icon><ArrowDown /></el-icon>
+              </div>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="handleMap" v-if="checkPermi(['wvp:device:edit'])">修改位置</el-dropdown-item>
+                  <el-dropdown-item command="delete" style="color: #f56c6c" v-if="checkPermi(['wvp:device:remove'])">删除</el-dropdown-item>
+                  <el-dropdown-item command="setGuard" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:control:guardApi'])">布防</el-dropdown-item>
+                  <el-dropdown-item command="resetGuard" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:control:guardApi'])">撤防</el-dropdown-item>
+                  <el-dropdown-item command="syncBasicParam" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:config:cdownloadApi'])">基础配置同步</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="通道数" min-width="70" align="center">
-        <template #default="scope">
-          <span style="font-size: 1rem">{{ scope.row.channelCount }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" min-width="70" align="center">
-        <template #default="scope">
-          <div slot="reference" class="name-wrapper">
-            <el-tag v-if="scope.row.onLine">在线</el-tag>
-            <el-tag type="info" v-if="!scope.row.onLine">离线</el-tag>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="订阅" min-width="240" align="center">
-        <template #default="scope">
-          <el-checkbox v-if="checkPermi(['wvp:device:subscribeCatalog'])" label="目录"
-                       :checked="scope.row.subscribeCycleForCatalog > 0"
-                       @change="(e)=>subscribeForCatalog(scope.row.id, e)"></el-checkbox>
-          <el-checkbox v-if="!checkPermi(['wvp:device:subscribeCatalog'])" label="目录"
-                       :checked="scope.row.subscribeCycleForCatalog > 0"
-                       disabled
-                       ></el-checkbox>
-
-          <el-checkbox v-if="checkPermi(['wvp:device:subscribeMobilePosition'])" label="位置"
-                       :checked="scope.row.subscribeCycleForMobilePosition > 0"
-                       @change="(e)=>subscribeForMobilePosition(scope.row.id, e)"></el-checkbox>
-          <el-checkbox v-if="!checkPermi(['wvp:device:subscribeMobilePosition'])" label="位置"
-                       disabled
-                       :checked="scope.row.subscribeCycleForMobilePosition > 0"
-          ></el-checkbox>
-
-          <el-checkbox label="报警" disabled :checked="scope.row.subscribeCycleForAlarm > 0"></el-checkbox>
-        </template>
-      </el-table-column>
-      <el-table-column prop="keepaliveTime" label="最近心跳" width="150" align="center">
-      </el-table-column>
-      <el-table-column prop="registerTime" label="最近注册" width="150" align="center">
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width" fixed="right">
-        <template #default="scope">
-          <el-button link type="primary" :disabled="scope.row.online===0" v-hasPermi="['wvp:device:sync']"
-                     @click="refDevice(scope.row)">刷新
-          </el-button>
-          <el-button type="text" v-if="checkPermi(['wvp:device:channels'])"
-                     @click="showChannelList(scope.row)">通道
-          </el-button>
-          <el-button link type="primary" @click="handleUpdate(scope.row)" v-if="checkPermi(['wvp:device:edit'])">修改
-          </el-button>
-
-          <el-dropdown @command="(command)=>{moreClick(command, scope.row)}" v-if="checkPermi(['wvp:device:remove','wvp:control:guardApi','wvp:config:cdownloadApi','wvp:device:edit'])">
-             <span class="el-dropdown-link">
-              <el-button type="text">
-                更多
-                <el-icon>
-                  <arrow-down/>
-                </el-icon>
-              </el-button>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="handleMap" v-if="checkPermi(['wvp:device:edit'])">
-                  修改位置
-                </el-dropdown-item>
-                <el-dropdown-item command="delete" style="color: #f56c6c" v-if="checkPermi(['wvp:device:remove'])">
-                  删除
-                </el-dropdown-item>
-                <el-dropdown-item command="setGuard" v-bind:disabled="!scope.row.onLine" v-if="checkPermi(['wvp:control:guardApi'])">
-                  布防
-                </el-dropdown-item>
-                <el-dropdown-item command="resetGuard" v-bind:disabled="!scope.row.onLine" v-if="checkPermi(['wvp:control:guardApi'])">
-                  撤防
-                </el-dropdown-item>
-                <el-dropdown-item command="syncBasicParam" v-bind:disabled="!scope.row.onLine" v-if="checkPermi(['wvp:config:cdownloadApi'])">
-                  基础配置同步
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </template>
-      </el-table-column>
-    </el-table>
+    </table-self>
 
     <pagination
         v-show="total > 0"
@@ -312,13 +282,14 @@ import {ElMessage} from 'element-plus'
 import {configDownloadApi} from "../../../api/wvp/config.js";
 import {deptTreeSelect} from "@/api/system/user";
 import DeviceClassificationLayout from '@/components/DeviceClassificationLayout/index.vue'
+import { clacPXToVW } from "@/utils/index";
+import { ArrowDown, Delete, InfoFilled } from '@element-plus/icons-vue'
 
 const {proxy} = getCurrentInstance();
 
 const deviceList = ref([]);
 const open = ref(false);
 const loading = ref(true);
-const showSearch = ref(true);
 const total = ref(0);
 const title = ref("");
 const msg = ref("");
@@ -330,6 +301,37 @@ const showProgress = ref(false);
 
 const deptOptions = ref(undefined);
 const enabledDeptOptions = ref(undefined);
+const searchData = ref([
+  {
+    label: '所属部门',
+    value: 'deptId',
+    type: 'tree-select',
+    option: [],
+    default: undefined
+  },
+  {
+    label: '地址',
+    value: 'ip',
+    type: 'text',
+    default: undefined
+  },
+  {
+    label: '厂家',
+    value: 'manufacturer',
+    type: 'text',
+    default: undefined
+  },
+  {
+    label: '在线状态',
+    value: 'status',
+    type: 'select',
+    option: [
+      { label: '在线', value: '1' },
+      { label: '离线', value: '0' }
+    ],
+    default: undefined
+  }
+]);
 
 const ids = ref([]);
 const classificationDeviceKeys = ref([]);
@@ -360,6 +362,7 @@ const data = reactive({
     status: undefined,
     ip: undefined,
     manufacturer: undefined,
+    deptId: undefined,
   },
   rules: {
     deviceId: [{required: true, message: "请输入设备编号", trigger: "blur"}],
@@ -384,6 +387,10 @@ function getDeptTree() {
   deptTreeSelect().then(response => {
     deptOptions.value = response.data;
     enabledDeptOptions.value = filterDisabledDept(JSON.parse(JSON.stringify(response.data)));
+    const deptField = searchData.value.find(item => item.value === 'deptId');
+    if (deptField) {
+      deptField.option = enabledDeptOptions.value || [];
+    }
   });
 };
 
@@ -399,6 +406,17 @@ function filterDisabledDept(deptList) {
     return true;
   });
 };
+
+/** 高级搜索 */
+function searchResetFn(val) {
+  queryParams.value.pageNum = 1;
+  queryParams.value.name = val.name || undefined;
+  queryParams.value.deptId = val.deptId || undefined;
+  queryParams.value.ip = val.ip || undefined;
+  queryParams.value.manufacturer = val.manufacturer || undefined;
+  queryParams.value.status = val.status || undefined;
+  getList();
+}
 
 /** 取消按钮 */
 function cancel() {
@@ -423,18 +441,6 @@ function reset() {
     lat: undefined,
   };
   proxy.resetForm("formRef");
-}
-
-/** 搜索按钮操作 */
-function handleQuery() {
-  queryParams.value.pageNum = 1;
-  getList();
-}
-
-/** 重置按钮操作 */
-function resetQuery() {
-  proxy.resetForm("queryRef");
-  handleQuery();
 }
 
 /** 修改按钮操作 */
