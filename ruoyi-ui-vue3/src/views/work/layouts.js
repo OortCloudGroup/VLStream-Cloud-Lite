@@ -1,22 +1,19 @@
-function cells(count) {
-  return Array.from({ length: count }, (_, i) => ({
-    index: i + 1,
-    type: '',
-    data: null
-  }))
+import { createSplitSlots, getSplitLayout } from './splitScreenLayouts.js'
+
+function buildLayouts() {
+  const modes = [1, 4, 6, 8, 9, 16, 17, 21, 23, 24]
+  const layouts = {}
+  modes.forEach((mode) => {
+    layouts[mode] = createSplitSlots(mode, (index) => ({
+      index: index + 1,
+      type: '',
+      data: null
+    }))
+  })
+  return layouts
 }
 
-const layouts = {
-  1: cells(1),
-  4: cells(4),
-  6: cells(6),
-  8: cells(8),
-  9: cells(9),
-  16: cells(16),
-  17: cells(17),
-  21: cells(21),
-  23: cells(23),
-  24: cells(24)
-}
+const layouts = buildLayouts()
 
 export default layouts
+export { getSplitLayout, createSplitSlots }

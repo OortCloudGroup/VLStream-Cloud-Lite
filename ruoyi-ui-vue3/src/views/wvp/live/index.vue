@@ -1,57 +1,112 @@
 <template>
-  <div class="app-container">
-    <el-row :gutter="20">
-      <el-col :span="4">
-        <el-card>
-          <div class="top">
-            <div>通道列表</div>
-            <div>
-              <el-switch
-                  v-model="activeValue"
-                  active-text="行政区划"
-                  inactive-text="业务分组"
-                  @change="onSwitch"
-              />
-            </div>
-          </div>
+  <div class="app-container live-page">
+    <div class="workbench-layout">
+      <aside v-yResize class="workbench-aside">
+        <div class="aside-title">设备列表</div>
+        <div class="head-container">
+          <el-input
+              v-model="deviceName"
+              placeholder="搜索设备名称"
+              clearable
+              prefix-icon="Search"
+              style="margin-bottom: 12px"
+          />
+        </div>
+        <div class="top">
+          <div>通道列表</div>
           <div>
-            <el-tree
-                :data="treeData"
-                :props="defaultProps"
-                lazy
-                :load="loadNode"
-                @node-click="handleNodeClick"/>
+            <el-switch
+                v-model="activeValue"
+                active-text="行政区划"
+                inactive-text="业务分组"
+                @change="onSwitch"
+            />
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="20">
-        <el-card>
-          <div class="flex">
-            分屏:
-            <svg-icon :class="['flex-icon', { active: model === 1 }]"
-                icon-class="splitOne" @click="spiltIndex(1)" class="flex-icon" />
-            <svg-icon :class="['flex-icon', { active: model === 4 }]"
-                icon-class="splitFour" @click="spiltIndex(4)" class="flex-icon" />
-            <svg-icon :class="['flex-icon', { active: model === 6 }]"
-                icon-class="splitSix" @click="spiltIndex(6)" class="flex-icon" />
-            <svg-icon :class="['flex-icon', { active: model === 9 }]"
-                icon-class="splitNine" @click="spiltIndex(9)" class="flex-icon" />
-          </div>
+        </div>
+        <div class="tree">
+          <el-tree
+              ref="deviceTreeRef"
+              :data="treeData"
+              :props="defaultProps"
+              lazy
+              :load="loadNode"
+              :filter-node-method="filterNode"
+              @node-click="handleNodeClick"
+          />
+        </div>
+      </aside>
 
-          <div style="display: flex; flex-wrap: wrap; margin-top: 20px;">
+      <main class="workbench-main">
+        <div class="workbench-toolbar">
+          <svg-icon :class="['flex-icon', { active: model === 1 }]" icon-class="screen1" @click="spiltIndex(1)" />
+          <svg-icon :class="['flex-icon', { active: model === 4 }]" icon-class="screen4" @click="spiltIndex(4)" />
+          <svg-icon :class="['flex-icon', { active: model === 6 }]" icon-class="screen6" @click="spiltIndex(6)" />
+          <svg-icon :class="['flex-icon', { active: model === 9 }]" icon-class="screen9" @click="spiltIndex(9)" />
+          <el-dropdown trigger="click" @command="handleScreenMore">
+            <span class="flex-icon more-trigger">
+              <svg-icon icon-class="screen-more" />
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="8">
+                  <svg-icon icon-class="screen8" class="dropdown-screen-icon" /> 八画面
+                </el-dropdown-item>
+                <el-dropdown-item command="16">
+                  <svg-icon icon-class="screen16" class="dropdown-screen-icon" /> 十六画面
+                </el-dropdown-item>
+                <el-dropdown-item command="17">
+                  <svg-icon icon-class="screen17" class="dropdown-screen-icon" /> 十七画面
+                </el-dropdown-item>
+                <el-dropdown-item command="21">
+                  <svg-icon icon-class="screen21" class="dropdown-screen-icon" /> 二十一画面
+                </el-dropdown-item>
+                <el-dropdown-item command="23">
+                  <svg-icon icon-class="screen23" class="dropdown-screen-icon" /> 二十三画面
+                </el-dropdown-item>
+                <el-dropdown-item command="24">
+                  <svg-icon icon-class="screen24" class="dropdown-screen-icon" /> 二十四画面
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <el-button size="small" @click="handleCustomScreen">自定义</el-button>
+          <svg-icon class="flex-icon" icon-class="screen-full" @click="toggleLiveFullscreen" />
+        </div>
+
+        <div class="workbench-players" ref="livePlayersRef">
+          <div class="players-grid" :style="gridContainerStyle">
             <div
-                v-for="(item, index) in splitLayouts[splitShow]"
-                :key="index"
-                :style="getCellStyle(splitShow)"
+                v-for="(item, index) in currentCells"
+                :key="`${splitShow}-${index}`"
+                :style="getCellStyle(index)"
                 :class="['player-cell', { active: activePlayerIndex === index }]"
-                @click="setActivePlayer(index)">
+                @click="setActivePlayer(index)"
+            >
               <CusPlayer :ref="'video' + index" />
             </div>
           </div>
+        </div>
+      </main>
+    </div>
 
-        </el-card>
-      </el-col>
-    </el-row>
+    <el-dialog v-model="customDialogVisible" title="自定义视图" width="26%" append-to-body>
+      <div class="custom-view-form">
+        <div class="custom-view-field">
+          <div class="custom-view-label">行(输入值1-9)</div>
+          <el-input v-model="customRows" maxlength="1" />
+        </div>
+        <span class="custom-view-x">x</span>
+        <div class="custom-view-field">
+          <div class="custom-view-label">列(输入值1-9)</div>
+          <el-input v-model="customCols" maxlength="1" />
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="confirmCustomScreen">确定</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -62,6 +117,8 @@ import {queryForTree as groupQueryForTree} from "@/api/wvp/group.js";
 import CusPlayer from "@/components/flv/CusPlayer.vue";
 import { start as playPush} from "@/api/wvp/push.js";
 import { start as playProxy } from "@/api/wvp/proxy.js";
+import {ElMessage} from "element-plus";
+import { getSplitLayout, getCustomEqualLayout } from "@/views/work/splitScreenLayouts.js";
 
 const {proxy} = getCurrentInstance();
 
@@ -71,6 +128,9 @@ const queryParams = ref({
 })
 
 const video = ref(null);
+const deviceName = ref('');
+const deviceTreeRef = ref(null);
+const livePlayersRef = ref(null);
 
 const treeData = ref([]);
 
@@ -80,12 +140,41 @@ const defaultProps = {
   isLeaf: 'leaf'
 };
 
-const splitLayouts = {
-  1: [1],
-  4: [1, 2, 3, 4],
-  6: [1, 2, 3, 4, 5, 6],
-  9: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-};
+const splitShow = ref(4)
+const borderWidth = ref(2)
+const activePlayerIndex = ref(null);
+const model = ref(4);
+const activeValue = ref(true);
+const customDialogVisible = ref(false)
+const customRows = ref('1')
+const customCols = ref('1')
+const customLayout = ref(null)
+
+const currentLayout = computed(() => {
+  if (splitShow.value === 'custom' && customLayout.value) {
+    return customLayout.value
+  }
+  return getSplitLayout(splitShow.value)
+})
+const currentCells = computed(() => currentLayout.value.cells)
+const gridContainerStyle = computed(() => ({
+  display: 'grid',
+  gridTemplateColumns: currentLayout.value.columns,
+  gridTemplateRows: currentLayout.value.rows,
+  gap: '2px',
+  width: '100%',
+  height: '100%',
+  minHeight: '640px'
+}))
+
+watch(deviceName, (val) => {
+  deviceTreeRef.value?.filter(val)
+})
+
+function filterNode(value, data) {
+  if (!value) return true
+  return String(data.name || '').includes(value)
+}
 
 async function onSwitch(e) {
   if (activeValue.value) {
@@ -157,7 +246,7 @@ const handleNodeClick = async (data) => {
     const videoRef = proxy.$refs[`video${activePlayerIndex.value}`];
     if (videoRef && videoRef[0]) {
       if (location.protocol === "https:") {
-        videoRef[0].createPlayer(res.data.https_flv, 0);
+        videoRef[0].createPlayer(ans.data.https_flv, 0);
       } else {
         videoRef[0].createPlayer(ans.data.flv, 0);
       }
@@ -182,44 +271,21 @@ const handleNodeClick = async (data) => {
 
 };
 
-const splitShow = ref(1)
-const borderWidth = ref(2)
-const activePlayerIndex = ref(null);
-const model = ref(1);
-const activeValue = ref(true);
-
-function getCellStyle(splitMode) {
-  model.value = splitMode;
-  const style = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#000000",
-    boxSizing: "border-box",
-  };
-
-  if (splitMode === 1) {
-    style.width = "100%";
-    style.height = "600px";
-    style.border  = `${borderWidth.value}px solid #409EFF`;
-  } else if (splitMode === 4) {
-    style.width = "50%";
-    style.height = "400px";
-    style.border  = `${borderWidth.value}px solid #409EFF`;
-    style.margin = "-2px";
-  } else if (splitMode === 6) {
-    style.width = "50%";
-    style.height = "300px";
-    style.border  = `${borderWidth.value}px solid #409EFF`;
-    style.margin = "-2px";
-  } else if (splitMode === 9) {
-    style.width = "33.33%";
-    style.height = "280px";
-    style.border  = `${borderWidth.value}px solid #409EFF`;
-    style.margin = "-2px";
+function getCellStyle(index) {
+  const cell = currentLayout.value.cells[index]
+  if (!cell) return {}
+  return {
+    gridColumn: cell.column,
+    gridRow: cell.row,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+    boxSizing: 'border-box',
+    border: `${borderWidth.value}px solid transparent`,
+    minHeight: 0,
+    overflow: 'hidden'
   }
-
-  return style;
 }
 
 function setActivePlayer(index) {
@@ -251,8 +317,45 @@ async function getGroupQueryForTree() {
 }
 
 function spiltIndex(index){
-  splitShow.value = index;
+  const key = Number(index)
+  customLayout.value = null
+  splitShow.value = key;
+  model.value = key;
   activePlayerIndex.value = null;
+}
+
+function handleScreenMore(command) {
+  spiltIndex(command)
+}
+
+function handleCustomScreen() {
+  customRows.value = '1'
+  customCols.value = '1'
+  customDialogVisible.value = true
+}
+
+function confirmCustomScreen() {
+  const rows = Number(customRows.value)
+  const cols = Number(customCols.value)
+  if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows < 1 || rows > 9 || cols < 1 || cols > 9) {
+    ElMessage.warning('行和列请输入 1-9 的整数')
+    return
+  }
+  customLayout.value = getCustomEqualLayout(rows, cols)
+  splitShow.value = 'custom'
+  model.value = 'custom'
+  activePlayerIndex.value = null
+  customDialogVisible.value = false
+}
+
+function toggleLiveFullscreen() {
+  const el = livePlayersRef.value
+  if (!el) return
+  if (!document.fullscreenElement) {
+    el.requestFullscreen?.()
+  } else {
+    document.exitFullscreen?.()
+  }
 }
 
 onMounted(async () => {
@@ -262,22 +365,94 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.app-container.live-page {
+  background: #fff;
+  border-radius: 10px;
+  min-height: calc(100vh - 84px);
+  box-sizing: border-box;
+  padding: 16px 20px;
+}
+
+.workbench-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  min-height: calc(100vh - 120px);
+  background: #fff;
+}
+
+.workbench-aside {
+  width: 300px;
+  flex-shrink: 0;
+  padding-right: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+.aside-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  padding-left: 8px;
+  border-left: 3px solid var(--el-color-primary);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
 .top {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
 }
 
-.flex {
-  width: 100%;
+.tree {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.workbench-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.workbench-toolbar {
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.workbench-players {
+  flex: 1;
+  min-height: 640px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.players-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 640px;
+  background: #000;
 }
 
 .player-cell {
   position: relative;
   transition: border-color 0.3s ease;
+  overflow: hidden;
 }
 
 .player-cell:hover {
@@ -285,26 +460,68 @@ onMounted(async () => {
 }
 
 .player-cell.active {
-  border-color: #67C23A !important;
-  z-index: 999;
-  boxSizing: "border-box"
+  border-color: var(--el-color-primary) !important;
+  z-index: 2;
 }
 
 .flex-icon {
-  margin-left: 10px;
-}
-
-.flex-icon {
-  margin-left: 10px;
   cursor: pointer;
-  font-size: 20px;
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
   transition: color 0.3s ease, transform 0.3s ease;
+  color: #666;
 }
 
 .flex-icon.active {
-  color: #409EFF;
-  transform: scale(1.2);
+  color: var(--el-color-primary);
+  transform: scale(1.1);
+}
+
+.workbench-toolbar .flex-icon,
+.workbench-toolbar .svg-icon,
+.workbench-toolbar .more-trigger .svg-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+}
+
+.more-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.dropdown-screen-icon {
+  margin-right: 8px;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+.custom-view-form {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 0 16px;
+}
+
+.custom-view-field {
+  width: 120px;
+}
+
+.custom-view-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+
+.custom-view-x {
+  padding-bottom: 8px;
+  font-size: 14px;
+  color: #333;
 }
 </style>
-
-

@@ -556,12 +556,12 @@
           <svg-icon class="flex-icon" icon-class="screen-full" @click="toggleWorkbenchFullscreen" />
         </div>
         <div class="workbench-players" ref="workbenchPlayersRef">
-          <div class="players-grid">
+          <div class="players-grid" :style="gridContainerStyle">
             <div
                 :id="'video' + index"
-                v-for="(item, index) in splitLayouts[splitShow]"
-                :key="index"
-                :style="getCellStyle(splitShow)"
+                v-for="(item, index) in currentSplitSlots"
+                :key="`${splitShow}-${index}`"
+                :style="getCellStyle(index)"
                 :class="['player-cell', { active: activePlayerIndex === index }]"
                 @click="setActivePlayer(index)">
               <div v-if="item.data" class="player-delete">
@@ -588,6 +588,25 @@
         </div>
       </main>
     </div>
+
+    <el-dialog v-model="customDialogVisible" title="自定义视图" width="26%" append-to-body>
+      <div class="custom-view-form">
+        <div class="custom-view-field">
+          <div class="custom-view-label">行(输入值1-9)</div>
+          <el-input v-model="customRows" maxlength="1" />
+        </div>
+        <span class="custom-view-x">x</span>
+        <div class="custom-view-field">
+          <div class="custom-view-label">列(输入值1-9)</div>
+          <el-input v-model="customCols" maxlength="1" />
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="confirmCustomScreen">确定</el-button>
+        </div>
+      </template>
+    </el-dialog>
 
     <el-popover
         ref="popover"
@@ -628,6 +647,7 @@ import {rtspDeviceList} from "../../api/rtsp/RtspDevice.js";
 import {lsupDeviceList, ptzCtrlEnd, ptzCtrlFocus, ptzCtrlStart} from "../../api/isup/lsupDevice.js";
 import InfiniteList from 'vue3-infinite-list';
 import layouts from "./layouts.js";
+import { getSplitLayout, getCustomEqualLayout, createSplitSlots } from "./splitScreenLayouts.js";
 import {getConfigKey} from "../../api/system/config.js";
 import {listWork, updateWork} from "../../api/system/work.js";
 import {getFocusCamera, getIrIsCamera, getPtzCamera, queryListByParentId} from "../../api/wvp/channel.js";
@@ -706,7 +726,6 @@ const defaultProps = {
   isLeaf: 'leaf'
 };
 const splitLayouts = ref(JSON.parse(JSON.stringify(layouts)));
-
 
 const handleFavoriteSuccess = () => {
   proxy.$modal.msgSuccess("收藏成功")
@@ -967,15 +986,43 @@ const handleNodeClick = async (data) => {
   }
 };
 
-const splitShow = ref(1)
+const splitShow = ref(4)
 const borderWidth = ref(2)
 const activePlayerIndex = ref(null);
-const model = ref(1);
+const model = ref(4);
 const activeValue = ref(true);
+const customDialogVisible = ref(false)
+const customRows = ref('1')
+const customCols = ref('1')
+const customLayout = ref(null)
 
-function getCellStyle(splitMode) {
-  model.value = splitMode;
-  const style = {
+const currentLayout = computed(() => {
+  if (splitShow.value === 'custom' && customLayout.value) {
+    return customLayout.value
+  }
+  return getSplitLayout(splitShow.value)
+})
+const currentSplitSlots = computed(() => {
+  const slots = splitLayouts.value[splitShow.value]
+  return Array.isArray(slots) ? slots : []
+})
+const gridContainerStyle = computed(() => ({
+  display: 'grid',
+  gridTemplateColumns: currentLayout.value.columns,
+  gridTemplateRows: currentLayout.value.rows,
+  gap: '2px',
+  width: '100%',
+  height: '100%',
+  minHeight: '640px'
+}))
+
+function getCellStyle(index) {
+  model.value = splitShow.value;
+  const cell = currentLayout.value.cells[index]
+  if (!cell) return {}
+  return {
+    gridColumn: cell.column,
+    gridRow: cell.row,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -983,29 +1030,9 @@ function getCellStyle(splitMode) {
     boxSizing: "border-box",
     color: "#fff",
     fontSize: "14px",
+    minHeight: 0,
+    overflow: "hidden",
   };
-
-  const colsMap = {
-    1: 1,
-    4: 2,
-    6: 3,
-    8: 4,
-    9: 3,
-    16: 4,
-    17: 5,
-    21: 5,
-    23: 5,
-    24: 6
-  }
-  const cols = colsMap[splitMode] || 2
-  const rows = Math.ceil(splitMode / cols)
-  style.width = `calc(${100 / cols}% - 4px)`
-  style.height = `calc(${100 / rows}% - 4px)`
-  style.minHeight = splitMode === 1 ? '640px' : '160px'
-  style.margin = '2px'
-  style.flex = `0 0 calc(${100 / cols}% - 4px)`
-
-  return style;
 }
 
 const chooseId = ref(null);
@@ -1237,6 +1264,7 @@ function spiltIndex(index) {
     ElMessage.warning('暂不支持该分屏')
     return
   }
+  customLayout.value = null
   splitLayouts.value = JSON.parse(JSON.stringify(layouts));
   splitShow.value = key;
   model.value = key;
@@ -1249,7 +1277,29 @@ function handleScreenMore(command) {
 }
 
 function handleCustomScreen() {
-  ElMessage.info('自定义分屏功能开发中')
+  customRows.value = '1'
+  customCols.value = '1'
+  customDialogVisible.value = true
+}
+
+function confirmCustomScreen() {
+  const rows = Number(customRows.value)
+  const cols = Number(customCols.value)
+  if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows < 1 || rows > 9 || cols < 1 || cols > 9) {
+    ElMessage.warning('行和列请输入 1-9 的整数')
+    return
+  }
+  const layout = getCustomEqualLayout(rows, cols)
+  customLayout.value = layout
+  splitLayouts.value = {
+    ...JSON.parse(JSON.stringify(layouts)),
+    custom: createSplitSlots(layout, () => ({ type: '', data: null }))
+  }
+  splitShow.value = 'custom'
+  model.value = 'custom'
+  activePlayerIndex.value = null
+  selectDeviceId.value = null
+  customDialogVisible.value = false
 }
 
 const workbenchPlayersRef = ref(null)
@@ -1818,13 +1868,11 @@ onMounted(async () => {
 }
 
 .players-grid {
-  display: flex;
-  flex-wrap: wrap;
   position: relative;
   width: 100%;
   height: 100%;
   min-height: 640px;
-  align-content: flex-start;
+  background: #000;
 }
 
 .player-fill {
@@ -1873,6 +1921,31 @@ onMounted(async () => {
   margin-right: 8px;
   font-size: 16px;
   vertical-align: middle;
+}
+
+.custom-view-form {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 0 16px;
+}
+
+.custom-view-field {
+  width: 120px;
+}
+
+.custom-view-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+
+.custom-view-x {
+  padding-bottom: 8px;
+  font-size: 14px;
+  color: #333;
 }
 
 .el-tree {
