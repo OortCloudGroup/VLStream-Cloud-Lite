@@ -1,5 +1,11 @@
 <template>
-   <div class="app-container">
+   <div class="detail-page">
+      <detail-page-header
+         parent-title="字典管理"
+         title="字典数据"
+         back-path="/system/dict"
+      />
+      <div class="detail-body">
       <div class="toolbar-with-search">
          <div class="toolbar-left">
             <button type="button" class="exportBtn newBtn flexRowAC" @click="handleAdd" v-hasPermi="['system:dict:add']">
@@ -115,6 +121,7 @@
             </div>
          </template>
       </el-dialog>
+      </div>
    </div>
 </template>
 

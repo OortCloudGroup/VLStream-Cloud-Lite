@@ -1,67 +1,79 @@
 <template>
-  <div class="app-container">
-    <el-row :gutter="10" class="mb8">
-      <right-toolbar :search="false" @queryTable="getListDeviceDetailsByIds"></right-toolbar>
-    </el-row>
+  <div class="detail-page">
+    <detail-page-header
+      parent-title="设备管理"
+      title="通道列表"
+      back-path="/lecheng/lcDevice"
+    />
+    <div class="detail-body">
+      <div class="toolbar-with-search">
+        <div class="toolbar-left"></div>
+        <div class="searchHeight_out flexRowAC">
+          <export-excel-pdf />
+        </div>
+      </div>
 
-    <el-table :data="channelList">
-      <el-table-column label="通道名称" align="center" prop="channelName"/>
-      <el-table-column label="通道号" align="center" prop="channelId"/>
-      <el-table-column label="封面图" align="center" prop="channelPicUrl">
-        <template #default="scope">
-          <el-image v-if="scope.row.channelPicUrl" :src="scope.row.channelPicUrl" fit="cover"
-                    style="width: 50px; height: 50px"
-                    :preview-src-list="[scope.row.channelPicUrl]" preview-teleported>
-            <template #error>
-              <div class="image-slot">
-                <el-icon>
-                  <picture-filled/>
-                </el-icon>
+      <table-self class="new_table" header-cell-class-name="header_tenant_cell" stripe :data="channelList">
+        <el-table-column label="通道名称" align="center" prop="channelName" show-overflow-tooltip/>
+        <el-table-column label="通道号" align="center" prop="channelId" :width="clacPXToVW(100)"/>
+        <el-table-column label="封面图" align="center" prop="channelPicUrl" :width="clacPXToVW(100)">
+          <template #default="scope">
+            <el-image v-if="scope.row.channelPicUrl" :src="scope.row.channelPicUrl" fit="cover"
+                      style="width: 50px; height: 50px"
+                      :preview-src-list="[scope.row.channelPicUrl]" preview-teleported>
+              <template #error>
+                <div class="image-slot">
+                  <el-icon>
+                    <picture-filled/>
+                  </el-icon>
+                </div>
+              </template>
+            </el-image>
+          </template>
+        </el-table-column>
+        <el-table-column label="云存储状态" align="center" prop="csStatus" :min-width="clacPXToVW(140)">
+          <template #default="scope">
+            <el-tag type="primary" v-if="scope.row.csStatus === 'notExist'">未开通套餐</el-tag>
+            <el-tag type="primary" v-if="scope.row.csStatus === 'using'">开通云存储且没有过期</el-tag>
+            <el-tag type="primary" v-if="scope.row.csStatus === 'expired'">套餐过期</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="遮罩状态" align="center" prop="cameraStatus" :width="clacPXToVW(100)">
+          <template #default="scope">
+            <el-tag type="primary" v-if="scope.row.cameraStatus === 'on'">打开</el-tag>
+            <el-tag type="danger" v-if="scope.row.cameraStatus === 'off'">关闭</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="通道状态" align="center" prop="channelStatus" :width="clacPXToVW(100)">
+          <template #default="scope">
+            <el-tag type="success" v-if="scope.row.channelStatus === 'online'">在线</el-tag>
+            <el-tag type="danger" v-if="scope.row.channelStatus === 'offline'">离线</el-tag>
+            <el-tag type="warning" v-if="scope.row.channelStatus === 'sleep'">休眠</el-tag>
+            <el-tag type="primary" v-if="scope.row.channelStatus === 'upgrading'">升级中</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="通道最后离线时间" align="center" prop="lastOffLineTime" :min-width="clacPXToVW(160)">
+          <template #default="scope">
+            {{ formatTime(scope.row.lastOffLineTime) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+          <template #default="scope">
+            <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+              <div class="new_table_svg_group" @click.stop="getKitTokenFun(scope.row)" v-hasPermi="['lecheng:lc:getKitToken']">
+                <span>播放</span>
               </div>
-            </template>
-          </el-image>
-        </template>
-      </el-table-column>
-      <el-table-column label="云存储状态" align="center" prop="csStatus">
-        <template #default="scope">
-          <el-tag type="primary" v-if="scope.row.csStatus === 'notExist'">未开通套餐</el-tag>
-          <el-tag type="primary" v-if="scope.row.csStatus === 'using'">开通云存储且没有过期</el-tag>
-          <el-tag type="primary" v-if="scope.row.csStatus === 'expired'">套餐过期</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="遮罩状态" align="center" prop="cameraStatus">
-        <template #default="scope">
-          <el-tag type="primary" v-if="scope.row.cameraStatus === 'on'">打开</el-tag>
-          <el-tag type="danger" v-if="scope.row.cameraStatus === 'off'">关闭</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="通道状态" align="center" prop="channelStatus">
-        <template #default="scope">
-          <el-tag type="success" v-if="scope.row.channelStatus === 'online'">在线</el-tag>
-          <el-tag type="danger" v-if="scope.row.channelStatus === 'offline'">离线</el-tag>
-          <el-tag type="warning" v-if="scope.row.channelStatus === 'sleep'">休眠</el-tag>
-          <el-tag type="primary" v-if="scope.row.channelStatus === 'upgrading'">升级中</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="通道最后离线时间" align="center" prop="lastOffLineTime">
-        <template #default="scope">
-          {{ formatTime(scope.row.lastOffLineTime) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" fixed="right" width="200" class-name="small-padding fixed-width">
-        <template #default="scope">
-          <el-button link type="primary" @click="getKitTokenFun(scope.row)"
-                     v-hasPermi="['lecheng:lc:getKitToken']">播放
-          </el-button>
-          <el-button link type="primary" @click="modifyDeviceNameFun(scope.row)"
-                     v-hasPermi="['lecheng:lc:modifyDeviceName']">修改名称
-          </el-button>
-          <el-button link type="primary" @click="refreshDeviceCoverFun(scope.row)"
-                     v-hasPermi="['lecheng:lc:refreshDeviceCover']">刷新封面
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+              <div class="new_table_svg_group" @click.stop="modifyDeviceNameFun(scope.row)" v-hasPermi="['lecheng:lc:modifyDeviceName']">
+                <span>修改名称</span>
+              </div>
+              <div class="new_table_svg_group" @click.stop="refreshDeviceCoverFun(scope.row)" v-hasPermi="['lecheng:lc:refreshDeviceCover']">
+                <span>刷新封面</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+      </table-self>
+    </div>
 
     <el-dialog title="播放视频参数" v-model="openGetKitToken" width="32%" append-to-body>
       <el-form ref="getKitTokenRef" :model="getKitTokenForm" :rules="getKitTokenRules" label-width="120px">

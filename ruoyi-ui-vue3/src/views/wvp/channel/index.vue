@@ -1,185 +1,180 @@
 <template>
-  <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="关键字" prop="searchSrt">
-        <el-input
-            v-model="queryParams.searchSrt"
+  <div class="detail-page">
+    <detail-page-header
+      parent-title="国标设备"
+      title="通道列表"
+      back-path="/gbmanger/device"
+    />
+
+    <div class="detail-body">
+      <div class="toolbar-with-search">
+        <div class="toolbar-left"></div>
+        <div class="searchHeight_out flexRowAC">
+          <search-height-box
+            keyword="searchSrt"
             placeholder="请输入设备名称"
-            clearable
-            style="width: 240px"
-            @keyup.enter="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="通道类型" prop="channelType">
-        <el-select v-model="queryParams.channelType" placeholder="请选择通道类型" style="width: 250px;"
-                   default-first-option>
-          <el-option label="设备" value="false"></el-option>
-          <el-option label="子目录" value="true"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="在线状态" prop="online">
-        <el-select v-model="queryParams.online" placeholder="请选择在线状态" style="width: 250px;"
-                   default-first-option>
-          <el-option label="在线" value="true"></el-option>
-          <el-option label="离线" value="false"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+            :data="searchData"
+            @handle="searchResetFn"
+          />
+          <export-excel-pdf />
+        </div>
+      </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-            type="primary"
-            plain
-            icon="Back"
-            @click="handleBack"
-        >返回</el-button>
-      </el-col>
-      <right-toolbar v-model:showSearch="showSearch" @queryTable="initData"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="channelList" ref="channelListTable" border>
-      <el-table-column prop="name" label="名称" min-width="180" align="center"/>
-      <el-table-column prop="deviceId" label="编号" min-width="180" align="center"/>
-      <el-table-column label="快照" min-width="100" align="center">
-        <template #default="scope">
-          <ImagePreview :src="getSnap(scope.row)"></ImagePreview>
-        </template>
-      </el-table-column>
-      <el-table-column prop="subCount" label="子节点数" min-width="100" align="center"/>
-      <el-table-column prop="channelType" label="通道类型" min-width="100" align="center">
-        <template #default="scope">
-          <el-tag v-if="scope.row.channelType === 0">国标设备</el-tag>
-          <el-tag v-if="scope.row.channelType === 1">推流设备</el-tag>
-          <el-tag v-if="scope.row.channelType === 2">拉流代理</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="manufacturer" label="厂家" min-width="100" align="center"/>
-      <el-table-column label="位置信息" min-width="120" align="center">
-        <template #default="scope">
-          <span
-              v-if="scope.row.longitude && scope.row.latitude">{{ scope.row.longitude }}<br/>{{
-              scope.row.latitude
-            }}</span>
-          <span v-if="!scope.row.longitude || !scope.row.latitude">无</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="ptzType" label="云台类型" min-width="100" align="center">
-        <template #default="scope">
-          <div>{{ scope.row.ptzTypeText }}</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="开启音频" min-width="100" align="center">
-        <template #default="scope">
-          <el-switch @change="updateChannel(scope.row)" v-model="scope.row.hasAudio" active-color="#409EFF">
-          </el-switch>
-        </template>
-      </el-table-column>
-      <el-table-column label="码流类型" min-width="180" align="center">
-        <template #default="scope">
-          <div v-if="checkPermi(['wvp:device:channelStreamIdentification'])">
-            <el-select @change="channelSubStreamChange(scope.row)"
-                       v-model="scope.row.streamIdentification"
-                       placeholder="请选择码流类型" default-first-option
-
-            >
-              <el-option label="stream:0(主码流)" value="stream:0"></el-option>
-              <el-option label="stream:1(子码流)" value="stream:1"></el-option>
-              <el-option label="streamnumber:0(主码流-2022)" value="streamnumber:0"></el-option>
-              <el-option label="streamnumber:1(子码流-2022)" value="streamnumber:1"></el-option>
-              <el-option label="streamprofile:0(主码流-大华)" value="streamprofile:0"></el-option>
-              <el-option label="streamprofile:1(子码流-大华)" value="streamprofile:1"></el-option>
-              <el-option label="streamMode:main(主码流-水星+TP-LINK)" value="streamMode:main"></el-option>
-              <el-option label="streamMode:sub(子码流-水星+TP-LINK)" value="streamMode:sub"></el-option>
-            </el-select>
-          </div>
-          <div v-else>
-            <el-tag v-if="scope.row.streamIdentification === 'stream:0'">stream:0(主码流)</el-tag>
-            <el-tag v-if="scope.row.streamIdentification === 'stream:1'">stream:1(子码流)</el-tag>
-            <el-tag v-if="scope.row.streamIdentification === 'streamnumber:0'">streamnumber:0(主码流-2022)</el-tag>
-            <el-tag v-if="scope.row.streamIdentification === 'streamnumber:1'">streamnumber:1(子码流-2022)</el-tag>
-            <el-tag v-if="scope.row.streamIdentification === 'streamprofile:0'">streamprofile:0(主码流-大华)</el-tag>
-            <el-tag v-if="scope.row.streamIdentification === 'streamprofile:1'">streamprofile:1(子码流-大华)</el-tag>
-            <el-tag v-if="scope.row.streamIdentification === 'streamMode:main'">streamMode:main(主码流-水星+TP-LINK)
-            </el-tag>
-            <el-tag v-if="scope.row.streamIdentification === 'streamMode:sub'">streamMode:sub(子码流-水星+TP-LINK)
-            </el-tag>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" min-width="100" align="center">
-        <template #default="scope">
-          <div slot="reference" class="name-wrapper">
+      <table-self
+        class="new_table"
+        header-cell-class-name="header_tenant_cell"
+        stripe
+        v-loading="loading"
+        :data="channelList"
+        ref="channelListTable"
+      >
+        <el-table-column prop="name" label="名称" :min-width="clacPXToVW(180)" align="center" show-overflow-tooltip/>
+        <el-table-column prop="deviceId" label="编号" :min-width="clacPXToVW(180)" align="center" show-overflow-tooltip/>
+        <el-table-column label="快照" :min-width="clacPXToVW(100)" align="center">
+          <template #default="scope">
+            <ImagePreview :src="getSnap(scope.row)"></ImagePreview>
+          </template>
+        </el-table-column>
+        <el-table-column prop="subCount" label="子节点数" :min-width="clacPXToVW(100)" align="center"/>
+        <el-table-column prop="channelType" label="通道类型" :min-width="clacPXToVW(100)" align="center">
+          <template #default="scope">
+            <el-tag v-if="scope.row.channelType === 0">国标设备</el-tag>
+            <el-tag v-if="scope.row.channelType === 1">推流设备</el-tag>
+            <el-tag v-if="scope.row.channelType === 2">拉流代理</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="manufacturer" label="厂家" :min-width="clacPXToVW(100)" align="center" show-overflow-tooltip/>
+        <el-table-column label="位置信息" :min-width="clacPXToVW(120)" align="center">
+          <template #default="scope">
+            <span v-if="scope.row.longitude && scope.row.latitude">{{ scope.row.longitude }}<br/>{{ scope.row.latitude }}</span>
+            <span v-else>无</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ptzType" label="云台类型" :min-width="clacPXToVW(100)" align="center">
+          <template #default="scope">
+            <div>{{ scope.row.ptzTypeText }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="开启音频" :min-width="clacPXToVW(100)" align="center">
+          <template #default="scope">
+            <el-switch @change="updateChannel(scope.row)" v-model="scope.row.hasAudio" active-color="#409EFF"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="码流类型" :min-width="clacPXToVW(180)" align="center">
+          <template #default="scope">
+            <div v-if="checkPermi(['wvp:device:channelStreamIdentification'])">
+              <el-select
+                @change="channelSubStreamChange(scope.row)"
+                v-model="scope.row.streamIdentification"
+                placeholder="请选择码流类型"
+                default-first-option
+              >
+                <el-option label="stream:0(主码流)" value="stream:0"></el-option>
+                <el-option label="stream:1(子码流)" value="stream:1"></el-option>
+                <el-option label="streamnumber:0(主码流-2022)" value="streamnumber:0"></el-option>
+                <el-option label="streamnumber:1(子码流-2022)" value="streamnumber:1"></el-option>
+                <el-option label="streamprofile:0(主码流-大华)" value="streamprofile:0"></el-option>
+                <el-option label="streamprofile:1(子码流-大华)" value="streamprofile:1"></el-option>
+                <el-option label="streamMode:main(主码流-水星+TP-LINK)" value="streamMode:main"></el-option>
+                <el-option label="streamMode:sub(子码流-水星+TP-LINK)" value="streamMode:sub"></el-option>
+              </el-select>
+            </div>
+            <div v-else>
+              <el-tag v-if="scope.row.streamIdentification === 'stream:0'">stream:0(主码流)</el-tag>
+              <el-tag v-if="scope.row.streamIdentification === 'stream:1'">stream:1(子码流)</el-tag>
+              <el-tag v-if="scope.row.streamIdentification === 'streamnumber:0'">streamnumber:0(主码流-2022)</el-tag>
+              <el-tag v-if="scope.row.streamIdentification === 'streamnumber:1'">streamnumber:1(子码流-2022)</el-tag>
+              <el-tag v-if="scope.row.streamIdentification === 'streamprofile:0'">streamprofile:0(主码流-大华)</el-tag>
+              <el-tag v-if="scope.row.streamIdentification === 'streamprofile:1'">streamprofile:1(子码流-大华)</el-tag>
+              <el-tag v-if="scope.row.streamIdentification === 'streamMode:main'">streamMode:main(主码流-水星+TP-LINK)</el-tag>
+              <el-tag v-if="scope.row.streamIdentification === 'streamMode:sub'">streamMode:sub(子码流-水星+TP-LINK)</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" :min-width="clacPXToVW(100)" align="center">
+          <template #default="scope">
             <el-tag v-if="scope.row.status === 'ON'">在线</el-tag>
-            <el-tag type="info" v-if="scope.row.status !== 'ON'">离线</el-tag>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width" fixed="right">
-        <template #default="scope">
-          <el-button v-bind:disabled="device == null || device.online === 0"
-                     v-if="checkPermi(['wvp:play:start'])"
-                     type="text" @click="start(scope.row)">播放
-          </el-button>
-          <el-button v-bind:disabled="device == null || device.online === 0"
-                     v-hasPermi="['wvp:play:stop']"
-                     type="text" style="color: #f56c6c" v-if="!!scope.row.streamId"
-                     @click="stopDevicePush(scope.row)">停止
-          </el-button>
-          <el-button
-              type="text"
-              @click="handleEdit(scope.row)"
-              v-hasPermi="['wvp:channel:edit']"
-          >
-            编辑
-          </el-button>
+            <el-tag type="info" v-else>离线</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+          <template #default="scope">
+            <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+              <div
+                v-if="checkPermi(['wvp:play:start'])"
+                class="new_table_svg_group"
+                :class="{ 'is-disabled': device == null || device.online === 0 }"
+                @click.stop="device && device.online !== 0 && start(scope.row)"
+              >
+                <span>播放</span>
+              </div>
+              <div
+                v-if="!!scope.row.streamId"
+                v-hasPermi="['wvp:play:stop']"
+                class="new_table_svg_group"
+                :class="{ 'is-disabled': device == null || device.online === 0 }"
+                style="color: #f56c6c"
+                @click.stop="device && device.online !== 0 && stopDevicePush(scope.row)"
+              >
+                <span>停止</span>
+              </div>
+              <div
+                class="new_table_svg_group"
+                @click.stop="handleEdit(scope.row)"
+                v-hasPermi="['wvp:channel:edit']"
+              >
+                <span>编辑</span>
+              </div>
+              <el-dropdown
+                v-if="checkPermi(['wvp:control:recordApi'])"
+                @command="(command)=>{moreClick(command, scope.row)}"
+              >
+                <div class="new_table_svg_group" @click.stop>
+                  <span>更多</span>
+                  <el-icon><ArrowDown /></el-icon>
+                </div>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="records" :disabled="device == null || device.online === 0">
+                      设备录像
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      command="cloudRecords"
+                      :disabled="device == null || device.online === 0"
+                      v-if="checkPermi(['wvp:record:list'])"
+                    >
+                      云端录像
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      command="record"
+                      :disabled="device == null || device.online === 0"
+                      v-if="checkPermi(['wvp:control:recordApi'])"
+                    >
+                      设备录像控制-开始
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      command="stopRecord"
+                      :disabled="device == null || device.online === 0"
+                      v-if="checkPermi(['wvp:control:recordApi'])"
+                    >
+                      设备录像控制-停止
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </template>
+        </el-table-column>
+      </table-self>
 
-          <el-dropdown @command="(command)=>{moreClick(command, scope.row)}"
-                       v-if="checkPermi(['wvp:control:recordApi'])">
-             <span class="el-dropdown-link">
-              <el-button type="text">
-                更多
-                <el-icon>
-                  <arrow-down/>
-                </el-icon>
-              </el-button>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="records" v-bind:disabled="device == null || device.online === 0">
-                  设备录像
-                </el-dropdown-item>
-                <el-dropdown-item command="cloudRecords" v-bind:disabled="device == null || device.online === 0"
-                                  v-if="checkPermi(['wvp:record:list'])">
-                  云端录像
-                </el-dropdown-item>
-                <el-dropdown-item command="record" v-bind:disabled="device == null || device.online === 0"
-                                  v-if="checkPermi(['wvp:control:recordApi'])">
-                  设备录像控制-开始
-                </el-dropdown-item>
-                <el-dropdown-item command="stopRecord" v-bind:disabled="device == null || device.online === 0"
-                                  v-if="checkPermi(['wvp:control:recordApi'])">
-                  设备录像控制-停止
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </template>
-      </el-table-column>
-
-    </el-table>
-
-    <pagination
+      <pagination
         v-show="total > 0"
         :total="total"
         v-model:page="queryParams.pageNum"
         v-model:limit="queryParams.pageSize"
         @pagination="initData"
-    />
+      />
+    </div>
 
     <el-dialog title="编辑通道" v-model="open" width="65%" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
@@ -675,7 +670,7 @@
 <script setup name="Channel">
 import useClipboard from 'vue-clipboard3'
 import {checkPermi} from "@/utils/permission";
-import { CaretTop } from '@element-plus/icons-vue'
+import { ArrowDown, CaretTop, DocumentCopy, Microphone } from '@element-plus/icons-vue'
 import ChannelCode from "../../components/common/channelCode.vue"
 import ChooseCivilCode from "../../components/common/chooseCivilCode.vue"
 import ChooseGroup from "../../components/dialog/chooseGroup.vue"
@@ -692,7 +687,6 @@ import PtzWiper from "./components/ptzWiper.vue";
 import PtzSwitch from "./components/ptzSwitch.vue";
 import {playStop} from "../../../api/wvp/play.js";
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {DocumentCopy, Microphone} from '@element-plus/icons-vue'
 import {
   changeAudio,
   getDeviceById,
@@ -713,6 +707,7 @@ import router from "@/router";
 import {useRoute} from "vue-router";
 import CryptoJS from 'crypto-js';
 import {ZLMRTCClient} from '@/components/rtcPlayer/js/ZLMRTCClient';
+import { clacPXToVW } from "@/utils/index";
 const { toClipboard } = useClipboard()
 
 const route = useRoute();
@@ -732,6 +727,28 @@ const open = ref(false);
 const openPlay = ref(false);
 const deviceChannelList = ref([])
 const showSearch = ref(true);
+const searchData = ref([
+  {
+    label: '通道类型',
+    value: 'channelType',
+    type: 'select',
+    option: [
+      { label: '设备', value: 'false' },
+      { label: '子目录', value: 'true' }
+    ],
+    default: undefined
+  },
+  {
+    label: '在线状态',
+    value: 'online',
+    type: 'select',
+    option: [
+      { label: '在线', value: 'true' },
+      { label: '离线', value: 'false' }
+    ],
+    default: undefined
+  }
+]);
 const loadSnap = ref({});
 const channelListTable = ref(null);
 const channelCode = ref(null);
@@ -971,10 +988,21 @@ function handleQuery() {
   queryParams.value.pageNum = 1;
   initData();
 }
+/** 高级搜索 */
+function searchResetFn(val) {
+  queryParams.value.pageNum = 1;
+  queryParams.value.searchSrt = val.searchSrt || undefined;
+  queryParams.value.channelType = val.channelType || undefined;
+  queryParams.value.online = val.online || undefined;
+  initData();
+}
+
 
 /** 重置按钮操作 */
 function resetQuery() {
-  proxy.resetForm("queryRef");
+  queryParams.value.searchSrt = undefined;
+  queryParams.value.channelType = undefined;
+  queryParams.value.online = undefined;
   handleQuery();
 }
 
@@ -1270,9 +1298,6 @@ function stopRecord(itemData) {
   })
 }
 
-function handleBack(){
-  proxy.$tab.closeOpenPage({path: "/gbmanger/device"});
-}
 
 onMounted(() => {
   deviceId.value = route.params && route.params.deviceId;
@@ -1286,7 +1311,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .example-showcase .el-dropdown-link {
   cursor: pointer;
   color: var(--el-color-primary);
@@ -1508,4 +1533,6 @@ onMounted(() => {
   height: 48px; /* 3rem * 16 = 48px */
   line-height: 64px; /* 4rem * 16 = 64px */
 }
+
+
 </style>

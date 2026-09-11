@@ -1,66 +1,79 @@
 <template>
-  <div class="app-container">
-    <el-row :gutter="10" class="mb8">
-      <right-toolbar :search="false" @queryTable="getCameraDeviceFun"></right-toolbar>
-    </el-row>
+  <div class="detail-page">
+    <detail-page-header
+      parent-title="设备管理"
+      title="通道列表"
+      back-path="/yingshi/ysDevice"
+    />
+    <div class="detail-body">
+      <div class="toolbar-with-search">
+        <div class="toolbar-left"></div>
+        <div class="searchHeight_out flexRowAC">
+          <export-excel-pdf />
+        </div>
+      </div>
 
-    <el-table :data="channelList">
-      <el-table-column label="设备序列号" align="center" prop="deviceSerial" width="100"/>
-      <el-table-column label="IPC序列号" align="center" prop="ipcSerial" width="100"/>
-      <el-table-column label="通道号" align="center" prop="channelNo" width="100"/>
-      <el-table-column label="设备名" align="center" prop="deviceName"/>
-      <el-table-column label="设备上报名称" align="center" prop="localName"/>
-      <el-table-column label="通道名" align="center" prop="channelName"/>
-      <el-table-column label="图片地址（大图）" align="center" prop="picUrl">
-        <template #default="scope">
-          <el-image :src="scope.row.picUrl" fit="cover" style="width: 50px; height: 50px"
-                    :preview-src-list="[scope.row.picUrl]" preview-teleported>
-            <template #error>
-              <div class="image-slot">
-                <el-icon>
-                  <picture-filled/>
-                </el-icon>
+      <table-self class="new_table" header-cell-class-name="header_tenant_cell" stripe :data="channelList">
+        <el-table-column label="设备序列号" align="center" prop="deviceSerial" :width="clacPXToVW(120)"/>
+        <el-table-column label="IPC序列号" align="center" prop="ipcSerial" :width="clacPXToVW(120)"/>
+        <el-table-column label="通道号" align="center" prop="channelNo" :width="clacPXToVW(100)"/>
+        <el-table-column label="设备名" align="center" prop="deviceName" show-overflow-tooltip/>
+        <el-table-column label="设备上报名称" align="center" prop="localName" show-overflow-tooltip/>
+        <el-table-column label="通道名" align="center" prop="channelName" show-overflow-tooltip/>
+        <el-table-column label="图片地址（大图）" align="center" prop="picUrl" :width="clacPXToVW(120)">
+          <template #default="scope">
+            <el-image :src="scope.row.picUrl" fit="cover" style="width: 50px; height: 50px"
+                      :preview-src-list="[scope.row.picUrl]" preview-teleported>
+              <template #error>
+                <div class="image-slot">
+                  <el-icon>
+                    <picture-filled/>
+                  </el-icon>
+                </div>
+              </template>
+            </el-image>
+          </template>
+        </el-table-column>
+        <el-table-column label="在线状态" align="center" prop="status" :width="clacPXToVW(100)">
+          <template #default="scope">
+            <dict-tag :options="yingshi_monitoring_status" :value="scope.row.status"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="是否加密" align="center" prop="isEncrypt" :width="clacPXToVW(100)">
+          <template #default="scope">
+            <dict-tag :options="yingshi_camera_is_encrypt" :value="scope.row.isEncrypt"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="视频质量" align="center" prop="videoLevel" :width="clacPXToVW(110)">
+          <template #default="scope">
+            <dict-tag :options="yingshi_camera_video_quality" :value="scope.row.videoLevel"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="当前通道是否关联IPC" align="center" prop="relatedIpc" :width="clacPXToVW(140)">
+          <template #default="scope">
+            <el-tag v-if="scope.row.relatedIpc" effect="dark">是</el-tag>
+            <el-tag v-else effect="dark">否</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="是否显示" align="center" prop="isAdd" :width="clacPXToVW(100)">
+          <template #default="scope">
+            <dict-tag :options="yingshi_camera_is_add" :value="scope.row.isAdd"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(180)">
+          <template #default="scope">
+            <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+              <div class="new_table_svg_group" @click.stop="play(scope.row)" v-hasPermi="['yingshi:ys:play']">
+                <span>播放</span>
               </div>
-            </template>
-          </el-image>
-        </template>
-      </el-table-column>
-      <el-table-column label="在线状态" align="center" prop="status">
-        <template #default="scope">
-          <dict-tag :options="yingshi_monitoring_status" :value="scope.row.status"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="是否加密" align="center" prop="isEncrypt">
-        <template #default="scope">
-          <dict-tag :options="yingshi_camera_is_encrypt" :value="scope.row.isEncrypt"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="视频质量" align="center" prop="videoLevel">
-        <template #default="scope">
-          <dict-tag :options="yingshi_camera_video_quality" :value="scope.row.videoLevel"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="当前通道是否关联IPC" align="center" prop="relatedIpc" width="100">
-        <template #default="scope">
-          <el-tag v-if="scope.row.relatedIpc" effect="dark">是</el-tag>
-          <el-tag v-else effect="dark">否</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="是否显示" align="center" prop="isAdd" width="100">
-        <template #default="scope">
-          <dict-tag :options="yingshi_camera_is_add" :value="scope.row.isAdd"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
-        <template #default="scope">
-          <el-button link type="primary" @click="play(scope.row)"
-                     v-hasPermi="['yingshi:ys:play']">播放</el-button>
-          <el-button link type="primary" @click="cameraNameUpdateFun(scope.row)"
-                     v-hasPermi="['yingshi:ys:cameraNameUpdate']">通道名称</el-button>
-
-        </template>
-      </el-table-column>
-    </el-table>
+              <div class="new_table_svg_group" @click.stop="cameraNameUpdateFun(scope.row)" v-hasPermi="['yingshi:ys:cameraNameUpdate']">
+                <span>通道名称</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+      </table-self>
+    </div>
 
     <el-dialog title="播放" v-model="visible" width="50%" append-to-body @close="playClose">
       <div style="width: 770px;height: 500px;">

@@ -4,7 +4,7 @@ import { getRouters } from '@/api/menu'
 import Layout from '@/layout/index'
 import ParentView from '@/components/ParentView'
 import InnerLink from '@/layout/components/InnerLink'
-import { buildSidebarByGroup, resolveGroupByPath } from '@/utils/menuGroups'
+import { buildSidebarByGroup, resolveGroupByPath, resolveGroupByRoute } from '@/utils/menuGroups'
 
 // 匹配views里面所有的.vue文件
 const modules = import.meta.glob('./../../views/**/*.vue')
@@ -43,18 +43,24 @@ const usePermissionStore = defineStore(
         this.currentGroup = groupKey
       },
       /**
-       * 按顶栏分组刷新左侧菜单
+       * 按顶栏分组刷新左侧菜单（分组未变时不重建，避免侧栏闪烁）
        */
       applyMenuGroup(groupKey) {
         const key = groupKey || 'workbench'
+        if (key === this.currentGroup && Array.isArray(this.sidebarRouters) && this.sidebarRouters.length) {
+          return
+        }
         this.setCurrentGroup(key)
         this.setSidebarRouters(buildSidebarByGroup(this.menuSourceRoutes, key))
       },
       /**
-       * 根据当前 path 同步顶栏组与侧栏
+       * 根据当前 path / 路由同步顶栏组与侧栏
+       * 传入 route 时优先按 meta.activeMenu 归组（通道列表等隐藏页）
        */
-      syncMenuGroupByPath(path) {
-        const group = resolveGroupByPath(path)
+      syncMenuGroupByPath(pathOrRoute) {
+        const group = typeof pathOrRoute === 'object' && pathOrRoute !== null
+          ? resolveGroupByRoute(pathOrRoute)
+          : resolveGroupByPath(pathOrRoute)
         this.applyMenuGroup(group)
         return group
       },
@@ -76,7 +82,7 @@ const usePermissionStore = defineStore(
             this.setDefaultRoutes(sidebarRoutes)
             this.setTopbarRoutes(defaultRoutes)
             // 按当前路径同步顶栏分组（深链进入协议页时落在「视频汇聚」）
-            this.syncMenuGroupByPath(router.currentRoute.value?.path || '/index')
+            this.syncMenuGroupByPath(router.currentRoute.value || '/index')
             resolve(rewriteRoutes)
           })
         })

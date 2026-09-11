@@ -1,5 +1,11 @@
 <template>
-   <div class="app-container">
+   <div class="detail-page">
+      <detail-page-header
+         parent-title="用户管理"
+         title="分配角色"
+         back-path="/system/user"
+      />
+      <div class="detail-body">
       <h4 class="form-header h4">基本信息</h4>
       <el-form :model="form" label-width="80px">
          <el-row>
@@ -42,6 +48,7 @@
             <el-button @click="close()">返回</el-button>
          </div>
       </el-form>
+      </div>
    </div>
 </template>
 

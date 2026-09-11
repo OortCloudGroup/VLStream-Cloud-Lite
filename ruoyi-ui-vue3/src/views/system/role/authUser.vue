@@ -1,6 +1,12 @@
 
 <template>
-   <div class="app-container">
+   <div class="detail-page">
+      <detail-page-header
+         parent-title="角色管理"
+         title="分配用户"
+         back-path="/system/role"
+      />
+      <div class="detail-body">
       <div class="toolbar-with-search">
          <div class="toolbar-left">
             <button type="button" class="exportBtn newBtn flexRowAC" @click="openSelectUser" v-hasPermi="['system:role:add']">
@@ -57,6 +63,7 @@
          @pagination="getList"
       />
       <select-user ref="selectRef" :roleId="queryParams.roleId" @ok="handleQuery" />
+      </div>
    </div>
 </template>
 

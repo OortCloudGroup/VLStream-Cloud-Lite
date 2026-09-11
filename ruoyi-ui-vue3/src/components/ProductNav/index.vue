@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { PRODUCT_TABS, buildSidebarByGroup, findFirstMenuPath, resolveGroupByPath } from '@/utils/menuGroups'
+import { PRODUCT_TABS, buildSidebarByGroup, findFirstMenuPath, resolveGroupByRoute } from '@/utils/menuGroups'
 import usePermissionStore from '@/store/modules/permission'
 import useAppStore from '@/store/modules/app'
 
@@ -25,12 +25,17 @@ const appStore = useAppStore()
 const activeGroup = computed(() => permissionStore.currentGroup || 'workbench')
 
 function applyGroup(groupKey, { navigate } = { navigate: false }) {
-  const routes = buildSidebarByGroup(permissionStore.menuSourceRoutes, groupKey)
-  permissionStore.setCurrentGroup(groupKey)
-  permissionStore.setSidebarRouters(routes)
-  appStore.toggleSideBarHide(routes.length === 0)
+  const sameGroup = groupKey === permissionStore.currentGroup
+  // 同组内路由跳转不重建侧栏，避免左侧菜单闪一下
+  if (!sameGroup || !permissionStore.sidebarRouters.length) {
+    const routes = buildSidebarByGroup(permissionStore.menuSourceRoutes, groupKey)
+    permissionStore.setCurrentGroup(groupKey)
+    permissionStore.setSidebarRouters(routes)
+    appStore.toggleSideBarHide(routes.length === 0)
+  }
 
   if (navigate) {
+    const routes = permissionStore.sidebarRouters
     const first = findFirstMenuPath(routes)
     if (first && normalizeCompare(first) !== normalizeCompare(route.path)) {
       router.push(first).catch(() => {})
@@ -54,11 +59,11 @@ function handleSelect(groupKey) {
 
 function syncFromRoute() {
   if (!permissionStore.menuSourceRoutes.length) return
-  const group = resolveGroupByPath(route.path)
+  const group = resolveGroupByRoute(route)
   applyGroup(group, { navigate: false })
 }
 
-watch(() => route.path, () => {
+watch(() => [route.path, route.meta?.activeMenu], () => {
   syncFromRoute()
 })
 

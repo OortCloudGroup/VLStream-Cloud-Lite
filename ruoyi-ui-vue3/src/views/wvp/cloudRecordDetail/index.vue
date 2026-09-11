@@ -1,5 +1,11 @@
 <template>
-  <div class="app-container">
+  <div class="detail-page">
+    <detail-page-header
+      parent-title="国标设备"
+      title="云端录像"
+      back-path="/gbmanger/device"
+    />
+    <div class="detail-body">
     <el-row :gutter="20">
       <el-col :span="3">
         <div class="head-container">
@@ -48,6 +54,7 @@
         </div>
       </el-col>
     </el-row>
+    </div>
   </div>
 </template>
 

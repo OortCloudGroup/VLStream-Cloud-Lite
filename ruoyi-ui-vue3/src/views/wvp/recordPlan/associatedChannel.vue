@@ -1,5 +1,11 @@
 <template>
-  <div class="app-container">
+  <div class="detail-page">
+    <detail-page-header
+      parent-title="录像计划"
+      title="关联通道"
+      back-path="/gbmanger/recordPlan"
+    />
+    <div class="detail-body">
     <el-tabs v-model="queryParams.hasLink" class="demo-tabs" @tab-click="handleClick">
       <el-tab-pane label="未关联" name="false"/>
       <el-tab-pane label="已关联" name="true"/>
@@ -110,6 +116,7 @@
         />
       </el-dialog>
     </el-tabs>
+    </div>
   </div>
 </template>
 

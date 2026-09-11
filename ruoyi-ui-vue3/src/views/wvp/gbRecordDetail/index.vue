@@ -1,5 +1,11 @@
 <template>
-  <div class="app-container">
+  <div class="detail-page">
+    <detail-page-header
+      parent-title="国标设备"
+      title="设备录像"
+      back-path="/gbmanger/device"
+    />
+    <div class="detail-body">
     <div style="margin-bottom: 10px;">
       <el-alert style="margin-bottom: 10px;" title="日期和时间不要选择太大要不然会很卡，解决方法：自行搭配el-table-v2" type="error" />
       <el-alert title="关于分页问题自行查看国标文件9.7，能否分页取决于厂家是否支持分页功能" type="error" />
@@ -55,6 +61,7 @@
         <easy-player class="player" :video-url="videoUrl" autoplay :live="true"></easy-player>
       </div>
     </el-dialog>
+    </div>
   </div>
 
   <RecordDownload ref="recordDownloadRef" />

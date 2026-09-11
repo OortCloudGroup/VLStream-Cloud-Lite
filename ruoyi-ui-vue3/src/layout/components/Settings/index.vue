@@ -103,7 +103,7 @@ const predefineColors = ref(["#409EFF", "#ff4500", "#ff8c00", "#ffd700", "#90ee9
 function topNavChange(val) {
   if (!val) {
     appStore.toggleSideBarHide(false);
-    permissionStore.syncMenuGroupByPath(router.currentRoute.value.path);
+    permissionStore.syncMenuGroupByPath(router.currentRoute.value);
   }
 }
 

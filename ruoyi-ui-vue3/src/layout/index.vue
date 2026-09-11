@@ -83,7 +83,6 @@ function setLayout() {
   }
 }
 
-/* unifiedUser: 顶栏透明，无白底 */
 .layout-header {
   flex-shrink: 0;
   width: 100%;
@@ -91,7 +90,6 @@ function setLayout() {
   background: transparent;
 }
 
-/* unifiedUser: gap 20px，右侧留白 20px */
 .layout-body {
   flex: 1;
   min-height: 0;

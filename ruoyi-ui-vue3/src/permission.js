@@ -44,7 +44,7 @@ router.beforeEach((to, from, next) => {
                 router.addRoute(route) // 动态添加可访问路由表
               }
             })
-            usePermissionStore().syncMenuGroupByPath(to.path)
+            usePermissionStore().syncMenuGroupByPath(to)
             next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
           })
         }).catch(err => {
@@ -73,6 +73,6 @@ router.afterEach((to) => {
   NProgress.done()
   const permissionStore = usePermissionStore()
   if (permissionStore.menuSourceRoutes.length) {
-    permissionStore.syncMenuGroupByPath(to.path)
+    permissionStore.syncMenuGroupByPath(to)
   }
 })

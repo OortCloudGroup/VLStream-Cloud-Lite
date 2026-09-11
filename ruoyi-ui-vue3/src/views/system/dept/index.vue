@@ -13,34 +13,48 @@
          </div>
       </div>
 
-      <el-table
+      <table-self
          v-if="refreshTable"
          v-loading="loading"
          :data="deptList"
          row-key="deptId"
          :default-expand-all="isExpandAll"
          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+         class="new_table"
+         header-cell-class-name="header_tenant_cell"
+         stripe
       >
-         <el-table-column prop="deptName" label="部门名称" width="260"></el-table-column>
-         <el-table-column prop="orderNum" label="排序" width="200"></el-table-column>
-         <el-table-column prop="status" label="状态" width="100">
+         <el-table-column prop="deptName" label="部门名称" :show-overflow-tooltip="true"></el-table-column>
+         <el-table-column prop="orderNum" label="排序" :width="clacPXToVW(100)"></el-table-column>
+         <el-table-column prop="status" label="状态" :width="clacPXToVW(100)">
             <template #default="scope">
                <dict-tag :options="sys_normal_disable" :value="scope.row.status" />
             </template>
          </el-table-column>
-         <el-table-column label="创建时间" align="center" prop="createTime" width="200">
+         <el-table-column label="创建时间" align="center" prop="createTime" :width="clacPXToVW(180)">
             <template #default="scope">
                <span>{{ parseTime(scope.row.createTime) }}</span>
             </template>
          </el-table-column>
-         <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+         <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
             <template #default="scope">
-               <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:dept:edit']">修改</el-button>
-               <el-button link type="primary" icon="Plus" @click="handleAdd(scope.row)" v-hasPermi="['system:dept:add']">新增</el-button>
-               <el-button v-if="scope.row.parentId != 0" link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['system:dept:remove']">删除</el-button>
+               <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
+                  <div class="new_table_svg_group" @click.stop="handleUpdate(scope.row)" v-hasPermi="['system:dept:edit']">
+                     <el-icon><Edit /></el-icon>
+                     <span>修改</span>
+                  </div>
+                  <div class="new_table_svg_group" @click.stop="handleAdd(scope.row)" v-hasPermi="['system:dept:add']">
+                     <el-icon><Plus /></el-icon>
+                     <span>新增</span>
+                  </div>
+                  <div class="new_table_svg_group" @click.stop="handleDelete(scope.row)" v-if="scope.row.parentId != 0" v-hasPermi="['system:dept:remove']">
+                     <el-icon><Delete /></el-icon>
+                     <span>删除</span>
+                  </div>
+               </div>
             </template>
          </el-table-column>
-      </el-table>
+      </table-self>
 
       <!-- 添加或修改部门对话框 -->
       <el-dialog :title="title" v-model="open" width="40%" append-to-body>
@@ -108,6 +122,7 @@
 
 <script setup name="Dept">
 import { listDept, getDept, delDept, addDept, updateDept, listDeptExcludeChild } from "@/api/system/dept";
+import { clacPXToVW } from "@/utils/index";
 
 const { proxy } = getCurrentInstance();
 const { sys_normal_disable } = proxy.useDict("sys_normal_disable");

@@ -1,5 +1,11 @@
 <template>
-  <div class="app-container">
+  <div class="detail-page">
+    <detail-page-header
+      parent-title="节点管理"
+      title="修改媒体服务器"
+      back-path="/gbmanger/node"
+    />
+    <div class="detail-body">
     <el-form ref="wvpMediaServerFormRef" :model="form" :rules="rules" label-width="150px">
       <el-row :gutter="20">
         <el-col :span="12">
@@ -124,6 +130,7 @@
         </el-col>
       </el-row>
     </el-form>
+    </div>
   </div>
 </template>
 

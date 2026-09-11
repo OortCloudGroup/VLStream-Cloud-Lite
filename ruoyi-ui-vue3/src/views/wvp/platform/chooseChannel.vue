@@ -1,5 +1,11 @@
 <template>
-  <div class="app-container">
+  <div class="detail-page">
+    <detail-page-header
+      parent-title="国标级联"
+      title="通道共享"
+      back-path="/gbmanger/platform"
+    />
+    <div class="detail-body">
     <el-tabs v-model="queryParams.hasShare" class="demo-tabs" @tab-click="handleClick">
       <el-tab-pane label="未关联" name="false"/>
       <el-tab-pane label="已关联" name="true"/>
@@ -110,6 +116,7 @@
         />
       </el-dialog>
     </el-tabs>
+    </div>
   </div>
 </template>
 

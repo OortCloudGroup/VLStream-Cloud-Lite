@@ -33,6 +33,8 @@ const DEVICE_PROTOCOLS = [
   { key: '/rtsp', title: 'RTSP协议', titles: ['rtsp协议', 'RTSP协议', 'RTSP'], icon: 'rtsp' },
   { key: '/isup', title: 'ISUP协议', titles: ['海康协议', 'ISUP协议', 'ISUP'], icon: 'isup' },
   { key: '/dahua', title: '大华协议', titles: ['大华协议'], icon: 'dahua' },
+  { key: '/yingshi', title: '萤石协议', titles: ['萤石协议', '萤石'], icon: 'device' },
+  { key: '/lecheng', title: '乐橙协议', titles: ['乐橙协议', '乐橙'], icon: 'device' },
   { key: '/custom', title: '自定义协议', titles: ['自定义协议'], icon: 'device' }
 ]
 
@@ -142,9 +144,7 @@ function routeMatchKey(route, key, titles = []) {
   return false
 }
 
-/**
- * 给路由及其可见子节点写入侧栏图标（与 unifiedUser meta.icon 用法一致）
- */
+/** 给路由及其可见子节点写入侧栏图标 */
 function applyRouteIcon(route, icon) {
   if (!route || !icon) return route
   const cloned = {
@@ -293,8 +293,31 @@ export function resolveGroupByPath(routePath) {
     const k = key.toLowerCase()
     if (lower === k || lower.startsWith(k + '/')) return 'video'
   }
+  // 隐藏详情页（通道列表等）不在协议 path 下，按前缀归入视频汇聚
+  const VIDEO_DETAIL_PREFIXES = [
+    '/channel',
+    '/recordplan',
+    '/platform/choosechannel',
+    '/yingshi/yschannel',
+    '/lecheng/lechannel'
+  ]
+  for (const prefix of VIDEO_DETAIL_PREFIXES) {
+    if (lower === prefix || lower.startsWith(prefix + '/')) return 'video'
+  }
   if (lower.startsWith('/user')) return 'system'
   return 'system'
+}
+
+/**
+ * 优先用 meta.activeMenu（隐藏页高亮父菜单）解析顶栏分组
+ */
+export function resolveGroupByRoute(route) {
+  if (!route) return 'workbench'
+  const activeMenu = route.meta?.activeMenu
+  if (activeMenu) {
+    return resolveGroupByPath(activeMenu)
+  }
+  return resolveGroupByPath(route.path)
 }
 
 /**

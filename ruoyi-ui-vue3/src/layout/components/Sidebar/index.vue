@@ -53,7 +53,6 @@ const activeMenu = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-/* unifiedUser: 左侧透明，无白底卡片 */
 .sidebar-container {
   background-color: transparent !important;
   border-radius: 0;

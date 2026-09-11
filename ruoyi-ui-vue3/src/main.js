@@ -48,6 +48,7 @@ import SearchHeightBox from '@/components/SearchHeightBox'
 import ExportExcelPdf from '@/components/ExportExcelPdf'
 import ButtonGroup from '@/components/ButtonGroup'
 import TableSelf from '@/components/TableSelf'
+import DetailPageHeader from '@/components/DetailPageHeader'
 import { clacPXToVW } from '@/utils/index'
 
 // 平台从 URL 传入 accessToken 时，需要在路由守卫执行前保存，避免落入传统登录流程。
@@ -81,6 +82,7 @@ app.component('SearchHeightBox', SearchHeightBox)
 app.component('ExportExcelPdf', ExportExcelPdf)
 app.component('ButtonGroup', ButtonGroup)
 app.component('TableSelf', TableSelf)
+app.component('DetailPageHeader', DetailPageHeader)
 
 app.use(router)
 app.use(store)

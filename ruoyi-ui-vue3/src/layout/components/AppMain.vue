@@ -34,7 +34,6 @@ function addIframe() {
 </script>
 
 <style lang="scss" scoped>
-/* unifiedUser .subMenu_content */
 .app-main {
   flex: 1;
   min-height: 0;

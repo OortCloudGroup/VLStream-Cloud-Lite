@@ -10,7 +10,6 @@
     margin-left: 0!important;
   }
 
-  /* unifiedUser 左侧：透明底，无圆角卡片，激活左侧 4px 色条 */
   .sidebar-container {
     transition: width 0.28s;
     width: $base-sidebar-width !important;
@@ -121,7 +120,7 @@
       }
     }
 
-    /* 父级菜单：展开箭头放到图标左侧（对齐 unifiedUser / 设计稿） */
+    /* 父级菜单：展开箭头放到图标左侧 */
     .el-sub-menu > .el-sub-menu__title {
       padding-left: 6px !important;
       padding-right: 6px !important;
