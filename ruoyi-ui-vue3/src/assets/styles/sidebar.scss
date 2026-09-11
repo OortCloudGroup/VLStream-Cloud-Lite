@@ -290,6 +290,103 @@
     .sidebar-container {
       width: 54px !important;
       padding: 20px 0 0 0 !important;
+
+      a {
+        width: 100% !important;
+        max-width: 100%;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+
+      .el-menu {
+        align-items: center;
+        padding: 0 !important;
+      }
+
+      .el-menu-item,
+      .el-sub-menu__title {
+        width: 40px !important;
+        max-width: 40px !important;
+        min-width: 40px !important;
+        height: 40px !important;
+        line-height: 40px !important;
+        margin: 4px auto !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+        border-radius: 8px !important;
+        overflow: visible !important;
+        text-align: center !important;
+
+        .el-menu-tooltip__trigger,
+        .el-tooltip__trigger {
+          width: 100% !important;
+          height: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-sizing: border-box !important;
+        }
+
+        .menu-title,
+        span.menu-title {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+          overflow: hidden !important;
+          visibility: hidden !important;
+          flex: 0 !important;
+          min-width: 0 !important;
+        }
+
+        .svg-icon {
+          margin: 0 auto !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+          width: 20px !important;
+          height: 20px !important;
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          flex-shrink: 0;
+          position: static !important;
+          left: auto !important;
+          right: auto !important;
+        }
+
+        .el-sub-menu__icon-arrow {
+          display: none !important;
+        }
+      }
+
+      .el-sub-menu {
+        width: 40px !important;
+        margin: 0 auto !important;
+        overflow: visible;
+
+        & > .el-sub-menu__title {
+          padding: 0 !important;
+          justify-content: center !important;
+        }
+      }
+
+      /* 覆盖展开态「箭头在图标左侧」的 order，避免收起时图标偏左 */
+      .el-sub-menu > .el-sub-menu__title {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        gap: 0 !important;
+
+        .el-sub-menu__icon-arrow {
+          display: none !important;
+          order: 0 !important;
+          width: 0 !important;
+          margin: 0 !important;
+        }
+      }
     }
 
     .main-container {
@@ -299,43 +396,46 @@
     .sub-menu-title-noDropdown {
       padding: 0 !important;
       position: relative;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
 
-      .el-tooltip {
+      .el-tooltip,
+      .el-tooltip__trigger,
+      .el-menu-tooltip__trigger {
+        width: 100% !important;
+        height: 100% !important;
         padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
 
         .svg-icon {
-          margin-left: 20px;
-        }
-      }
-    }
-
-    .el-sub-menu {
-      overflow: hidden;
-
-      & > .el-sub-menu__title {
-        padding: 0 !important;
-
-        .svg-icon {
-          margin-left: 20px;
-        }
-
-        .el-sub-menu__icon-arrow {
-          display: none !important;
+          margin: 0 !important;
         }
       }
     }
 
     .el-menu--collapse {
+      width: 100% !important;
+
       .el-sub-menu {
         & > .el-sub-menu__title {
-          & > span,
-          & > i {
+          & > span:not(.svg-icon),
+          & > i:not(.svg-icon) {
             height: 0;
             width: 0;
             overflow: hidden;
             visibility: hidden;
             display: inline-block;
           }
+        }
+      }
+
+      .el-menu-item,
+      .el-sub-menu__title {
+        .svg-icon {
+          margin: 0 !important;
         }
       }
     }

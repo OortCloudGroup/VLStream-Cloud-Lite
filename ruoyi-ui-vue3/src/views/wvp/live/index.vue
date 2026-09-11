@@ -89,16 +89,26 @@
       </main>
     </div>
 
-    <el-dialog v-model="customDialogVisible" title="自定义视图" width="26%" append-to-body>
+    <el-dialog v-model="customDialogVisible" title="自定义视图" width="26%" append-to-body destroy-on-close>
       <div class="custom-view-form">
         <div class="custom-view-field">
           <div class="custom-view-label">行(输入值1-9)</div>
-          <el-input v-model="customRows" maxlength="1" />
+          <el-input
+              v-model="customRows"
+              maxlength="1"
+              inputmode="numeric"
+              @input="onCustomNumInput('rows', $event)"
+          />
         </div>
         <span class="custom-view-x">x</span>
         <div class="custom-view-field">
           <div class="custom-view-label">列(输入值1-9)</div>
-          <el-input v-model="customCols" maxlength="1" />
+          <el-input
+              v-model="customCols"
+              maxlength="1"
+              inputmode="numeric"
+              @input="onCustomNumInput('cols', $event)"
+          />
         </div>
       </div>
       <template #footer>
@@ -334,6 +344,15 @@ function handleCustomScreen() {
   customDialogVisible.value = true
 }
 
+function onCustomNumInput(which, val) {
+  const raw = String(val ?? '').replace(/\D/g, '').slice(0, 1)
+  if (which === 'rows') {
+    customRows.value = raw
+  } else {
+    customCols.value = raw
+  }
+}
+
 function confirmCustomScreen() {
   const rows = Number(customRows.value)
   const cols = Number(customCols.value)
@@ -384,12 +403,17 @@ onMounted(async () => {
 .workbench-aside {
   width: 300px;
   flex-shrink: 0;
-  padding-right: 20px;
+  padding: 0 20px 0 0;
+  margin: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: #fff;
+  border-radius: 0;
+  line-height: normal;
+  font-size: inherit;
+  color: inherit;
 }
 
 .aside-title {

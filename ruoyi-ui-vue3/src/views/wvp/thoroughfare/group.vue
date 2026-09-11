@@ -466,12 +466,17 @@ onMounted(() => {
 .thoroughfare-aside {
   width: 280px;
   flex-shrink: 0;
-  padding-right: 20px;
+  padding: 0 20px 0 0;
+  margin: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: #fff;
+  border-radius: 0;
+  line-height: normal;
+  font-size: inherit;
+  color: inherit;
 }
 
 .thoroughfare-tree {

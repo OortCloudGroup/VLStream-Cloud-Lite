@@ -293,12 +293,16 @@ onMounted(async () => {
 .classification-sidebar {
   width: 300px;
   flex-shrink: 0;
-  padding: 0 20px 16px 0;
+  padding: 0 20px 0 0;
+  margin: 0;
   background: transparent;
   border-radius: 0;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  line-height: normal;
+  font-size: inherit;
+  color: inherit;
 }
 
 .classification-tree-scroll {
