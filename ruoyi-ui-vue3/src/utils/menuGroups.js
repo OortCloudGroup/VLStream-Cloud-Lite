@@ -24,7 +24,7 @@ const VIDEO_MAP_KEYS = [
 ]
 
 /**
- * 视频汇聚 - 设备管理下协议（保留原树，仅覆盖显示名与图标）
+ * 视频汇聚 - 设备管理下协议（侧栏显示协议名；国际协议子菜单走顶部 Tab）
  */
 const DEVICE_PROTOCOLS = [
   { key: '/vlstream', title: 'VLStream协议', titles: ['VLStream', 'VLStream协议'], icon: 'vlstream' },
@@ -42,29 +42,169 @@ const DEVICE_MANAGE_ICON = 'device'
 const DEVICE_LEAF_TITLES = ['设备管理', '设备列表']
 /** settings.svg 为内嵌 PNG，无法跟随主题色，改用矢量 system */
 const FALLBACK_ICON = 'system'
+/** 子菜单改为顶部 Tab 的协议（国际/国标） */
+const PROTOCOL_TAB_KEYS = ['gbmanger']
 
-function normalizeDeviceLeaves(route) {
-  if (!route) return route
-  const cloned = {
-    ...route,
-    meta: route.meta ? { ...route.meta } : {}
+function joinRoutePath(base, path) {
+  if (path === undefined || path === null || path === '') return normalizePath(base)
+  if (String(path).startsWith('/')) return normalizePath(path)
+  return normalizePath((base || '') + '/' + path)
+}
+
+function isProtocolTabTarget(proto) {
+  const seg = pathSeg(proto.key)
+  return PROTOCOL_TAB_KEYS.includes(seg)
+}
+
+/**
+ * 协议节点整形：
+ * - 单叶子（如 VLStream/设备管理）：侧栏只显示协议名，去掉嵌套「设备管理」
+ * - 国际协议等多子菜单：侧栏只显示协议名，子菜单改顶部 Tab
+ */
+function reshapeProtocolNode(route, proto) {
+  let node = shallowCloneRoute(route, proto.title, proto.icon || DEVICE_MANAGE_ICON)
+  if (node.path && node.path !== '/' && !String(node.path).startsWith('/')) {
+    node.path = '/' + node.path
   }
-  if (!Array.isArray(route.children) || !route.children.length) {
-    return cloned
-  }
-  cloned.children = route.children.map(child => {
-    const next = normalizeDeviceLeaves(child)
-    const title = String(next.meta?.title || '')
-    if (DEVICE_LEAF_TITLES.includes(title)) {
-      next.meta = {
-        ...(next.meta || {}),
-        title: '设备管理',
-        icon: DEVICE_MANAGE_ICON
-      }
+
+  const showing = (node.children || []).filter(c => !c.hidden)
+  const useTabs = isProtocolTabTarget(proto) && showing.length > 1
+
+  if (useTabs) {
+    node.alwaysShow = false
+    node.meta = {
+      ...(node.meta || {}),
+      title: proto.title,
+      icon: proto.icon || DEVICE_MANAGE_ICON,
+      protocolTabs: true
     }
-    return next
-  })
-  return cloned
+    // 侧栏仅保留第一项（标题用协议名），其余隐藏，供高亮 path 使用
+    node.children = showing.map((child, index) => {
+      const cloned = {
+        ...child,
+        meta: { ...(child.meta || {}) }
+      }
+      if (index === 0) {
+        cloned.hidden = false
+        cloned.meta.title = proto.title
+        cloned.meta.icon = proto.icon || DEVICE_MANAGE_ICON
+      } else {
+        cloned.hidden = true
+      }
+      return cloned
+    })
+    return node
+  }
+
+  // 单子节点：折叠为协议名入口，不再展示嵌套「设备管理」
+  node.alwaysShow = false
+  if (showing.length === 1) {
+    const only = showing[0]
+    node.children = [{
+      ...only,
+      meta: {
+        ...(only.meta || {}),
+        title: proto.title,
+        icon: proto.icon || only.meta?.icon || DEVICE_MANAGE_ICON
+      }
+    }]
+  } else if (showing.length > 1) {
+    node.alwaysShow = true
+    node.children = showing.map(child => {
+      const title = String(child.meta?.title || '')
+      if (!DEVICE_LEAF_TITLES.includes(title)) return child
+      return {
+        ...child,
+        meta: {
+          ...(child.meta || {}),
+          title: '设备管理',
+          icon: DEVICE_MANAGE_ICON
+        }
+      }
+    })
+  }
+  return node
+}
+
+/**
+ * 国际协议顶部 Tab 列表（来自菜单源，非侧栏裁剪结果）
+ */
+export function getProtocolTabs(allRoutes) {
+  const routes = Array.isArray(allRoutes) ? allRoutes : []
+  const visible = routes.filter(r => !r.hidden)
+  const proto = DEVICE_PROTOCOLS.find(p => isProtocolTabTarget(p))
+  if (!proto) return []
+  const found = findRouteBySpec(visible, proto)
+  if (!found) return []
+
+  const base = found.path && String(found.path).startsWith('/')
+    ? normalizePath(found.path)
+    : normalizePath('/' + (found.path || pathSeg(proto.key)))
+
+  return (found.children || [])
+    .filter(c => !c.hidden && c.meta?.title)
+    .map(c => ({
+      title: String(c.meta.title),
+      path: joinRoutePath(base, c.path)
+    }))
+}
+
+/**
+ * 当前路由是否落在国际协议 Tab 范围内
+ */
+export function matchProtocolTabsByRoute(route, allRoutes) {
+  const tabs = getProtocolTabs(allRoutes)
+  if (!tabs.length) return null
+
+  const candidates = []
+  if (route?.meta?.activeMenu) candidates.push(normalizePath(route.meta.activeMenu))
+  if (route?.path) candidates.push(normalizePath(route.path))
+
+  let active = null
+  for (const path of candidates) {
+    const hit = tabs.find(t => path === t.path || path.startsWith(t.path + '/'))
+    if (hit) {
+      active = hit.path
+      break
+    }
+  }
+
+  // 隐藏详情页等：path 以 /gbmanger 开头也归入
+  if (!active) {
+    const raw = normalizePath(route?.path || '')
+    if (!raw.toLowerCase().startsWith('/gbmanger')) return null
+    active = tabs[0].path
+  }
+
+  return {
+    tabs,
+    active,
+    sidebarActive: tabs[0].path
+  }
+}
+
+/**
+ * 左侧有树、Tab 应放在右侧的国际协议页（国标设备 / 分屏监控）
+ * 无树页（国标级联、录像计划等）仍用 AppMain 顶栏 Tab
+ */
+export function isProtocolTreeLayoutRoute(route) {
+  const path = normalizePath(route?.meta?.activeMenu || route?.path || '').toLowerCase()
+  if (!path) return false
+  // 国标设备及设备相关详情
+  if (path === '/gbmanger/device' || path.startsWith('/gbmanger/device/')) return true
+  // 分屏监控：菜单 path 为 wvpLive → /gbmanger/wvplive
+  if (
+    path === '/gbmanger/wvplive' ||
+    path.startsWith('/gbmanger/wvplive/') ||
+    path === '/gbmanger/live' ||
+    path.startsWith('/gbmanger/live/') ||
+    /\/gbmanger\/.*live/.test(path)
+  ) {
+    return true
+  }
+  const title = String(route?.meta?.title || '')
+  if (title.includes('分屏') && path.includes('/gbmanger')) return true
+  return false
 }
 
 const WORKBENCH_PATHS = WORKBENCH_KEYS.map(i => i.key)
@@ -347,13 +487,7 @@ export function buildSidebarByGroup(allRoutes, groupKey) {
     for (const proto of DEVICE_PROTOCOLS) {
       const found = findRouteBySpec(visible, proto)
       if (!found) continue
-      let node = shallowCloneRoute(found, proto.title, proto.icon || DEVICE_MANAGE_ICON)
-      node = normalizeDeviceLeaves(node)
-      if (node.path && node.path !== '/' && !String(node.path).startsWith('/')) {
-        node.path = '/' + node.path
-      }
-      node.alwaysShow = true
-      protocolChildren.push(node)
+      protocolChildren.push(reshapeProtocolNode(found, proto))
     }
 
     if (protocolChildren.length) {

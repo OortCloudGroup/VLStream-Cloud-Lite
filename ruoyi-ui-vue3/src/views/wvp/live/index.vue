@@ -37,6 +37,7 @@
       </aside>
 
       <main class="workbench-main">
+        <ProtocolTabs embedded />
         <div class="workbench-toolbar">
           <svg-icon :class="['flex-icon', { active: model === 1 }]" icon-class="screen1" @click="spiltIndex(1)" />
           <svg-icon :class="['flex-icon', { active: model === 4 }]" icon-class="screen4" @click="spiltIndex(4)" />
@@ -125,6 +126,7 @@ import {queryForTree} from "@/api/wvp/region";
 import {queryListByCivilCode, queryListByParentId, sendDevicePush} from "@/api/wvp/channel.js";
 import {queryForTree as groupQueryForTree} from "@/api/wvp/group.js";
 import CusPlayer from "@/components/flv/CusPlayer.vue";
+import ProtocolTabs from "@/layout/components/ProtocolTabs.vue";
 import { start as playPush} from "@/api/wvp/push.js";
 import { start as playProxy } from "@/api/wvp/proxy.js";
 import {ElMessage} from "element-plus";

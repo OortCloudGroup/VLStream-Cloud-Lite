@@ -31,6 +31,7 @@ import SidebarItem from './SidebarItem'
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
+import { matchProtocolTabsByRoute } from '@/utils/menuGroups'
 
 const route = useRoute();
 const appStore = useAppStore()
@@ -46,8 +47,15 @@ const isCollapse = computed(() => !appStore.sidebar.opened);
 const activeMenu = computed(() => {
   const { meta, path } = route;
   if (meta.activeMenu) {
+    const tabState = matchProtocolTabsByRoute(
+      { path: meta.activeMenu, meta: {} },
+      permissionStore.menuSourceRoutes
+    )
+    if (tabState) return tabState.sidebarActive
     return meta.activeMenu;
   }
+  const tabState = matchProtocolTabsByRoute(route, permissionStore.menuSourceRoutes)
+  if (tabState) return tabState.sidebarActive
   return path;
 });
 </script>

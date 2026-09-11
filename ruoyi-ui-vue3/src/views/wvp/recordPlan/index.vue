@@ -56,13 +56,21 @@
         @pagination="getList"
     />
 
-    <el-dialog :title="title" v-model="open" width="50%" append-to-body>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="50px">
+    <el-dialog :title="title" v-model="open" width="720px" append-to-body destroy-on-close>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="名称" prop="name">
-          <el-input type="text" v-model="form.name" placeholder="请输入名称"></el-input>
+          <el-input v-model="form.name" placeholder="请输入名称" />
         </el-form-item>
-        <el-form-item>
-          <ByteWeekTimePicker v-if="open" v-model="byteTime" name="name"/>
+        <el-form-item label="录像时间">
+          <el-radio-group v-model="repeat">
+            <el-radio value="day">每天</el-radio>
+            <el-radio value="next">隔天</el-radio>
+            <el-radio value="week">每周</el-radio>
+            <el-radio value="month">每月</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="open" label-width="0" class="timeline-form-item">
+          <RecordPlanTimeline ref="timelineRef" v-model="planItemList" :repeat="repeat" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -76,12 +84,13 @@
 </template>
 
 <script setup name="RecordPlan">
-import {addRecord, deleteRecord, getRecord, listRecord, updateRecord} from "../../../api/wvp/record.js";
-import ByteWeekTimePicker from "./byteWeekTimePicker.vue";
-import {ElMessage} from "element-plus";
+import { addRecord, deleteRecord, getRecord, listRecord, updateRecord } from "../../../api/wvp/record.js";
+import RecordPlanTimeline from "./RecordPlanTimeline.vue";
+import { ElMessage } from "element-plus";
 import router from "@/router";
 import { clacPXToVW } from "@/utils/index";
-const {proxy} = getCurrentInstance();
+
+const { proxy } = getCurrentInstance();
 
 const loading = ref(false);
 const total = ref(0);
@@ -89,8 +98,9 @@ const recordList = ref([]);
 const searchData = ref([]);
 const title = ref("");
 const open = ref(false);
-const byteTime = ref("");
-const id = ref(null);
+const repeat = ref("day");
+const planItemList = ref([]);
+const timelineRef = ref(null);
 
 const data = reactive({
   form: {},
@@ -100,11 +110,11 @@ const data = reactive({
     query: undefined,
   },
   rules: {
-    name: [{required: true, message: "请输入名称", trigger: "blur"}],
+    name: [{ required: true, message: "请输入名称", trigger: "blur" }],
   }
 });
 
-const {queryParams, form, rules} = toRefs(data);
+const { queryParams, form, rules } = toRefs(data);
 
 function getList() {
   loading.value = true;
@@ -112,176 +122,100 @@ function getList() {
     total.value = res.total;
     recordList.value = res.rows;
     loading.value = false;
-  })
+  });
 }
 
-/** 搜索按钮操作 */
 function searchResetFn(val) {
   queryParams.value.pageNum = 1;
   queryParams.value.query = val.query || undefined;
   getList();
 }
 
-/** 表单重置 */
 function reset() {
   form.value = {
     id: undefined,
+    name: undefined,
     planItemList: undefined,
   };
+  repeat.value = "day";
+  planItemList.value = [];
   proxy.resetForm("formRef");
 }
 
 function handleAdd() {
-  reset()
-  open.value = true
-  byteTime.value = "";
-  title.value = "新增录像计划"
+  reset();
+  open.value = true;
+  title.value = "新增录像计划";
+  nextTick(() => {
+    timelineRef.value?.reset();
+  });
 }
 
 function cancel() {
-  reset()
-  byteTime.value = ""
-  open.value = false
+  reset();
+  open.value = false;
 }
 
 function handleEdit(row) {
-  reset()
-  open.value = true
-  byteTime.value = "";
-  title.value = "修改录像计划"
+  reset();
+  open.value = true;
+  title.value = "修改录像计划";
   getRecord(row.id).then(res => {
-    byteTime.value = plan2Byte(res.data.planItemList)
-    form.value.name = res.data.name
-    form.value.id = res.data.id
-  })
+    form.value.name = res.data.name;
+    form.value.id = res.data.id;
+    const items = res.data.planItemList || [];
+    nextTick(() => {
+      const inferred = timelineRef.value?.fromPlanItemList(items) || "day";
+      repeat.value = inferred;
+      planItemList.value = timelineRef.value?.toPlanItemList(inferred) || items;
+    });
+  });
 }
 
 function handleDelete(row) {
-  proxy.$modal.confirm('是否确认删除该录制计划？').then(function () {
+  proxy.$modal.confirm("是否确认删除该录制计划？").then(function () {
     deleteRecord(row.id).then(() => {
       ElMessage({
-        type: 'success',
-        message: '删除成功',
-      })
+        type: "success",
+        message: "删除成功",
+      });
       getList();
-    })
-  })
+    });
+  });
 }
 
-function handleLink(row){
+function handleLink(row) {
   router.push(`/recordPlan/associatedChannel/index/${row.id}`);
 }
 
-/** 提交按钮 */
 function submitForm() {
   proxy.$refs["formRef"].validate(valid => {
-    if (valid) {
-      form.value.planItemList = byteTime2PlanList()
-      if (form.value.id != undefined) {
-        updateRecord(form.value).then(() => {
-          open.value = false;
-          getList();
-          proxy.$modal.msgSuccess("修改成功");
-        })
-      } else {
-        addRecord(form.value).then(() => {
-          open.value = false
-          getList()
-          proxy.$modal.msgSuccess("新增成功");
-        })
-      }
+    if (!valid) return;
+    const items = timelineRef.value?.toPlanItemList() || planItemList.value || [];
+    if (!items.length) {
+      proxy.$modal.msgWarning("请选择录像时间段");
+      return;
     }
-  })
+    form.value.planItemList = items;
+    const req = form.value.id != undefined ? updateRecord(form.value) : addRecord(form.value);
+    req.then(() => {
+      open.value = false;
+      getList();
+      proxy.$modal.msgSuccess(form.value.id != undefined ? "修改成功" : "新增成功");
+    });
+  });
 }
 
-
-const byteTime2PlanList = () => {
-  if (byteTime.value.length === 0) {
-    return;
-  }
-
-  const DayTimes = 24 * 2;
-  let planList = [];
-  let week = 1;
-
-  // 把 336 长度的 list 分成 7 组，每组 48 个
-  for (let i = 0; i < byteTime.value.length; i += DayTimes) {
-    let planArray = byteTime2Plan(byteTime.value.slice(i, i + DayTimes));
-    if (!planArray || planArray.length === 0) {
-      week++;
-      continue;
-    }
-    for (let j = 0; j < planArray.length; j++) {
-      planList.push({
-        planId: id.value,
-        start: planArray[j].start,
-        stop: planArray[j].stop,
-        weekDay: week,
-      });
-    }
-    week++;
-  }
-  return planList;
-};
-
-const byteTime2Plan = (weekItem) => {
-  let start = null;
-  let stop = null;
-  let result = [];
-
-  for (let i = 0; i < weekItem.length; i++) {
-    let item = weekItem[i];
-    if (item === '1') { // 表示选中
-      stop = i;
-      if (start === null) {
-        start = i;
-      }
-      if (i === weekItem.length - 1 && start != null && stop != null) {
-        result.push({
-          start: start,
-          stop: stop,
-        });
-      }
-    } else {
-      if (stop !== null) {
-        result.push({
-          start: start,
-          stop: stop,
-        });
-        start = null;
-        stop = null;
-      }
-    }
-  }
-  return result;
-};
-
-const plan2Byte = (planList) => {
-  let byte = "";
-  let indexArray = {};
-
-  for (let i = 0; i < planList.length; i++) {
-    let weekDay = planList[i].weekDay;
-    let index = planList[i].start;
-    let endIndex = planList[i].stop;
-    for (let j = index; j <= endIndex; j++) {
-      indexArray["key_" + (j + (weekDay - 1) * 48)] = 1;
-    }
-  }
-
-  for (let i = 0; i < 336; i++) {
-    if (indexArray["key_" + i]) {
-      byte += "1";
-    } else {
-      byte += "0";
-    }
-  }
-  return byte;
-};
-
-getList()
+getList();
 </script>
 
 <style scoped>
+.timeline-form-item {
+  margin-bottom: 0;
+}
 
+.timeline-form-item :deep(.el-form-item__content) {
+  display: block;
+  width: 100%;
+}
 </style>

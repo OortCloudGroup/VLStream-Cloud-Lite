@@ -49,7 +49,10 @@
     </aside>
 
     <main class="classification-content">
-      <slot />
+      <ProtocolTabs embedded />
+      <div class="classification-content-body">
+        <slot />
+      </div>
     </main>
 
     <el-dialog v-model="categoryDialog.visible" :title="categoryDialog.mode === 'add' ? `新增${activeLabel}` : `修改${activeLabel}`" width="30%" append-to-body>
@@ -114,6 +117,7 @@
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { Delete, Edit, Folder, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import ProtocolTabs from '@/layout/components/ProtocolTabs.vue'
 import {
   addClassificationCategory,
   deleteClassificationCategory,
@@ -374,10 +378,23 @@ onMounted(async () => {
 .classification-content {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   background: transparent;
   border-radius: 0;
   box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.classification-content-body {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
+}
+
+.classification-content-body :deep(.app-container) {
+  padding: 0;
 }
 
 .assignment-alert {
