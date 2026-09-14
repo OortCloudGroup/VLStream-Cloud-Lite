@@ -50,12 +50,14 @@ public class DefaultProperties {
          * sip_server_log.log 和 sip_debug_log.log ERROR, INFO, WARNING, OFF, DEBUG, TRACE
          */
         Logger log = LoggerFactory.getLogger(AlarmNotifyMessageHandler.class);
+        // 始终指定由 slf4j 实现的日志适配器，避免关闭日志时回退到默认的 log4j1 LogWriter 导致 NoClassDefFoundError
+        properties.setProperty("gov.nist.javax.sip.STACK_LOGGER", "com.ruoyi.wvp.gb28181.conf.StackLoggerImpl");
+        properties.setProperty("gov.nist.javax.sip.SERVER_LOGGER", "com.ruoyi.wvp.gb28181.conf.ServerLoggerImpl");
         if (sipLog) {
-            properties.setProperty("gov.nist.javax.sip.STACK_LOGGER", "com.ruoyi.wvp.gb28181.conf.StackLoggerImpl");
-            properties.setProperty("gov.nist.javax.sip.SERVER_LOGGER", "com.ruoyi.wvp.gb28181.conf.ServerLoggerImpl");
             properties.setProperty("gov.nist.javax.sip.LOG_MESSAGE_CONTENT", "true");
             log.info("[SIP日志]已开启");
-        }else {
+        } else {
+            properties.setProperty("gov.nist.javax.sip.LOG_MESSAGE_CONTENT", "false");
             log.info("[SIP日志]已关闭");
         }
         return properties;
