@@ -19,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,25 @@ public class VlStreamDeviceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('vlstream:device:list')")
     @GetMapping("/{deviceRowId}/streams")
     public AjaxResult streams(@PathVariable Long deviceRowId) {
-        return success(streamMapper.selectAvailableByDeviceId(deviceRowId));
+        // 仅设备列表权限保护的流详情接口提供设备上报地址，不改变实体其他接口的脱敏行为。
+        List<Map<String, Object>> streams = new ArrayList<>();
+        for (VlStreamDeviceStream stream : streamMapper.selectAvailableByDeviceId(deviceRowId)) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", String.valueOf(stream.getId()));
+            item.put("deviceRowId", String.valueOf(stream.getDeviceRowId()));
+            item.put("channelId", stream.getChannelId());
+            item.put("streamName", stream.getStreamName());
+            item.put("streamType", stream.getStreamType());
+            item.put("protocol", stream.getProtocol());
+            item.put("defaultStream", stream.getDefaultStream());
+            item.put("available", stream.getAvailable());
+            item.put("lastReportTime", stream.getLastReportTime());
+            item.put("zlmApp", stream.getZlmApp());
+            item.put("zlmStream", stream.getZlmStream());
+            item.put("sourceUrl", stream.getSourceUrl());
+            streams.add(item);
+        }
+        return success(streams);
     }
 
     @PreAuthorize("@ss.hasPermi('vlstream:device:list')")

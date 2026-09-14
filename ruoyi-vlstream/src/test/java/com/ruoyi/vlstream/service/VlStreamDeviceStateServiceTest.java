@@ -19,6 +19,51 @@ import static org.mockito.Mockito.when;
 
 public class VlStreamDeviceStateServiceTest {
     @Test
+    public void persistsLocationAndHandlesOmissionOfflineAndExplicitClear() {
+        VlStreamDeviceMapper devices = mock(VlStreamDeviceMapper.class);
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        when(messages.insertIgnore(any(), any(), any(), any())).thenReturn(1);
+        VlStreamDevice device = new VlStreamDevice();
+        device.setId(1L);
+        when(devices.selectByDeviceId("location-test")).thenReturn(device);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(devices, mock(VlStreamDeviceStreamMapper.class), messages);
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"location-test\",\"messageId\":\"loc-1\",\"payload\":{\"online\":true,\"location\":{\"longitude\":113.123456789,\"latitude\":0}}}");
+        service.handle(message);
+        assertEquals(new java.math.BigDecimal("113.12345679"), device.getLongitude());
+        assertEquals(new java.math.BigDecimal("0.00000000"), device.getLatitude());
+        JSONObject payload = message.getJSONObject("payload");
+        payload.remove("location");
+        service.handle(message);
+        assertEquals(new java.math.BigDecimal("113.12345679"), device.getLongitude());
+        payload.put("online", false);
+        payload.put("location", null);
+        service.handle(message);
+        org.junit.Assert.assertNotNull(device.getLongitude());
+        payload.put("online", true);
+        service.handle(message);
+        org.junit.Assert.assertNull(device.getLongitude());
+        org.junit.Assert.assertNull(device.getLatitude());
+        payload.put("location", JSON.parseObject("{\"longitude\":-180,\"latitude\":90}"));
+        service.handle(message);
+        assertEquals(new java.math.BigDecimal("-180.00000000"), device.getLongitude());
+        assertEquals(new java.math.BigDecimal("90.00000000"), device.getLatitude());
+    }
+
+    @Test
+    public void rejectsInvalidLocationWithoutRecordingMessage() {
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(mock(VlStreamDeviceMapper.class), mock(VlStreamDeviceStreamMapper.class), messages);
+        for (String location : new String[]{"{}", "[]", "false", "{\"longitude\":0}",
+                "{\"longitude\":\"113\",\"latitude\":22}", "{\"longitude\":180.00001,\"latitude\":0}",
+                "{\"longitude\":-180.00001,\"latitude\":0}", "{\"longitude\":0,\"latitude\":90.1}",
+                "{\"longitude\":0,\"latitude\":-90.1}", "{\"longitude\":null,\"latitude\":0}"}) {
+            JSONObject message = JSON.parseObject("{\"deviceId\":\"location-test\",\"messageId\":\"bad\",\"payload\":{\"online\":true,\"location\":" + location + "}}");
+            assertEquals(400, service.handle(message).getJSONObject("payload").getIntValue("code"));
+        }
+        org.mockito.Mockito.verifyNoInteractions(messages);
+    }
+
+    @Test
     public void tracksOnlineTransitionsAndPreservesSnapshotsAcrossLegacyHeartbeatsAndWills() {
         VlStreamDeviceMapper devices = mock(VlStreamDeviceMapper.class);
         VlStreamDeviceStreamMapper streams = mock(VlStreamDeviceStreamMapper.class);

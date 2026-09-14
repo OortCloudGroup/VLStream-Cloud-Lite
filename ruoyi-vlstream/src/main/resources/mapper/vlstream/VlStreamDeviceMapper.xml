@@ -14,10 +14,12 @@
         <result property="lastOnlineTime" column="last_online_time"/>
         <result property="capabilitiesJson" column="capabilities_json"/>
         <result property="modelsJson" column="models_json"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
     <sql id="columns">id,device_id,device_name,device_serial,device_model,firmware_version,face_version,ip_addr,mac,online,
-        online_reason,heartbeat_index,last_message_id,last_reported_at,last_heartbeat_time,last_online_time,capabilities_json,models_json,telemetry_json,
+        online_reason,heartbeat_index,last_message_id,last_reported_at,last_heartbeat_time,last_online_time,capabilities_json,models_json,longitude,latitude,telemetry_json,
         service_status_json,create_time,update_time</sql>
     <select id="selectById" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where id=#{id}</select>
     <select id="selectByDeviceId" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where device_id=#{deviceId}</select>
@@ -47,15 +49,15 @@
     </select>
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into wvp_vlstream_device(device_id,device_name,device_serial,device_model,firmware_version,face_version,ip_addr,mac,online,
-          online_reason,heartbeat_index,last_message_id,last_reported_at,last_heartbeat_time,last_online_time,capabilities_json,models_json,telemetry_json,service_status_json,create_time,update_time)
+          online_reason,heartbeat_index,last_message_id,last_reported_at,last_heartbeat_time,last_online_time,capabilities_json,models_json,longitude,latitude,telemetry_json,service_status_json,create_time,update_time)
         values(#{deviceId},#{deviceName},#{deviceSerial},#{deviceModel},#{firmwareVersion},#{faceVersion},#{ipAddr},#{mac},#{online},
-          #{onlineReason},#{heartbeatIndex},#{lastMessageId},#{lastReportedAt},#{lastHeartbeatTime},#{lastOnlineTime},#{capabilitiesJson},#{modelsJson},#{telemetryJson},#{serviceStatusJson},#{createTime},#{updateTime})
+          #{onlineReason},#{heartbeatIndex},#{lastMessageId},#{lastReportedAt},#{lastHeartbeatTime},#{lastOnlineTime},#{capabilitiesJson},#{modelsJson},#{longitude},#{latitude},#{telemetryJson},#{serviceStatusJson},#{createTime},#{updateTime})
     </insert>
     <update id="update">
         update wvp_vlstream_device set device_name=#{deviceName},device_serial=#{deviceSerial},device_model=#{deviceModel},firmware_version=#{firmwareVersion},
           face_version=#{faceVersion},ip_addr=#{ipAddr},mac=#{mac},online=#{online},online_reason=#{onlineReason},
           heartbeat_index=#{heartbeatIndex},last_message_id=#{lastMessageId},last_reported_at=#{lastReportedAt},
-          last_heartbeat_time=#{lastHeartbeatTime},last_online_time=#{lastOnlineTime},capabilities_json=#{capabilitiesJson},models_json=#{modelsJson},telemetry_json=#{telemetryJson},service_status_json=#{serviceStatusJson},update_time=#{updateTime}
+          last_heartbeat_time=#{lastHeartbeatTime},last_online_time=#{lastOnlineTime},capabilities_json=#{capabilitiesJson},models_json=#{modelsJson},longitude=#{longitude},latitude=#{latitude},telemetry_json=#{telemetryJson},service_status_json=#{serviceStatusJson},update_time=#{updateTime}
         where id=#{id}
     </update>
     <update id="markOfflineBefore">

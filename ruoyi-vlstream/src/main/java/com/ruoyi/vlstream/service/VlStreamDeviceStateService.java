@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,6 +48,9 @@ public class VlStreamDeviceStateService {
         }
         if (!(payload.get("online") instanceof Boolean) || !validSnapshots(payload)) {
             return VlStreamProtocol.reply(message, 400, "online必须为布尔值，capabilities和models必须符合状态快照格式");
+        }
+        if (!validLocation(payload)) {
+            return VlStreamProtocol.reply(message, 400, "location必须为null或包含有效WGS84经纬度的对象：longitude为-180至180，latitude为-90至90，均为数值");
         }
 
         Date receivedAt = new Date();
@@ -83,6 +88,11 @@ public class VlStreamDeviceStateService {
         // Offline wills may contain old snapshots prepared when MQTT connected.
         if (online && payload.containsKey("capabilities")) device.setCapabilitiesJson(json(payload.get("capabilities")));
         if (online && payload.containsKey("models")) device.setModelsJson(json(payload.get("models")));
+        if (online && payload.containsKey("location")) {
+            JSONObject location = payload.getJSONObject("location");
+            device.setLongitude(location == null ? null : location.getBigDecimal("longitude").setScale(8, RoundingMode.HALF_UP));
+            device.setLatitude(location == null ? null : location.getBigDecimal("latitude").setScale(8, RoundingMode.HALF_UP));
+        }
         device.setTelemetryJson(json(payload.get("telemetry")));
         device.setServiceStatusJson(json(payload.get("serviceStatus")));
         device.setUpdateTime(receivedAt);
@@ -132,6 +142,24 @@ public class VlStreamDeviceStateService {
 
     private Date parseDate(String value, Date fallback) {
         try { return Date.from(Instant.parse(value)); } catch (Exception ignored) { return fallback; }
+    }
+
+    private boolean validLocation(JSONObject payload) {
+        Object location = payload.get("location");
+        if (location == null) return true;
+        if (!(location instanceof JSONObject)) return false;
+        JSONObject coordinates = (JSONObject) location;
+        return validCoordinate(coordinates.get("longitude"), 180)
+                && validCoordinate(coordinates.get("latitude"), 90);
+    }
+
+    private boolean validCoordinate(Object value, int maximum) {
+        if (!(value instanceof Number)) return false;
+        try {
+            return new BigDecimal(value.toString()).abs().compareTo(BigDecimal.valueOf(maximum)) <= 0;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
     }
 
     private boolean validSnapshots(JSONObject payload) {

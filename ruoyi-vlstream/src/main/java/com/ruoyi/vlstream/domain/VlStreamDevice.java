@@ -4,6 +4,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import java.util.Date;
+import java.math.BigDecimal;
 
 public class VlStreamDevice extends BaseEntity {
     private static final long serialVersionUID = 1L;
@@ -26,6 +27,8 @@ public class VlStreamDevice extends BaseEntity {
     private Date lastOnlineTime;
     private String capabilitiesJson;
     private String modelsJson;
+    private BigDecimal longitude;
+    private BigDecimal latitude;
     private String telemetryJson;
     private String serviceStatusJson;
     private String keyword;
@@ -67,6 +70,10 @@ public class VlStreamDevice extends BaseEntity {
     public String getCapabilitiesJson() { return capabilitiesJson; }
     public void setCapabilitiesJson(String capabilitiesJson) { this.capabilitiesJson = capabilitiesJson; }
     public String getModelsJson() { return modelsJson; }
+    public BigDecimal getLongitude() { return longitude; }
+    public void setLongitude(BigDecimal longitude) { this.longitude = longitude; }
+    public BigDecimal getLatitude() { return latitude; }
+    public void setLatitude(BigDecimal latitude) { this.latitude = latitude; }
     public void setModelsJson(String modelsJson) { this.modelsJson = modelsJson; }
     public void setLastHeartbeatTime(Date lastHeartbeatTime) { this.lastHeartbeatTime = lastHeartbeatTime; }
     public String getTelemetryJson() { return telemetryJson; }

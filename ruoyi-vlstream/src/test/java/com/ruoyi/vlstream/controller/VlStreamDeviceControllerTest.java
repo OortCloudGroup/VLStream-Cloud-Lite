@@ -19,6 +19,27 @@ import static org.mockito.Mockito.when;
 
 public class VlStreamDeviceControllerTest {
     @Test
+    public void streamDetailsReturnReportedSourceWithoutProxySecret() throws Exception {
+        VlStreamDeviceStreamMapper mapper = mock(VlStreamDeviceStreamMapper.class);
+        VlStreamDeviceStream stream = new VlStreamDeviceStream();
+        stream.setId(20L);
+        stream.setDeviceRowId(10L);
+        stream.setSourceUrl("http://camera.example/video/device-1");
+        stream.setZlmProxyKey("test-proxy-secret");
+        when(mapper.selectAvailableByDeviceId(10L)).thenReturn(java.util.Collections.singletonList(stream));
+        VlStreamDeviceController controller = new VlStreamDeviceController(mock(VlStreamDeviceMapper.class), mapper,
+                mock(IMediaServerService.class), mock(VlStreamFirmwareDeploymentService.class));
+        java.util.List<?> rows = (java.util.List<?>) controller.streams(10L).get(AjaxResult.DATA_TAG);
+        Map<?, ?> row = (Map<?, ?>) rows.get(0);
+        assertEquals(stream.getSourceUrl(), row.get("sourceUrl"));
+        assertEquals("20", row.get("id"));
+        assertEquals(false, row.containsKey("zlmProxyKey"));
+        org.springframework.security.access.prepost.PreAuthorize permission = VlStreamDeviceController.class
+                .getMethod("streams", Long.class).getAnnotation(org.springframework.security.access.prepost.PreAuthorize.class);
+        assertEquals("@ss.hasPermi('vlstream:device:list')", permission.value());
+    }
+
+    @Test
     public void returnsCameraRtcUrlWithoutCreatingZlmProxy() {
         VlStreamDeviceMapper deviceMapper = mock(VlStreamDeviceMapper.class);
         VlStreamDeviceStreamMapper streamMapper = mock(VlStreamDeviceStreamMapper.class);
