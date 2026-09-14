@@ -1,14 +1,19 @@
-# VLStream WVP Lite v1.0.4
+# VLStream WVP Lite v1.0.5
 
 ## Release highlights
 
-- Publish the public container image as `ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.4`.
-- Rename the Compose project and release archive to VLStream WVP Lite.
+- Publish the public container image as `ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.5`.
+- Keep the VLStream WVP Lite Compose project and release archive coordinates.
 - Keep the established Java module identifiers and `ry-wvp` database schema for runtime compatibility.
 - Deploy MySQL, Redis, EMQX, ZLMediaKit, and the WVP backend as independent services.
 
-- Patch release for the current MQTT, Flyway, local/SSO authentication, device
-  playback, and OTA improvements.
+- Add persistent VLStream device state snapshots and device-location support.
+- Release SIP resources cleanly during restart and retain the configurable
+  non-expiring local/VLStream token behavior.
+- Remove development-only endpoints and credential defaults from the public
+  image; deployment-specific values must be supplied through environment variables.
+- Continue the current MQTT, Flyway, local/SSO authentication, device playback,
+  and OTA improvements.
 - Default and external Compose deployments now explicitly enable the WVP MQTT
   extension and configure its broker through environment variables.
 - The one-command package includes MySQL, Redis, EMQX, ZLMediaKit, and WVP.

@@ -22,7 +22,7 @@ The default Compose file starts five independent services: MySQL, Redis, EMQX
 service image. The WVP image
 also contains the compiled browser UI, so no separate frontend service is
 needed. The backend image is
-`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.4`.
+`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.5`.
 
 Use an existing MySQL, Redis, ZLMediaKit, and MQTT Broker installation with:
 
@@ -61,6 +61,12 @@ account instead of reusing a production root account where possible.
 Docker host use `http://host.docker.internal:8080/blade-system/user/info`; when
 the two backends share a Compose network, use the VLStream service name, for
 example `http://backend:8080/blade-system/user/info`.
+
+Firmware and OTA storage is optional. Before using it, set
+`VLSTREAM_FIRMWARE_MINIO_ENDPOINT`, `VLSTREAM_FIRMWARE_PUBLIC_ENDPOINT`,
+`VLSTREAM_FIRMWARE_MINIO_ACCESS_KEY`, `VLSTREAM_FIRMWARE_MINIO_SECRET_KEY`,
+and `VLSTREAM_WVP_PUBLIC_URL` in `.env`. The public image intentionally contains
+no MinIO endpoint or credential defaults.
 
 The packaged ZLMediaKit image is configured with the same `ZLM_SECRET` passed
 to WVP. `ZLM_PUBLIC_HOST` must be the DNS name or public IP devices and browsers
@@ -102,7 +108,7 @@ migrations must never be edited, deleted, or renamed.
 
 ## Protocols and native SDKs
 
-GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.4 base deployment.
+GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.5 base deployment.
 ISUP and Dahua integrations are optional/experimental: their native SDK shared
 libraries, dependency completeness, and redistribution terms have not been
 verified for this public Linux image. They are not enabled by the default

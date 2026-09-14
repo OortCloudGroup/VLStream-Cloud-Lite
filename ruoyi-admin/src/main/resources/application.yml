@@ -32,7 +32,7 @@ server:
     # [可选] 证书文件路径，放置在resource/目录下即可，修改xxx为文件名
     key-store: classpath:test.monitor.89iot.cn.jks
     # [可选] 证书密码
-    key-store-password: gpf64qmw
+    key-store-password: ${SSL_KEY_STORE_PASSWORD:change-me-keystore-password}
     # [可选] 证书类型， 默认为jks，根据实际修改
     key-store-type: JKS
   servlet:
@@ -70,9 +70,9 @@ spring:
   flyway:
     enabled: ${FLYWAY_ENABLED:true}
     locations: classpath:db/migration
-    url: jdbc:mysql://${DB_HOST:192.168.60.77}:${DB_PORT:32443}/${DB_NAME:ry-wvp}?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:ry-wvp}?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     user: ${DB_MIGRATION_USERNAME:${DB_USERNAME:root}}
-    password: ${DB_MIGRATION_PASSWORD:${DB_PASSWORD:mysql@pass}}
+    password: ${DB_MIGRATION_PASSWORD:${DB_PASSWORD:${DB_MIGRATION_PASSWORD:${DB_PASSWORD:}}}}
     # 当前 WVP 数据库在接入 Flyway 前已经由初始化 SQL 建表；首次启动只登记基线，随后执行更高版本迁移。
     baseline-on-migrate: true
     baseline-version: 1.2.0
@@ -103,10 +103,10 @@ spring:
   # redis 配置
   redis:
     # 地址
-    host: ${REDIS_HOST:192.168.60.76}
-    port: ${REDIS_PORT:32576}
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
     database: 10
-    password: ${REDIS_PASSWORD:redis@pass}
+    password: ${REDIS_PASSWORD:}
     # 连接超时时间
     timeout: 10s
     lettuce:
@@ -130,13 +130,13 @@ token:
   # 令牌自定义标识
   header: accessToken
   # 令牌密钥
-  secret: abcdefghijklmnopqrstuvwxyz
+  secret: ${TOKEN_SECRET:change-me-token-secret}
   # WVP 本地及 VLStream 联邦身份缓存有效期（分钟），-1 表示永不过期
   expireTime: ${WVP_TOKEN_EXPIRE_MINUTES:-1}
   #校验token地址 http://apaas-sso.p-lvgemgroup/sso/v1/verifyToken
-  verifyTokenAddress: ${SSO_VERIFY_TOKEN:http://oort.oortcloudsmart.com:21410/bus/apaas-sso/sso/v1/verifyToken}
+  verifyTokenAddress: ${SSO_VERIFY_TOKEN:}
   # VLStream/SpringBlade token校验地址，仅X-WVP-Auth-Source=vlstream时使用；部署环境必须显式配置，避免127.0.0.1误指向WVP自身
-  vlstreamVerifyTokenAddress: ${VLSTREAM_VERIFY_TOKEN:http://127.0.0.1:8080/blade-system/user/info}
+  vlstreamVerifyTokenAddress: ${VLSTREAM_VERIFY_TOKEN:}
   # 可选的协议设备默认部门；留空时新增设备不写入 dept_id
   vlstreamDefaultDeptId: ${VLSTREAM_DEFAULT_DEPT_ID:}
 
@@ -190,7 +190,7 @@ sip:
   # [可选]
   id: 41010500002000000001
   # [可选] 默认设备认证密码，后续扩展使用设备单独密码, 移除密码将不进行校验
-  password: 12345678
+  password: ${SIP_PASSWORD:change-me-sip-password}
   # 是否存储alarm信息
   alarm: false
 
@@ -212,7 +212,7 @@ media:
   http-port: ${ZLM_HTTP_PORT:${ZLMEDIAKIT_HTTP_PORT:8090}}
   # ZLM_SECRET：调用ZLM /index/api/* 管理接口时使用的鉴权密钥。
   # 必须与ZLM配置中的api.secret完全一致；WVP与VLS连接同一ZLM时应使用相同值。
-  secret: ${ZLM_SECRET:${ZLMEDIAKIT_SECRET:su6TiedN2rVAmBbIDX0aa0QTiBJLBdcf}}
+  secret: ${ZLM_SECRET:${ZLMEDIAKIT_SECRET:change-me-zlm-secret}}
   # 启用多端口模式, 多端口模式使用端口区分每路流，兼容性更好。 单端口使用流的ssrc区分， 点播超时建议使用多端口测试
   rtp:
     # [可选] 是否启用多端口模式, 开启后会在portRange范围内选择端口用于媒体流传输
@@ -262,7 +262,7 @@ isup:
   smsBackServerListe:
     Port: 8000
   # ISUP5.0登录秘钥
-  isupKey: 12345678
+  isupKey: ${ISUP_KEY:change-me-isup-key}
 
 # ISUP linux64配置
 isup-linux64:
@@ -306,7 +306,7 @@ isup-linux64:
   # 图片存储服务器监听外部请求的端口号
   picServerListenPort: 2611
   # 用于海康设备认证的秘钥，ISUP5.0协议中的必需项
-  iSUPKey: "12345678"
+  iSUPKey: "${ISUP_KEY:change-me-isup-key}"
   # 报警服务器打印事件模式：
   # file=事件保存到文件中
   # console=事件打印在控制台上
@@ -355,12 +355,12 @@ vlstream:
   mqtt:
     # 本地默认不消费测试环境设备消息；设备中心部署必须显式设置为 true。
     enabled: ${VLSTREAM_MQTT_ENABLED:true}
-    host: ${VLSTREAM_MQTT_HOST:192.168.60.79}
-    port: ${VLSTREAM_MQTT_PORT:32570}
-    username: ${VLSTREAM_MQTT_USERNAME:VLStream}
-    password: ${VLSTREAM_MQTT_PASSWORD:oort@123}
+    host: ${VLSTREAM_MQTT_HOST:127.0.0.1}
+    port: ${VLSTREAM_MQTT_PORT:1883}
+    username: ${VLSTREAM_MQTT_USERNAME:}
+    password: ${VLSTREAM_MQTT_PASSWORD:}
     # 必须与VLS客户端ID不同，否则同一Broker会断开其中一个连接。
-    client-id: ${VLSTREAM_WVP_MQTT_CLIENT_ID:wvp-vlstream-backend-oort-local}
+    client-id: ${VLSTREAM_WVP_MQTT_CLIENT_ID:wvp-vlstream-backend}
     qos: ${VLSTREAM_MQTT_QOS:1}
     keep-alive-seconds: ${VLSTREAM_MQTT_KEEP_ALIVE_SECONDS:60}
     connection-timeout-seconds: ${VLSTREAM_MQTT_CONNECTION_TIMEOUT_SECONDS:10}
@@ -372,13 +372,13 @@ vlstream:
   firmware:
     # WVP now owns the VLS RootFS firmware repository and OTA workflow.
     # 复用 VLS 已联调通过的本机 MinIO；容器/生产环境仍可通过环境变量覆盖。
-    endpoint: ${VLSTREAM_FIRMWARE_MINIO_ENDPOINT:http://192.168.88.31:9000}
-    public-endpoint: ${VLSTREAM_FIRMWARE_PUBLIC_ENDPOINT:http://192.168.88.31:9000}
-    access-key: ${VLSTREAM_FIRMWARE_MINIO_ACCESS_KEY:admin}
-    secret-key: ${VLSTREAM_FIRMWARE_MINIO_SECRET_KEY:MinioLocal123}
+    endpoint: ${VLSTREAM_FIRMWARE_MINIO_ENDPOINT:}
+    public-endpoint: ${VLSTREAM_FIRMWARE_PUBLIC_ENDPOINT:}
+    access-key: ${VLSTREAM_FIRMWARE_MINIO_ACCESS_KEY:}
+    secret-key: ${VLSTREAM_FIRMWARE_MINIO_SECRET_KEY:}
     bucket: ${VLSTREAM_FIRMWARE_MINIO_BUCKET:vls-firmware}
     # 摄像头可访问的 WVP 根地址；本地源码默认端口为 9080。
-    platform-base-url: ${VLSTREAM_WVP_PUBLIC_URL:http://192.168.88.31:9080}
+    platform-base-url: ${VLSTREAM_WVP_PUBLIC_URL:}
     upload-url-ttl-seconds: ${VLSTREAM_FIRMWARE_UPLOAD_TTL_SECONDS:600}
     download-url-ttl-seconds: ${VLSTREAM_FIRMWARE_DOWNLOAD_TTL_SECONDS:1800}
     ota-download-url-ttl-seconds: ${VLSTREAM_FIRMWARE_OTA_TTL_SECONDS:7200}
