@@ -7,6 +7,8 @@
 
   <p>
     <a href="https://github.com/OortCloudGroup/apaas-wvp-server"><img src="https://img.shields.io/badge/GitHub-OortCloudGroup%2Fapaas--wvp--server-181717?style=flat-square&logo=github" alt="GitHub"></a>
+    <a href="https://gitcode.com/qq_74020751/VLStream-Cloud-Lite"><img src="https://img.shields.io/badge/GitCode-qq__74020751%2FVLStream--Cloud--Lite-C71D23?style=flat-square" alt="GitCode"></a>
+    <a href="https://gitee.com/lcqssaa/VLStream-Cloud-Lite"><img src="https://img.shields.io/badge/Gitee-lcqssaa%2FVLStream--Cloud--Lite-C71D23?style=flat-square&logo=gitee" alt="Gitee"></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License"></a>
     <img src="https://img.shields.io/badge/Java-8-orange.svg?style=flat-square" alt="Java 8">
     <img src="https://img.shields.io/badge/Spring%20Boot-2.7.18-6DB33F.svg?style=flat-square" alt="Spring Boot 2.7.18">
