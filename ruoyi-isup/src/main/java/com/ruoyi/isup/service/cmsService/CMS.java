@@ -25,6 +25,12 @@ import java.io.IOException;
 @Component("cmsService")
 public class CMS {
 
+    @Autowired
+    private com.ruoyi.isup.ehome.EhomeRegistration ehomeRegistration;
+
+    @Autowired
+    private org.springframework.beans.factory.ObjectProvider<com.ruoyi.isup.ehome.EhomePreviews> ehomePreviews;
+
     public static HCISUPCMS hCEhomeCMS = null;
 
     /**
@@ -145,6 +151,7 @@ public class CMS {
     }
 
     public void startCmsListen() {
+        ehomeRegistration.resetOnlineState();
         if (fRegisterCallBack == null) {
             fRegisterCallBack = new FRegisterCallBack();
         }
@@ -518,6 +525,22 @@ public class CMS {
     public class FRegisterCallBack implements HCISUPCMS.DEVICE_REGISTER_CB {
         @Override
         public boolean invoke(int lUserID, int dwDataType, Pointer pOutBuffer, int dwOutLen, Pointer pInBuffer, int dwInLen, Pointer pUser) {
+            // One SDK listener dispatches protocol families into independent services and device tables.
+            if ((dwDataType == 0 || dwDataType == 2 || dwDataType == 7)
+                    && com.ruoyi.isup.ehome.EhomeRegistration.isLegacy(pOutBuffer, dwOutLen)) {
+                try {
+                    return dwDataType == 0
+                            ? ehomeRegistration.online(lUserID, pOutBuffer, dwOutLen, pInBuffer, dwInLen)
+                            : ehomeRegistration.register(lUserID, pOutBuffer, dwOutLen);
+                } catch (RuntimeException e) { log.error("EHome 注册回调失败", e); return false; }
+            }
+            if (dwDataType == 1 && ehomeRegistration.owns(lUserID)) {
+                ehomeRegistration.offline(lUserID);
+                // Do not synchronously re-enter the vendor SDK from its registration callback.
+                java.util.concurrent.CompletableFuture.runAsync(() -> ehomePreviews.getObject().offline(lUserID))
+                        .exceptionally(error -> { log.error("释放 EHome 离线预览失败", error); return null; });
+                return true;
+            }
             switch (dwDataType) {
                 case HCISUPCMS.EHOME_REGISTER_TYPE.ENUM_DEV_ON: {
                     HCISUPCMS.NET_EHOME_DEV_REG_INFO_V12 strDevRegInfo = new HCISUPCMS.NET_EHOME_DEV_REG_INFO_V12();

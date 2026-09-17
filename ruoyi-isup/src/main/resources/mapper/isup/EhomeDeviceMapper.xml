@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.isup.mapper.EhomeDeviceMapper">
+    <select id="selectDevices" resultType="com.ruoyi.isup.ehome.EhomeDevice">
+        select i.id, i.dept_id, i.device_id, i.name, i.device_serial, i.ip_address,
+               i.firmware_version, i.dev_protocol_version, i.status, i.luser_id,
+               i.create_time, i.update_time, i.remark
+        from ehome_device i left join sys_dept d on i.dept_id=d.dept_id
+        <where>
+            <if test="id != null">and i.id=#{id}</if>
+            <if test="keyword != null and keyword != ''">
+                and (i.name like concat('%',#{keyword},'%') or i.device_id like concat('%',#{keyword},'%')
+                     or i.device_serial like concat('%',#{keyword},'%') or i.ip_address like concat('%',#{keyword},'%'))
+            </if>
+            <if test="status != null and status != ''">and i.status=#{status}</if>
+            <if test="devProtocolVersion != null and devProtocolVersion != ''">and i.dev_protocol_version like concat(#{devProtocolVersion},'%')</if>
+            <if test="categoryType != null and categoryType != &apos;&apos;">
+                <if test="categoryId != null">
+                    and exists (select 1 from wvp_device_category_relation cr
+                        join wvp_device_category cc on cc.id=cr.category_id
+                        where cr.protocol_type=&apos;EHOME&apos; and cr.device_key=cast(i.id as char)
+                        and cr.category_type=#{categoryType}
+                        and (cc.id=#{categoryId} or find_in_set(#{categoryId},cc.ancestors)))
+                </if>
+                <if test="unclassified != null and unclassified">
+                    and not exists (select 1 from wvp_device_category_relation cr
+                        where cr.protocol_type=&apos;EHOME&apos; and cr.device_key=cast(i.id as char)
+                        and cr.category_type=#{categoryType})
+                </if>
+            </if>
+            ${params.dataScope}
+        </where>
+        order by i.create_time desc, i.id desc
+    </select>
+    <select id="findRegisteredId" resultType="java.lang.Long">
+        select id from ehome_device where device_id=#{deviceId} order by id limit 1
+    </select>
+    <insert id="insertRegistration" useGeneratedKeys="true" keyProperty="id">
+        insert into ehome_device (dept_id,device_id,name,device_serial,ip_address,firmware_version,
+                                dev_protocol_version,luser_id,status,create_time,update_time)
+        values (#{deptId},#{deviceId},#{name},#{deviceSerial},#{ipAddress},#{firmwareVersion},
+                #{devProtocolVersion},#{luserId},'ON',now(),now())
+    </insert>
+    <update id="updateRegistration">
+        update ehome_device set device_serial=#{deviceSerial}, ip_address=#{ipAddress},
+            firmware_version=#{firmwareVersion},dev_protocol_version=#{devProtocolVersion},
+            luser_id=#{luserId},status='ON',update_time=now()
+        where id=#{id}
+    </update>
+    <update id="markOffline">
+        update ehome_device set status='OFFLINE',update_time=now() where luser_id=#{luserId}
+    </update>
+    <update id="markAllOffline">
+        update ehome_device set status='OFFLINE' where status='ON'
+    </update>
+    <update id="updateMetadata">
+        update ehome_device set name=#{name},remark=#{remark},update_time=now() where id=#{id}
+    </update>
+</mapper>

@@ -26,6 +26,9 @@ import com.ruoyi.isup.service.streamService.HCNetSDK;
 @Slf4j
 @Component("smsService")
 public class SMS {
+    public static volatile int listenHandle = -1;
+    @Autowired
+    private org.springframework.beans.factory.ObjectProvider<com.ruoyi.isup.ehome.EhomePreviews> ehomePreviews;
     public SMS() {
     }
     public static HCISUPSMS hcISUPSMS = null;
@@ -165,6 +168,7 @@ public class SMS {
         struPreviewListen.byLinkMode = 0; //0- TCP方式，1- UDP方式
         struPreviewListen.write();
         int SmsHandle = hcISUPSMS.NET_ESTREAM_StartListenPreview(struPreviewListen);
+        listenHandle = SmsHandle;
         if (SmsHandle <0) {
             log.error("SMS流媒体服务监听失败, 错误码:"+hcISUPSMS.NET_ESTREAM_GetLastError());
             hcISUPSMS.NET_ESTREAM_Fini();
@@ -182,6 +186,16 @@ public class SMS {
     public class FPREVIEW_NEWLINK_CB implements HCISUPSMS.PREVIEW_NEWLINK_CB {
         @Override
         public boolean invoke(int lLinkHandle, HCISUPSMS.NET_EHOME_NEWLINK_CB_MSG pNewLinkCBMsg, Pointer pUserData) {
+
+            if (ehomePreviews.getObject().link(lLinkHandle,
+                    com.ruoyi.isup.ehome.EhomeNative.text(pNewLinkCBMsg.szDeviceID),
+                    pNewLinkCBMsg.dwChannelNo, pNewLinkCBMsg.byStreamType)) {
+                if (fPREVIEW_DATA_CB_WIN == null) fPREVIEW_DATA_CB_WIN = new FPREVIEW_DATA_CB_WIN();
+                HCISUPSMS.NET_EHOME_PREVIEW_DATA_CB_PARAM callback = new HCISUPSMS.NET_EHOME_PREVIEW_DATA_CB_PARAM();
+                callback.fnPreviewDataCB = fPREVIEW_DATA_CB_WIN;
+                callback.write();
+                return hcISUPSMS.NET_ESTREAM_SetPreviewDataCB(lLinkHandle, callback);
+            }
 
             HCISUPSMS.NET_EHOME_PREVIEW_DATA_CB_PARAM struDataCB = new HCISUPSMS.NET_EHOME_PREVIEW_DATA_CB_PARAM();
 
@@ -214,6 +228,13 @@ public class SMS {
         @Override
         public void invoke(int iPreviewHandle, HCISUPSMS.NET_EHOME_PREVIEW_CB_MSG pPreviewCBMsg, Pointer pUserData) {
 
+            if (ehomePreviews.getObject().hasLink(iPreviewHandle)) {
+                if (pPreviewCBMsg.pRecvdata != null && pPreviewCBMsg.dwDataLen > 0 && pPreviewCBMsg.dwDataLen <= 2 * 1024 * 1024) {
+                    ehomePreviews.getObject().data(iPreviewHandle, pPreviewCBMsg.pRecvdata.getByteArray(0, pPreviewCBMsg.dwDataLen));
+                }
+                return;
+            }
+
             switch (pPreviewCBMsg.byDataType) {
                 case HCNetSDK.NET_DVR_SYSHEAD:
                 {
@@ -227,7 +248,7 @@ public class SMS {
                     if(dataStream!=null){
                         Integer l = PreviewHandSAndSessionIDandMap.get(iPreviewHandle);
                         HandleStream handleStream = concurrentMap.get(l);
-                        handleStream.processStream(dataStream);
+                        if (handleStream != null) handleStream.processStream(dataStream);
                     }
                 }
             }
