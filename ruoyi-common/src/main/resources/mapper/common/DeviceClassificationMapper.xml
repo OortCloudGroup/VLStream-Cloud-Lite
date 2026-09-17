@@ -25,6 +25,8 @@
         select 'ISUP' protocol_type, cast(id as char) device_key, trim(device_id) logical_device_id
         from isup_device where device_id is not null and trim(device_id) != ''
         union all
+        select 'EHOME', cast(id as char), trim(device_id) from ehome_device
+        union all
         select 'RTSP', cast(id as char), coalesce(nullif(trim(stream_id), ''), cast(id as char))
         from rtsp_device
         union all
@@ -116,6 +118,7 @@
     <select id="countProtocolDevices" resultType="int">
         <choose>
             <when test="protocolType == 'ISUP'">select count(1) from isup_device</when>
+            <when test="protocolType == 'EHOME'">select count(1) from ehome_device</when>
             <when test="protocolType == 'RTSP'">select count(1) from rtsp_device</when>
             <when test="protocolType == 'ONVIF'">select count(1) from onvif_device</when>
             <when test="protocolType == 'GB28181'">select count(1) from wvp_device</when>

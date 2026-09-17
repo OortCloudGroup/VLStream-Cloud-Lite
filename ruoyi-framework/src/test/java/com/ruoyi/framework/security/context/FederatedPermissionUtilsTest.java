@@ -12,6 +12,8 @@ public class FederatedPermissionUtilsTest
     {
         assertTrue(FederatedPermissionUtils.isProtocolPermission("vlstream:device:list"));
         assertTrue(FederatedPermissionUtils.isProtocolPermission("custom:device:add"));
+        assertTrue(FederatedPermissionUtils.isProtocolPermission("ehome:device:list"));
+        assertTrue(FederatedPermissionUtils.isProtocolPermission("ehome:device:preview"));
     }
 
     @Test

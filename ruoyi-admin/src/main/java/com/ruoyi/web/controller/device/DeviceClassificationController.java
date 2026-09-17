@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/device/classification")
 public class DeviceClassificationController extends BaseController {
-    private static final String LIST_PERMISSIONS = "isup:lsupDevice:list,rtsp:RtspDevice:list,onvif:device:list,dahua:device:list,wvp:device:list,vlstream:device:list,custom:device:list";
-    private static final String EDIT_PERMISSIONS = "isup:lsupDevice:edit,rtsp:RtspDevice:edit,onvif:device:edit,dahua:device:edit,wvp:device:edit,vlstream:device:edit,custom:device:edit";
+    private static final String LIST_PERMISSIONS = "isup:lsupDevice:list,ehome:device:list,rtsp:RtspDevice:list,onvif:device:list,dahua:device:list,wvp:device:list,vlstream:device:list,custom:device:list";
+    private static final String EDIT_PERMISSIONS = "isup:lsupDevice:edit,ehome:device:edit,rtsp:RtspDevice:edit,onvif:device:edit,dahua:device:edit,wvp:device:edit,vlstream:device:edit,custom:device:edit";
 
     private final DeviceClassificationService service;
 

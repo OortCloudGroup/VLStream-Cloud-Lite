@@ -23,6 +23,7 @@ public final class FederatedPermissionUtils
 
         String normalized = permission.trim().toLowerCase(Locale.ROOT);
         return normalized.startsWith("isup:")
+                || normalized.startsWith("ehome:")
                 || normalized.startsWith("rtsp:")
                 || normalized.startsWith("onvif:")
                 || normalized.startsWith("dahua:")
