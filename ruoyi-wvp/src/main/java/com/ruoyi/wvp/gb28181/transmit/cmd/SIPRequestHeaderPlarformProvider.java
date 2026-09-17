@@ -106,6 +106,8 @@ public class SIPRequestHeaderPlarformProvider {
 			registerRequest.addHeader(authorizationHeader);
 			return  registerRequest;
 		}
+		String authUsername = parentPlatform.getUsername();
+		if (authUsername == null || authUsername.isEmpty()) authUsername = parentPlatform.getDeviceGBId();
 		String realm = www.getRealm();
 		String nonce = www.getNonce();
 		String scheme = www.getScheme();
@@ -126,7 +128,7 @@ public class SIPRequestHeaderPlarformProvider {
 				// TODO
 			}
 		}
-		String HA1 = DigestUtils.md5DigestAsHex((parentPlatform.getDeviceGBId() + ":" + realm + ":" + parentPlatform.getPassword()).getBytes());
+		String HA1 = DigestUtils.md5DigestAsHex((authUsername + ":" + realm + ":" + parentPlatform.getPassword()).getBytes());
 		String HA2=DigestUtils.md5DigestAsHex((Request.REGISTER + ":" + requestURI.toString()).getBytes());
 
 		StringBuffer reStr = new StringBuffer(200);
@@ -147,7 +149,7 @@ public class SIPRequestHeaderPlarformProvider {
 		String RESPONSE = DigestUtils.md5DigestAsHex(reStr.toString().getBytes());
 
 		AuthorizationHeader authorizationHeader = SipFactory.getInstance().createHeaderFactory().createAuthorizationHeader(scheme);
-		authorizationHeader.setUsername(parentPlatform.getDeviceGBId());
+		authorizationHeader.setUsername(authUsername);
 		authorizationHeader.setRealm(realm);
 		authorizationHeader.setNonce(nonce);
 		authorizationHeader.setURI(requestURI);

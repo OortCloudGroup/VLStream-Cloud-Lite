@@ -1,6 +1,7 @@
 package com.ruoyi.wvp.gb28181.transmit.event.response.impl;
 
 import com.ruoyi.wvp.gb28181.bean.Platform;
+import com.ruoyi.wvp.gb28181.utils.RegistrationExpiry;
 import com.ruoyi.wvp.gb28181.bean.PlatformCatch;
 import com.ruoyi.wvp.gb28181.bean.SipTransactionInfo;
 import com.ruoyi.wvp.gb28181.service.IPlatformService;
@@ -91,7 +92,12 @@ public class RegisterResponseProcessor extends SIPResponseProcessorAbstract {
 
 			if (platformRegisterInfo.isRegister()) {
 				SipTransactionInfo sipTransactionInfo = new SipTransactionInfo(response);
-				platformService.online(parentPlatform, sipTransactionInfo);
+				int grantedExpires = RegistrationExpiry.resolve(response, parentPlatform);
+				if (grantedExpires == 0) {
+					platformService.offline(parentPlatform, false);
+				} else {
+					platformService.online(parentPlatform, sipTransactionInfo, grantedExpires);
+				}
 			}else {
 				platformService.offline(parentPlatform, true);
 			}

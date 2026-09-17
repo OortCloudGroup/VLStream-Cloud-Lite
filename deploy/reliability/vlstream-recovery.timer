@@ -1,0 +1,12 @@
+[Unit]
+Description=Inspect VLStream every minute
+After=vlstream-stack.service
+
+[Timer]
+OnBootSec=30
+OnUnitInactiveSec=60
+AccuracySec=5
+Unit=vlstream-recovery.service
+
+[Install]
+WantedBy=timers.target

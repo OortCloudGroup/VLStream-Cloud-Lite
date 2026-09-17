@@ -13,8 +13,6 @@ import com.ruoyi.wvp.service.bean.GPSMsgInfo;
 import com.ruoyi.wvp.utils.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,12 +38,8 @@ public class MobilePositionServiceImpl implements IMobilePositionService {
     @Autowired
     private PlatformMapper platformMapper;
 
-    @Autowired
-    private RedisTemplate<String, MobilePosition> redisTemplate;
-
-    private final String REDIS_MOBILE_POSITION_LIST = "redis_mobile_position_list";
-
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void add(MobilePosition mobilePosition) {
         List<MobilePosition> list = new ArrayList<>();
         list.add(mobilePosition);
@@ -53,16 +47,13 @@ public class MobilePositionServiceImpl implements IMobilePositionService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void add(List<MobilePosition> mobilePositionList) {
-        redisTemplate.opsForList().leftPushAll(REDIS_MOBILE_POSITION_LIST, mobilePositionList);
-    }
-
-    private List<MobilePosition> get(int length) {
-        Long size = redisTemplate.opsForList().size(REDIS_MOBILE_POSITION_LIST);
-        if (size == null || size == 0) {
-            return new ArrayList<>();
+        if (mobilePositionList == null || mobilePositionList.isEmpty()) return;
+        // Bound each SQL batch while keeping the whole incoming report in one transaction.
+        for (int start = 0; start < mobilePositionList.size(); start += 3000) {
+            persistPositions(mobilePositionList.subList(start, Math.min(start + 3000, mobilePositionList.size())));
         }
-        return redisTemplate.opsForList().rightPop(REDIS_MOBILE_POSITION_LIST, Math.min(length, size));
     }
 
 
@@ -94,14 +85,7 @@ public class MobilePositionServiceImpl implements IMobilePositionService {
         channelMapper.updateStreamGPS(gpsMsgInfoList);
     }
 
-    @Scheduled(fixedDelay = 1000)
-    @Transactional
-    public void executeTaskQueue() {
-        int countLimit = 3000;
-        List<MobilePosition> mobilePositions = get(countLimit);
-        if (mobilePositions == null || mobilePositions.isEmpty()) {
-            return;
-        }
+    private void persistPositions(List<MobilePosition> mobilePositions) {
         if (userSetting.getSavePositionHistory()) {
             mobilePositionMapper.batchadd(mobilePositions);
         }
@@ -115,7 +99,7 @@ public class MobilePositionServiceImpl implements IMobilePositionService {
             deviceChannel.setLatitude(mobilePosition.getLatitude());
             deviceChannel.setGpsTime(mobilePosition.getTime());
             deviceChannel.setUpdateTime(DateUtil.getNow());
-            updateChannelMap.put(mobilePosition.getDeviceId() + mobilePosition.getChannelId(), deviceChannel);
+            updateChannelMap.put(mobilePosition.getDeviceId() + ":" + mobilePosition.getChannelId(), deviceChannel);
         }
         List<DeviceChannel> channels = new ArrayList<>(updateChannelMap.values());
         channelMapper.batchUpdatePosition(channels);

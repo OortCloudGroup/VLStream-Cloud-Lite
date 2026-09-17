@@ -1,0 +1,13 @@
+[Unit]
+Description=VLStream bounded container recovery
+After=vlstream-stack.service
+Requisite=vlstream-stack.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/vlstream/app
+StateDirectory=vlstream-recovery
+StateDirectoryMode=0700
+UMask=0077
+ExecStart=/usr/bin/python3 /opt/vlstream/app/deploy/reliability/recovery.py --project-directory /opt/vlstream/app --state /var/lib/vlstream-recovery/state.json --apply
+TimeoutStartSec=300

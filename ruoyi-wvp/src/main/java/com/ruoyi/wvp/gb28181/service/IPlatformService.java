@@ -49,6 +49,8 @@ public interface IPlatformService {
      */
     void online(Platform parentPlatform, SipTransactionInfo sipTransactionInfo);
 
+    void online(Platform parentPlatform, SipTransactionInfo sipTransactionInfo, int grantedExpires);
+
     /**
      * 平台离线
      * @param parentPlatform 平台信息

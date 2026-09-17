@@ -258,6 +258,11 @@ public class PlatformServiceImpl implements IPlatformService {
 
     @Override
     public void online(Platform platform, SipTransactionInfo sipTransactionInfo) {
+        online(platform, sipTransactionInfo, platform.getExpires());
+    }
+
+    @Override
+    public void online(Platform platform, SipTransactionInfo sipTransactionInfo, int grantedExpires) {
         log.info("[国标级联]：{}, 平台上线", platform.getServerGBId());
         final String registerFailAgainTaskKey = REGISTER_FAIL_AGAIN_KEY_PREFIX + platform.getServerGBId();
         dynamicTask.stop(registerFailAgainTaskKey);
@@ -277,14 +282,11 @@ public class PlatformServiceImpl implements IPlatformService {
         redisCatchStorage.updatePlatformCatchInfo(platformCatch);
 
         final String registerTaskKey = REGISTER_KEY_PREFIX + platform.getServerGBId();
-        if (!dynamicTask.isAlive(registerTaskKey)) {
-            log.info("[国标级联]：{}, 添加定时注册任务", platform.getServerGBId());
-            // 添加注册任务
-            dynamicTask.startCron(registerTaskKey,
-                // 注册失败（注册成功时由程序直接调用了online方法）
-                ()-> registerTask(platform, sipTransactionInfo),
-                    platform.getExpires() * 1000);
-        }
+        dynamicTask.stop(registerTaskKey);
+        int renewalDelay = com.ruoyi.wvp.gb28181.utils.RegistrationExpiry.renewalDelayMillis(platform.getExpires(), grantedExpires);
+        log.info("[国标级联]：{}, 注册有效期 {} 秒，{} 毫秒后续注册", platform.getServerGBId(), grantedExpires, renewalDelay);
+        // A successful response starts a new lease, including responses to periodic refreshes.
+        dynamicTask.startCron(registerTaskKey, () -> registerTask(platform, sipTransactionInfo), renewalDelay);
 
 
         final String keepaliveTaskKey = KEEPALIVE_KEY_PREFIX + platform.getServerGBId();
@@ -302,7 +304,11 @@ public class PlatformServiceImpl implements IPlatformService {
                                 // 心跳失败
                                 PlatformCatch platformCatchForNow = redisCatchStorage.queryPlatformCatchInfo(platform.getServerGBId());
                                 // 此时是第三次心跳超时， 平台离线
-                                if (platformCatchForNow.getKeepAliveReply()  == 2) {
+                                if (platformCatchForNow == null) {
+                                    log.warn("[国标级联] 心跳缓存缺失，等待运行状态重建");
+                                    return;
+                                }
+                                if (platformCatchForNow.getKeepAliveReply() >= 2) {
                                     // 设置平台离线，并重新注册
                                     log.info("[国标级联] 三次心跳失败, 平台{}({})离线", platform.getName(), platform.getServerGBId());
                                     offline(platform, false);
