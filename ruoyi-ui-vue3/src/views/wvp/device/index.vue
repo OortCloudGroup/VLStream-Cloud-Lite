@@ -225,7 +225,8 @@
         v-model="showDialog"
         append-to-body
     >
-      <div id="shared" style="margin-top: 1rem;margin-right: 100px;">
+      <template #header><div class="gb-dialog-heading"><span>国标服务信息</span><el-button link type="primary" @click="showHelp = true">帮助说明</el-button></div></template>
+      <div id="shared" style="margin-top: 1rem;">
         <el-descriptions v-if="configInfoData.sip" :span="2" border>
           <el-descriptions-item label="编号">{{ configInfoData.sip.id }}</el-descriptions-item>
           <el-descriptions-item label="域">{{ configInfoData.sip.domain }}</el-descriptions-item>
@@ -253,6 +254,7 @@
     </el-dialog>
 
 
+    <GbHelpDialog v-model="showHelp" mode="service" />
     <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
@@ -261,6 +263,8 @@
 </template>
 
 <script setup name="Device">
+import GbHelpDialog from '@/components/GbHelpDialog.vue'
+const showHelp = ref(false)
 import {checkPermi} from "@/utils/permission";
 import MapGaoDe from "@/components/MapGaoDe/index.vue";
 import {

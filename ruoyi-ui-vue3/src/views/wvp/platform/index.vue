@@ -104,16 +104,17 @@
     />
 
     <el-dialog :title="title" v-model="open" width="65%" append-to-body>
+      <template #header><div class="gb-dialog-heading"><span>{{ title }}</span><el-button link type="primary" @click="showHelp = true"><el-icon class="gb-help-icon"><QuestionFilled /></el-icon>帮助说明与示例</el-button></div></template>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="130px">
         <el-row>
           <el-col :span="12">
             <el-form-item label="名称" prop="name">
-              <el-input v-model="form.name"></el-input>
+              <el-input v-model="form.name" :placeholder="platformExample.name"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="SIP服务国标编码" prop="serverGBId">
-              <el-input v-model="form.serverGBId" clearable @input="serverGBIdChange"></el-input>
+              <el-input v-model="form.serverGBId" :placeholder="platformExample.serverGBId" clearable @input="serverGBIdChange"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -121,12 +122,12 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="SIP服务国标域" prop="serverGBDomain">
-              <el-input v-model="form.serverGBDomain" clearable></el-input>
+              <el-input v-model="form.serverGBDomain" :placeholder="platformExample.serverGBDomain" clearable></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="SIP服务IP" prop="serverIp">
-              <el-input v-model="form.serverIp" clearable></el-input>
+              <el-input v-model="form.serverIp" :placeholder="platformExample.serverIp" clearable></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -134,12 +135,12 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="SIP服务端口" prop="serverPort">
-              <el-input v-model="form.serverPort" clearable type="number"></el-input>
+              <el-input v-model="form.serverPort" :placeholder="platformExample.serverPort" clearable type="number"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="设备国标编号" prop="deviceGBId">
-              <el-input v-model="form.deviceGBId" clearable @input="deviceGBIdChange"></el-input>
+              <el-input v-model="form.deviceGBId" :placeholder="platformExample.deviceGBId" clearable @input="deviceGBIdChange"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -147,7 +148,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="本地IP" prop="deviceIp">
-              <el-select v-model="form.deviceIp" placeholder="请选择与上级相通的网卡" style="width: 100%">
+              <el-select v-model="form.deviceIp" placeholder="选择与上级相通的网卡，如 192.0.2.10" style="width: 100%">
                 <el-option
                     v-for="ip in deviceIps"
                     :key="ip"
@@ -167,12 +168,12 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="SIP认证用户名" prop="username">
-              <el-input v-model="form.username"></el-input>
+              <el-input v-model="form.username" placeholder="填写上级分配的认证用户名"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="SIP认证密码" prop="password">
-              <el-input v-model="form.password"></el-input>
+              <el-input v-model="form.password" placeholder="填写上级约定的 SIP 密码" show-password></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -180,12 +181,12 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="注册周期(秒)" prop="expires">
-              <el-input v-model="form.expires"></el-input>
+              <el-input v-model="form.expires" :placeholder="platformExample.expires"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="心跳周期(秒)" prop="keepTimeout">
-              <el-input v-model="form.keepTimeout"></el-input>
+              <el-input v-model="form.keepTimeout" :placeholder="platformExample.keepTimeout"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -193,7 +194,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="SDP发流IP" prop="sendStreamIp">
-              <el-input v-model="form.sendStreamIp"></el-input>
+              <el-input v-model="form.sendStreamIp" :placeholder="platformExample.sendStreamIp"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -201,7 +202,7 @@
               <el-select
                   v-model="form.transport"
                   style="width: 100%"
-                  placeholder="请选择信令传输方式"
+                  placeholder="例如：UDP（与上级一致）"
               >
                 <el-option label="UDP" value="UDP"></el-option>
                 <el-option label="TCP" value="TCP"></el-option>
@@ -241,7 +242,7 @@
               <el-select
                   v-model="form.characterSet"
                   style="width: 100%"
-                  placeholder="请选择字符集"
+                  placeholder="例如：GB2312（与上级一致）"
               >
                 <el-option label="GB2312" value="GB2312"></el-option>
                 <el-option label="UTF-8" value="UTF-8"></el-option>
@@ -303,10 +304,14 @@
         </div>
       </template>
     </el-dialog>
+    <GbHelpDialog v-model="showHelp" mode="platform" />
   </div>
 </template>
 
 <script setup name="Platform">
+import GbHelpDialog from '@/components/GbHelpDialog.vue'
+import { platformExample } from '@/utils/gbHelp'
+const showHelp = ref(false)
 import {
   addPlatform,
   delPlatform,

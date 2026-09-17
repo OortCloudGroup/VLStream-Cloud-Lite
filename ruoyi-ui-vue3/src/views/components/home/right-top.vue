@@ -1,6 +1,6 @@
 <script setup name="RightTop">
 import {defineExpose, nextTick, onBeforeUnmount, ref} from 'vue';
-import * as echarts from 'echarts';
+import { getHomeChart, chartTextColor } from './homeChart';
 import moment from 'moment'
 
 defineExpose({setData})
@@ -12,7 +12,8 @@ function setData(cpuList) {
   let dataList = cpuList?.map(i => (i.data*100).toFixed(2))
   nextTick(() => {
     const chartDom = document.getElementById('rightTopChart');
-    let chart = echarts.init(chartDom);
+    let chart = getHomeChart(chartDom);
+    if (!chart) return;
     myChart.value = chart
     let option;
     option = {
@@ -84,16 +85,17 @@ function setData(cpuList) {
 }
 
 function resize() {
-  myChart.value.resize();
+  myChart.value?.resize?.();
 }
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize",resize);
+  myChart.value?.dispose?.();
 })
 </script>
 
 <template>
-  <div style="width: 100%;height: 350px;" id="rightTopChart"></div>
+  <div style="width: 100%;height: 300px;" id="rightTopChart"></div>
 </template>
 
 <style scoped lang="scss"></style>

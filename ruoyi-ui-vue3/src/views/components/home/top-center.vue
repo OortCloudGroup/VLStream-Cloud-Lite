@@ -1,9 +1,9 @@
 <template>
-  <div style="width: 100%;height: 350px;" id="topCenterChart"></div>
+  <div style="width: 100%;height: 300px;" id="topCenterChart"></div>
 </template>
 
 <script setup name="TopCenter">
-import * as echarts from 'echarts';
+import { getHomeChart, chartTextColor } from './homeChart';
 import {countGbNum} from "../../../api/index.js";
 import {graphic} from "echarts/core";
 
@@ -28,7 +28,8 @@ onMounted(()=>{
   countGbNum().then((res)=>{
     nextTick(() => {
       const chartDom = document.getElementById('topCenterChart');
-      let chart = echarts.init(chartDom);
+      let chart = getHomeChart(chartDom);
+    if (!chart) return;
 
       state.offlineNum = res.data.offlineNum;
       state.onlineNum = res.data.onlineNum;
@@ -45,14 +46,14 @@ onMounted(()=>{
           textStyle: {
             rich: {
               value: {
-                color: "#ffffff",
+                color: chartTextColor(chartDom),
                 fontSize: 24,
                 fontWeight: "bold",
                 lineHeight: 20,
                 padding:[4,0,4,0]
               },
               name: {
-                color: "#ffffff",
+                color: chartTextColor(chartDom),
                 lineHeight: 20,
               },
             },
@@ -70,7 +71,7 @@ onMounted(()=>{
           {
             name: "国标总览",
             type: "pie",
-            radius: ["40%", "70%"],
+            radius: ["38%", "56%"],
             // avoidLabelOverlap: false,
             itemStyle: {
               borderRadius: 6,
@@ -84,7 +85,7 @@ onMounted(()=>{
               //   position: "outside",
               rich: {
                 b: {
-                  color: "#000",
+                  color: chartTextColor(chartDom),
                   fontSize: 12,
                   lineHeight: 26,
                 },
@@ -108,8 +109,8 @@ onMounted(()=>{
 
             labelLine: {
               show: true,
-              length: 20, // 第一段线 长度
-              length2: 36, // 第二段线 长度
+              length: 10,
+              length2: 10,
               smooth: 0.2,
               lineStyle: {},
             },
@@ -141,11 +142,12 @@ onMounted(()=>{
 })
 
 function resize() {
-  myChart.value.resize();
+  myChart.value?.resize?.();
 }
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize",resize);
+  myChart.value?.dispose?.();
 })
 </script>
 

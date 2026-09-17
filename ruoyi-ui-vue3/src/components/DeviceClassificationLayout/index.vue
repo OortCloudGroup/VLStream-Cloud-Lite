@@ -1,58 +1,77 @@
 <template>
   <div class="classification-layout">
     <aside v-yResize class="classification-sidebar">
-      <el-tabs v-model="activeType" stretch @tab-change="handleTabChange">
+      <el-tabs v-model="activeType" class="left-tabs" @tab-change="handleTabChange">
         <el-tab-pane v-for="tab in tabs" :key="tab.value" :label="tab.label" :name="tab.value" />
       </el-tabs>
 
-      <el-scrollbar class="classification-tree-scroll">
-        <el-tree
-          ref="treeRef"
-          :data="displayTree"
-          node-key="id"
-          default-expand-all
-          highlight-current
-          :expand-on-click-node="false"
-          @node-click="handleNodeClick"
-        >
-          <template #default="{ data }">
-            <div class="custom-tree-node">
-              <span class="tree-node-label">
-                <el-icon><Folder /></el-icon>
-                <span class="tree-node-name">{{ data.categoryName }}</span>
-                <span class="classification-count">{{ data.deviceCount }}</span>
-              </span>
-              <span
-                v-if="selectedCategory && String(selectedCategory.id) === String(data.id)"
-                class="tree-node-actions"
-                @click.stop
-              >
-                <el-tooltip content="新增" placement="top">
-                  <el-icon class="tree-action-icon" @click.stop="openCategoryDialog('add', data)"><Plus /></el-icon>
-                </el-tooltip>
-                <el-tooltip content="修改" placement="top">
-                  <el-icon class="tree-action-icon" @click.stop="openCategoryDialog('edit', data)"><Edit /></el-icon>
-                </el-tooltip>
-                <el-tooltip content="删除" placement="top">
-                  <el-icon class="tree-action-icon danger" @click.stop="removeCategory(data)"><Delete /></el-icon>
-                </el-tooltip>
-              </span>
-            </div>
-          </template>
-        </el-tree>
-      </el-scrollbar>
+      <div class="tree-title">{{ activeLabel }}</div>
+      <div class="tree-search-content">
+        <el-input v-model="treeSearchKeyword" placeholder="搜索" clearable prefix-icon="Search" />
+      </div>
 
-      <el-button class="assign-button" type="primary" plain :disabled="normalizedDeviceKeys.length === 0" @click="openAssignment">
-        设置分类<span v-if="normalizedDeviceKeys.length">（{{ normalizedDeviceKeys.length }}）</span>
-      </el-button>
-      <div class="selection-hint">勾选一台可单独设置，勾选多台可批量设置</div>
+      <el-tree
+        ref="treeRef"
+        class="classification-tree"
+        :data="displayTree"
+        :props="treeProps"
+        node-key="id"
+        default-expand-all
+        highlight-current
+        :expand-on-click-node="false"
+        :filter-node-method="filterNode"
+        @node-click="handleNodeClick"
+      >
+        <template #empty>
+          <div class="tree-empty" :class="{ readonly }" @click="openRootAdd">
+            {{ readonly ? '暂无数据' : '暂无数据，点击新增' }}
+          </div>
+        </template>
+        <template #default="{ node, data }">
+          <div
+            class="custom-tree-node"
+            @mouseenter="hoveredTreeNodeId = data.id"
+            @mouseleave="hoveredTreeNodeId = null"
+          >
+            <div class="tree-node-main">
+              <el-icon class="tree-icon"><Folder /></el-icon>
+              <el-tooltip :open-delay="500" effect="light" :content="node.label" placement="top">
+                <div
+                  class="tree-node-label"
+                  :class="{ active: selectedCategory && String(selectedCategory.id) === String(data.id) }"
+                  @dblclick.stop="handleEditNode(data)"
+                >
+                  {{ data.categoryName }} ({{ data.deviceCount || 0 }})
+                </div>
+              </el-tooltip>
+            </div>
+            <div
+              v-if="!readonly"
+              v-show="hoveredTreeNodeId === data.id || (selectedCategory && String(selectedCategory.id) === String(data.id))"
+              class="tree-node-actions"
+              @click.stop
+            >
+              <el-tooltip content="删除" placement="top">
+                <el-icon class="tree-action-icon danger" @click="handleRemoveNode(data)"><Delete /></el-icon>
+              </el-tooltip>
+              <el-tooltip content="新增子分类" placement="top">
+                <el-icon class="tree-action-icon" @click="handleAddChild(data)"><Plus /></el-icon>
+              </el-tooltip>
+            </div>
+          </div>
+        </template>
+      </el-tree>
+
+      <template v-if="showAssignment">
+        <el-button class="assign-button" type="primary" plain :disabled="normalizedDeviceKeys.length === 0" @click="openAssignment">
+          设置分类<span v-if="normalizedDeviceKeys.length">（{{ normalizedDeviceKeys.length }}）</span>
+        </el-button>
+        <div class="selection-hint">勾选一台可单独设置，勾选多台可批量设置</div>
+      </template>
     </aside>
 
     <main class="classification-content">
-      <ProtocolTabs embedded />
-      <div class="classification-content-body">
-        <slot />
-      </div>
+      <div class="classification-content-body"><slot /></div>
     </main>
 
     <el-dialog v-model="categoryDialog.visible" :title="categoryDialog.mode === 'add' ? `新增${activeLabel}` : `修改${activeLabel}`" width="30%" append-to-body>
@@ -64,7 +83,7 @@
             node-key="id"
             check-strictly
             default-expand-all
-            :props="{ label: 'categoryName', children: 'children' }"
+            :props="treeProps"
             style="width: 100%"
           />
         </el-form-item>
@@ -76,14 +95,12 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" :loading="categoryDialog.saving" @click="submitCategory">确定</el-button>
-          <el-button @click="categoryDialog.visible = false">取消</el-button>
-        </div>
+        <el-button @click="categoryDialog.visible = false">取消</el-button>
+        <el-button type="primary" :loading="categoryDialog.saving" @click="submitCategory">确定</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="assignmentDialog.visible" title="设置设备分类" width="34%" append-to-body>
+    <el-dialog v-if="showAssignment" v-model="assignmentDialog.visible" title="设置设备分类" width="34%" append-to-body>
       <el-alert
         v-if="normalizedDeviceKeys.length > 1"
         title="批量设置会用本次选择覆盖这些设备原有的区域、分组和标签"
@@ -104,20 +121,17 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" :loading="assignmentDialog.saving" @click="submitAssignment">保存</el-button>
-          <el-button @click="assignmentDialog.visible = false">取消</el-button>
-        </div>
+        <el-button @click="assignmentDialog.visible = false">取消</el-button>
+        <el-button type="primary" :loading="assignmentDialog.saving" @click="submitAssignment">保存</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref } from 'vue'
-import { Delete, Edit, Folder, Plus } from '@element-plus/icons-vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { Delete, Folder, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import ProtocolTabs from '@/layout/components/ProtocolTabs.vue'
 import {
   addClassificationCategory,
   deleteClassificationCategory,
@@ -129,7 +143,9 @@ import {
 
 const props = defineProps({
   protocolType: { type: String, required: true },
-  selectedDeviceKeys: { type: Array, default: () => [] }
+  selectedDeviceKeys: { type: Array, default: () => [] },
+  showAssignment: { type: Boolean, default: true },
+  readonly: { type: Boolean, default: false }
 })
 const emit = defineEmits(['filter-change', 'assigned'])
 
@@ -142,6 +158,8 @@ const treeProps = { label: 'categoryName', children: 'children' }
 const activeType = ref('REGION')
 const treeRef = ref()
 const selectedCategory = ref(null)
+const hoveredTreeNodeId = ref(null)
+const treeSearchKeyword = ref('')
 const treeCache = reactive({
   REGION: { tree: [], totalCount: 0, unclassifiedCount: 0 },
   GROUP: { tree: [], totalCount: 0, unclassifiedCount: 0 },
@@ -151,6 +169,12 @@ const treeCache = reactive({
 const normalizedDeviceKeys = computed(() => props.selectedDeviceKeys.filter(key => key !== null && key !== undefined && key !== '').map(key => String(key)))
 const activeLabel = computed(() => tabs.find(tab => tab.value === activeType.value)?.label || '')
 const displayTree = computed(() => treeCache[activeType.value].tree)
+
+watch(treeSearchKeyword, value => treeRef.value?.filter(value))
+
+function filterNode(value, data) {
+  return !value || (data.categoryName || '').includes(value)
+}
 
 async function loadTree(type = activeType.value) {
   const response = await getClassificationTree(type, props.protocolType)
@@ -166,6 +190,8 @@ async function loadAllTrees() {
 
 async function handleTabChange(type) {
   selectedCategory.value = null
+  treeSearchKeyword.value = ''
+  hoveredTreeNodeId.value = null
   await loadTree(type)
   emit('filter-change', { categoryType: undefined, categoryId: undefined, unclassified: undefined })
   nextTick(() => treeRef.value?.setCurrentKey(null))
@@ -198,18 +224,27 @@ function openCategoryDialog(mode, node) {
   categoryDialog.mode = mode
   categoryForm.id = mode === 'edit' ? String(target.id) : undefined
   categoryForm.categoryType = activeType.value
-  if (mode === 'edit') {
-    categoryForm.parentId = String(target.parentId || 0)
-    categoryForm.categoryName = target.categoryName
-    categoryForm.sortNum = target.sortNum || 0
-  } else {
-    // add under clicked node, or root if null
-    categoryForm.parentId = target ? String(target.id) : '0'
-    categoryForm.categoryName = ''
-    categoryForm.sortNum = 0
-  }
+  categoryForm.parentId = mode === 'edit' ? String(target.parentId || 0) : (target ? String(target.id) : '0')
+  categoryForm.categoryName = mode === 'edit' ? target.categoryName : ''
+  categoryForm.sortNum = mode === 'edit' ? (target.sortNum || 0) : 0
   categoryDialog.visible = true
   nextTick(() => categoryFormRef.value?.clearValidate())
+}
+
+function openRootAdd() {
+  if (!props.readonly) openCategoryDialog('add')
+}
+
+function handleAddChild(data) {
+  openCategoryDialog('add', data)
+}
+
+function handleEditNode(data) {
+  if (!props.readonly) openCategoryDialog('edit', data)
+}
+
+function handleRemoveNode(data) {
+  removeCategory(data)
 }
 
 async function submitCategory() {
@@ -277,12 +312,10 @@ async function submitAssignment() {
   }
 }
 
-onMounted(async () => {
-  await loadTree('REGION')
-})
+onMounted(() => loadTree('REGION'))
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .classification-layout {
   display: flex;
   align-items: stretch;
@@ -296,117 +329,79 @@ onMounted(async () => {
 
 .classification-sidebar {
   width: 300px;
+  padding-right: 20px;
   flex-shrink: 0;
-  padding: 0 20px 0 0;
-  margin: 0;
-  background: transparent;
-  border-radius: 0;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  line-height: normal;
-  font-size: inherit;
-  color: inherit;
-}
-
-.classification-tree-scroll {
-  flex: 1;
-  min-height: 360px;
-  margin: 10px -6px;
-}
-
-.custom-tree-node {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding-right: 8px;
-  min-width: 0;
-}
-
-.tree-node-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
-}
-
-.tree-node-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tree-node-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  margin-left: 8px;
-}
-
-.tree-action-icon {
-  cursor: pointer;
-  font-size: 16px;
-  color: var(--el-color-primary);
-}
-
-.tree-action-icon.danger {
-  color: var(--el-color-danger);
-}
-
-.classification-count {
-  color: #909399;
-  font-size: 12px;
-}
-
-.assign-button {
-  width: 100%;
-  margin-top: 8px;
-}
-
-.selection-hint {
-  color: #909399;
-  font-size: 12px;
-  line-height: 18px;
-  text-align: center;
-  margin-top: 8px;
-}
-
-.classification-content {
-  flex: 1;
-  min-width: 0;
   min-height: 0;
-  background: transparent;
-  border-radius: 0;
-  box-sizing: border-box;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.classification-content-body {
+.left-tabs {
+  margin-bottom: 12px;
+  flex-shrink: 0;
+
+  :deep(.el-tabs__header) { margin: 0; border-bottom: 1px solid #e4e7ed; }
+  :deep(.el-tabs__nav-wrap::after) { display: none; }
+  :deep(.el-tabs__nav) { display: flex; width: 100%; }
+  :deep(.el-tabs__item) { flex: 1; height: 40px; padding: 0; line-height: 40px; text-align: center; }
+}
+
+.tree-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 20px;
+  color: var(--el-color-primary);
+  flex-shrink: 0;
+
+  &::before { content: ''; width: 3px; height: 18px; background: var(--el-color-primary); }
+}
+
+.tree-search-content {
+  padding-bottom: 10px;
+  flex-shrink: 0;
+
+  :deep(.el-input__wrapper) { background: #fff; border: 1px solid #dcdfe6; border-radius: 4px; box-shadow: none; }
+}
+
+.classification-tree {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  background: #fff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar { display: none; }
+  :deep(.el-tree-node__content) {
+    --el-tree-node-hover-bg-color: var(--el-menu-hover-bg-color);
+    height: 38px;
+    color: #333;
+    font-size: 14px;
+  }
+  :deep(.el-tree-node.is-current.is-focusable > .el-tree-node__content) { color: var(--el-color-primary); background: var(--el-color-primary-light-9); }
 }
 
-.classification-content-body :deep(.app-container) {
-  padding: 0;
-}
+.custom-tree-node,
+.tree-node-main,
+.tree-node-actions { display: flex; align-items: center; }
+.custom-tree-node { width: 100%; min-width: 0; justify-content: space-between; padding-right: 4px; }
+.tree-node-main { flex: 1; min-width: 0; gap: 4px; overflow: hidden; }
+.tree-node-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-node-label.active { color: var(--el-color-primary); }
+.tree-node-actions { flex-shrink: 0; gap: 8px; margin-left: 8px; }
+.tree-action-icon { cursor: pointer; color: var(--el-color-primary); }
+.tree-action-icon.danger { color: var(--el-color-danger); }
+.tree-icon { flex-shrink: 0; color: var(--el-color-primary); font-size: 14px; }
 
-.assignment-alert {
-  margin-bottom: 18px;
-}
+.assign-button { width: 100%; margin-top: 8px; flex-shrink: 0; }
+.selection-hint { margin-top: 8px; color: #909399; font-size: 12px; line-height: 18px; text-align: center; flex-shrink: 0; }
+.tree-empty { padding: 24px 0; color: #909399; font-size: 14px; text-align: center; cursor: pointer; }
+.tree-empty.readonly { cursor: default; }
 
-:deep(.el-tree-node__content) {
-  height: 34px;
-}
-
-:deep(.el-tree-node__content > .custom-tree-node) {
-  flex: 1;
-  min-width: 0;
-}
+.classification-content { flex: 1; min-width: 0; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.classification-content-body { flex: 1; min-height: 0; overflow: auto; }
+.classification-content-body :deep(.app-container) { padding: 0; }
+.assignment-alert { margin-bottom: 18px; }
 </style>

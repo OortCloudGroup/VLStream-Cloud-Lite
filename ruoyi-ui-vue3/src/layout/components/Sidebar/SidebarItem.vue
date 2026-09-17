@@ -9,7 +9,16 @@
       </app-link>
     </template>
 
-    <el-sub-menu v-else ref="subMenu" :index="resolvePath(item.path)" teleported>
+    <el-sub-menu
+      v-else
+      ref="subMenu"
+      :index="resolvePath(item.path)"
+      :class="{
+        'align-root-menu': ['log', 'gbmanger'].includes(String(item.path || '').replace(/^\//, '')),
+        'align-top-menu': String(item.path || '').replace(/^\//, '') === 'device-manage'
+      }"
+      teleported
+    >
       <template v-if="item.meta" #title>
         <svg-icon :icon-class="resolveIcon(item.meta?.icon)" />
         <span class="menu-title" :title="hasTitle(item.meta.title)">{{ item.meta.title }}</span>

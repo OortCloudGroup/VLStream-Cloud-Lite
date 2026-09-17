@@ -562,8 +562,9 @@
                 v-for="(item, index) in currentSplitSlots"
                 :key="`${splitShow}-${index}`"
                 :style="getCellStyle(index)"
-                :class="['player-cell', { active: activePlayerIndex === index }]"
-                @click="setActivePlayer(index)">
+                :class="['player-cell', { active: activePlayerIndex === index, 'fallback-fullscreen': fallbackFullscreenIndex === index }]"
+                @click="setActivePlayer(index)"
+                @dblclick="togglePlayerFullscreen($event)">
               <div v-if="item.data" class="player-delete">
                 <el-tooltip effect="dark" content="删除" placement="top">
                   <el-icon @click.stop="deleteVideo(index)"><Delete/></el-icon>
@@ -572,12 +573,12 @@
 
               <template v-if="item.data">
                 <div v-if="item.type === 'GB'" class="player-fill">
-                  <Jessibuca v-show="vUrls[index]" :ref="'video' + index" :videoUrl="vUrls[index]" fluent autoplay live
+                  <Jessibuca v-show="vUrls[index]" :ref="'video' + index" :videoUrl="vUrls[index]" fluent autoplay live @dblclick.stop
                              :key="'jessibuca-'+index"/>
                 </div>
                 <div v-else class="player-fill">
                   <div v-if="item.data.playType === '2'" class="player-fill">
-                    <Jessibuca :videoUrl="vUrls[index]" fluent autoplay live :key="'jessibuca-'+index"/>
+                    <Jessibuca :videoUrl="vUrls[index]" fluent autoplay live @dblclick.stop :key="'jessibuca-'+index"/>
                   </div>
                   <video v-else :id="'rtspVideo' + index" muted playsinline controls class="player-fill"></video>
                 </div>
@@ -1322,6 +1323,7 @@ function confirmCustomScreen() {
 }
 
 const workbenchPlayersRef = ref(null)
+const fallbackFullscreenIndex = ref(null)
 
 function toggleWorkbenchFullscreen() {
   const el = workbenchPlayersRef.value
@@ -1331,6 +1333,36 @@ function toggleWorkbenchFullscreen() {
   } else {
     document.exitFullscreen?.()
   }
+}
+
+async function togglePlayerFullscreen(event) {
+  const playerCell = event.currentTarget
+  const playerIndex = Number(playerCell.id.replace('video', ''))
+
+  if (fallbackFullscreenIndex.value === playerIndex) {
+    fallbackFullscreenIndex.value = null
+    return
+  }
+
+  if (document.fullscreenElement === playerCell) {
+    await document.exitFullscreen?.()
+    return
+  }
+
+  if (typeof playerCell.requestFullscreen === 'function' && document.fullscreenEnabled) {
+    try {
+      await playerCell.requestFullscreen()
+      return
+    } catch (error) {
+      // 部分内嵌浏览器禁止原生全屏，改为页面内全屏，仍保持同样的观看体验。
+    }
+  }
+
+  fallbackFullscreenIndex.value = playerIndex
+}
+
+function handleFullscreenEscape(event) {
+  if (event.key === 'Escape') fallbackFullscreenIndex.value = null
 }
 
 const handleClick = (tab, event) => {
@@ -1770,9 +1802,14 @@ function onvifPtzCtrlEndFun() {
 }
 
 onMounted(async () => {
+  document.addEventListener('keydown', handleFullscreenEscape)
   await getConfigKeyFun()
   await getList()
   await getListWork()
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleFullscreenEscape)
 })
 
 </script>
@@ -1945,6 +1982,21 @@ onMounted(async () => {
 
 .player-cell.active {
   border-color: var(--el-color-primary) !important;
+}
+
+.player-cell:fullscreen {
+  border: 0 !important;
+  background: #000;
+}
+
+.player-cell.fallback-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 3000;
+  width: 100vw !important;
+  height: 100vh !important;
+  border: 0 !important;
+  background: #000;
 }
 
 .more-trigger {

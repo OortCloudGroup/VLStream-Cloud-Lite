@@ -1,5 +1,5 @@
 <script setup name="RightBottom">
-import * as echarts from 'echarts';
+import { getHomeChart, chartTextColor } from './homeChart';
 
 defineExpose({setData})
 
@@ -11,7 +11,8 @@ function setData(diskList) {
   let useList = diskList?.map(i => i.use.toFixed(2))
   nextTick(() => {
     const chartDom = document.getElementById('rightBottomChart');
-    let chart = echarts.init(chartDom);
+    let chart = getHomeChart(chartDom);
+    if (!chart) return;
     myChart.value = chart
     let option;
     option = {
@@ -27,7 +28,7 @@ function setData(diskList) {
           saveAsImage: { show: true }
         }
       },
-      legend: {},
+      legend: { left: 8 },
       grid: {
         left: '3%',
         right: '4%',
@@ -36,6 +37,7 @@ function setData(diskList) {
       },
       xAxis: {
         type: 'value',
+        splitNumber: 3,
         boundaryGap: [0, 0.01],
         axisLabel: {
           formatter: '{value} GB'
@@ -65,16 +67,17 @@ function setData(diskList) {
 }
 
 function resize() {
-  myChart.value.resize();
+  myChart.value?.resize?.();
 }
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize",resize);
+  myChart.value?.dispose?.();
 })
 </script>
 
 <template>
-  <div style="width: 100%;height: 350px;" id="rightBottomChart"></div>
+  <div style="width: 100%;height: 300px;" id="rightBottomChart"></div>
 </template>
 
 <style scoped lang="scss"></style>

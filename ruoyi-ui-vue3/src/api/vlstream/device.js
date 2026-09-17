@@ -8,6 +8,10 @@ export function listStreams(deviceRowId) {
   return request({ url: `/vlstream/device/${deviceRowId}/streams`, method: 'get' })
 }
 
+export function getDeviceDetail(deviceRowId) {
+  return request({ url: `/vlstream/device/${deviceRowId}/detail`, method: 'get' })
+}
+
 export function startPreview(deviceRowId, streamId) {
   return request({
     url: `/vlstream/device/${deviceRowId}/preview`,

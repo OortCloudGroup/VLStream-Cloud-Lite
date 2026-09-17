@@ -24,14 +24,15 @@ const VIDEO_MAP_KEYS = [
 ]
 
 /**
- * 视频汇聚 - 设备管理下协议（侧栏显示协议名；国际协议子菜单走顶部 Tab）
+ * 视频汇聚 - 设备管理下协议
  */
 const DEVICE_PROTOCOLS = [
   { key: '/vlstream', title: 'VLStream协议', titles: ['VLStream', 'VLStream协议'], icon: 'vlstream' },
-  { key: '/gbmanger', title: '国际协议', titles: ['国标协议', '国际协议'], icon: 'gb' },
+  { key: '/gbmanger', title: '国标协议', titles: ['国标协议', '国际协议'], icon: 'gb' },
   { key: '/onvif', title: 'ONVIF协议', titles: ['onvif协议', 'ONVIF协议', 'ONVIF'], icon: 'onvif' },
   { key: '/rtsp', title: 'RTSP协议', titles: ['rtsp协议', 'RTSP协议', 'RTSP'], icon: 'rtsp' },
   { key: '/isup', title: 'ISUP协议', titles: ['海康协议', 'ISUP协议', 'ISUP'], icon: 'isup' },
+  { key: '/ehome', title: 'EHome协议', titles: ['EHome协议', 'EHome'], icon: 'ehome' },
   { key: '/dahua', title: '大华协议', titles: ['大华协议'], icon: 'dahua' },
   { key: '/yingshi', title: '萤石协议', titles: ['萤石协议', '萤石'], icon: 'device' },
   { key: '/lecheng', title: '乐橙协议', titles: ['乐橙协议', '乐橙'], icon: 'device' },
@@ -42,8 +43,8 @@ const DEVICE_MANAGE_ICON = 'device'
 const DEVICE_LEAF_TITLES = ['设备管理', '设备列表']
 /** settings.svg 为内嵌 PNG，无法跟随主题色，改用矢量 system */
 const FALLBACK_ICON = 'system'
-/** 子菜单改为顶部 Tab 的协议（国际/国标） */
-const PROTOCOL_TAB_KEYS = ['gbmanger']
+/** 协议功能统一由左侧层级菜单承载，避免和顶部 Tab 重复。 */
+const PROTOCOL_TAB_KEYS = []
 
 function joinRoutePath(base, path) {
   if (path === undefined || path === null || path === '') return normalizePath(base)
@@ -59,7 +60,7 @@ function isProtocolTabTarget(proto) {
 /**
  * 协议节点整形：
  * - 单叶子（如 VLStream/设备管理）：侧栏只显示协议名，去掉嵌套「设备管理」
- * - 国际协议等多子菜单：侧栏只显示协议名，子菜单改顶部 Tab
+ * - 多子菜单协议：保留完整左侧层级，确保全部功能入口可见
  */
 function reshapeProtocolNode(route, proto) {
   let node = shallowCloneRoute(route, proto.title, proto.icon || DEVICE_MANAGE_ICON)
@@ -127,7 +128,7 @@ function reshapeProtocolNode(route, proto) {
 }
 
 /**
- * 国际协议顶部 Tab 列表（来自菜单源，非侧栏裁剪结果）
+ * 兼容历史顶部 Tab 配置；当前协议入口均由左侧菜单提供。
  */
 export function getProtocolTabs(allRoutes) {
   const routes = Array.isArray(allRoutes) ? allRoutes : []
@@ -150,7 +151,7 @@ export function getProtocolTabs(allRoutes) {
 }
 
 /**
- * 当前路由是否落在国际协议 Tab 范围内
+ * 当前路由是否落在历史协议 Tab 范围内
  */
 export function matchProtocolTabsByRoute(route, allRoutes) {
   const tabs = getProtocolTabs(allRoutes)

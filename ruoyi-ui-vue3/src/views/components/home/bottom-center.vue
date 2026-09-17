@@ -1,5 +1,5 @@
 <script setup name="BottomCenter">
-import * as echarts from 'echarts';
+import { getHomeChart, chartTextColor } from './homeChart';
 import moment from 'moment'
 
 defineExpose({setData})
@@ -11,16 +11,15 @@ function setData(memList) {
   let dataList = memList?.map(i => (i.data*100).toFixed(2))
   nextTick(() => {
     const chartDom = document.getElementById('bottomCenterChart');
-    let chart = echarts.init(chartDom);
+    let chart = getHomeChart(chartDom);
+    if (!chart) return;
     myChart.value = chart
     let option;
     option = {
       tooltip: {
         trigger: 'axis'
       },
-      legend: {
-        data: ['Rainfall']
-      },
+      grid: { left: 12, right: 16, top: 50, bottom: 16, containLabel: true },
       toolbox: {
         show: true,
         feature: {
@@ -48,17 +47,10 @@ function setData(memList) {
       ],
       series: [
         {
-          type: 'bar',
+          type: 'line',
+          showSymbol: false,
+          areaStyle: { opacity: 0.12 },
           data: dataList,
-          markPoint: {
-            data: [
-              { type: 'max', name: 'Max' },
-              { type: 'min', name: 'Min' }
-            ]
-          },
-          markLine: {
-            data: [{ type: 'average', name: 'Avg' }]
-          }
         },
       ]
     };
@@ -69,16 +61,17 @@ function setData(memList) {
 }
 
 function resize() {
-  myChart.value.resize();
+  myChart.value?.resize?.();
 }
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize",resize);
+  myChart.value?.dispose?.();
 })
 </script>
 
 <template>
-  <div style="width: 100%;height: 350px;" id="bottomCenterChart"></div>
+  <div style="width: 100%;height: 300px;" id="bottomCenterChart"></div>
 </template>
 
 <style scoped lang="scss">

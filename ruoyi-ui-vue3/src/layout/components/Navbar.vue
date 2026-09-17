@@ -2,8 +2,7 @@
   <div class="navbar">
     <div class="navbar-left" :class="{ 'is-collapse': !appStore.sidebar.opened }">
       <router-link to="/" class="brand" :class="{ 'is-collapse': !appStore.sidebar.opened }">
-        <span class="brand-mark" v-html="brandMark" aria-hidden="true" />
-        <span v-if="appStore.sidebar.opened" class="brand-title-img" v-html="brandTitle" aria-hidden="true" />
+        <img class="brand-logo" :src="brandLogo" alt="VLStream" />
       </router-link>
     </div>
     <hamburger
@@ -46,8 +45,7 @@
 import { ElMessageBox } from 'element-plus'
 import Hamburger from '@/components/Hamburger'
 import ProductNav from '@/components/ProductNav/index.vue'
-import brandMark from '@/assets/logo/brand-mark.svg?raw'
-import brandTitle from '@/assets/logo/brand-title.svg?raw'
+import brandLogo from '@/assets/logo/vls-brand.png'
 import useAppStore from '@/store/modules/app'
 import useUserStore from '@/store/modules/user'
 import useSettingsStore from '@/store/modules/settings'
@@ -127,31 +125,20 @@ function setLayout() {
     width: 40px;
   }
 
-  .brand-mark,
-  .brand-title-img {
+  .brand-logo {
+    display: block;
+    width: auto;
+    height: 52px;
+    max-width: none;
     flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: inherit;
-    line-height: 0;
+  }
 
-    :deep(svg) {
-      width: 100%;
-      height: 100%;
-      display: block;
-      fill: currentColor;
+  &.is-collapse {
+    overflow: hidden;
+
+    .brand-logo {
+      height: 52px;
     }
-  }
-
-  .brand-mark {
-    width: 40px;
-    height: 40px;
-  }
-
-  .brand-title-img {
-    width: 153px;
-    height: 32px;
   }
 }
 

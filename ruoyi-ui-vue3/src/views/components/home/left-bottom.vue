@@ -1,5 +1,5 @@
 <script setup name="LeftBottom">
-import * as echarts from 'echarts';
+import { getHomeChart, chartTextColor } from './homeChart';
 import moment from 'moment'
 
 defineExpose({setData})
@@ -12,7 +12,8 @@ function setData(netList) {
   let outList = netList?.map(i => i.out.toFixed(2))
   nextTick(() => {
     const chartDom = document.getElementById('leftBottomChart');
-    let chart = echarts.init(chartDom);
+    let chart = getHomeChart(chartDom);
+    if (!chart) return;
     myChart.value = chart
     let option;
     option = {
@@ -30,7 +31,7 @@ function setData(netList) {
           saveAsImage: { show: true }
         }
       },
-      legend: {},
+      legend: { left: 8 },
       grid: {
         left: '3%',
         right: '4%',
@@ -38,24 +39,26 @@ function setData(netList) {
         containLabel: true
       },
       xAxis: {
-        type: 'value',
-        axisLabel: {
-          formatter: '{value} MB'
-        }
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
       },
       yAxis: {
-        type: 'category',
-        data: timeList,
+        type: 'value',
+        splitNumber: 3,
+        axisLabel: { formatter: '{value} MB' }
       },
       series: [
         {
           name: '下载',
-          type: 'bar',
+          type: 'line',
+          showSymbol: false,
           data: inList
         },
         {
           name: '上传',
-          type: 'bar',
+          type: 'line',
+          showSymbol: false,
           data: outList
         }
       ]
@@ -67,16 +70,17 @@ function setData(netList) {
 }
 
 function resize() {
-  myChart.value.resize();
+  myChart.value?.resize?.();
 }
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize",resize);
+  myChart.value?.dispose?.();
 })
 </script>
 
 <template>
-  <div style="width: 100%;height: 350px;" id="leftBottomChart"></div>
+  <div style="width: 100%;height: 300px;" id="leftBottomChart"></div>
 </template>
 
 <style scoped lang="scss">

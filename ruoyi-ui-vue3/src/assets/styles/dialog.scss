@@ -1,5 +1,11 @@
 /* Dialog styles */
 
+.el-overlay {
+  background-color: rgba(0, 0, 0, 0.42);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
 .el-dialog {
   border-radius: 8px;
   padding: 0 0 24px 0 !important;
@@ -17,7 +23,7 @@
   height: 48px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #d8d8d8;
+  border-bottom: 0;
   box-sizing: border-box;
 }
 
@@ -121,6 +127,26 @@
 .el-dialog__footer > div > .el-button--primary:focus {
   background-color: var(--el-color-primary-light-3) !important;
   border-color: var(--el-color-primary-light-3) !important;
+}
+
+.gb-dialog-heading {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-right: 28px;
+
+  .el-button {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .gb-help-icon {
+    margin-right: 4px;
+    font-size: 14px;
+  }
 }
 
 .bigBtn {

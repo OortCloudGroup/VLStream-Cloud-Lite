@@ -1,9 +1,9 @@
 <template>
-  <div style="width: 100%;height: 350px;" id="leftTopChart"></div>
+  <div style="width: 100%;height: 300px;" id="leftTopChart"></div>
 </template>
 
 <script setup name="LeftTop">
-import * as echarts from 'echarts';
+import { getHomeChart, chartTextColor } from './homeChart';
 import {countDeviceNum} from "../../../api/index.js";
 
 const myChart = ref({})
@@ -12,7 +12,8 @@ onMounted(()=>{
   countDeviceNum().then((res)=>{
     nextTick(() => {
       const chartDom = document.getElementById('leftTopChart');
-      let chart = echarts.init(chartDom);
+      let chart = getHomeChart(chartDom);
+    if (!chart) return;
       myChart.value = chart
       let option;
       option = {
@@ -27,14 +28,17 @@ onMounted(()=>{
           }
         },
         legend: {
-          orient: 'vertical',
-          left: 'left'
+          orient: 'horizontal',
+          bottom: 0,
+          left: 'center'
         },
         series: [
           {
 
             type: 'pie',
-            radius: '50%',
+            radius: ['35%', '58%'],
+            center: ['50%', '43%'],
+            label: { show: false },
             data: [
               { value: res.data.totalGbNum, name: '国标设备数' },
               { value: res.data.totalIsupNum, name: '海康设备数' },
@@ -61,11 +65,12 @@ onMounted(()=>{
 
 
 function resize() {
-  myChart.value.resize();
+  myChart.value?.resize?.();
 }
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize",resize);
+  myChart.value?.dispose?.();
 })
 </script>
 

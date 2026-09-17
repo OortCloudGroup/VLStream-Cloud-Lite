@@ -158,6 +158,28 @@
       }
     }
 
+    /* 顶级设备管理与电子地图共用同一图标/文字基线，展开箭头不参与内容排版。 */
+    .el-sub-menu.align-top-menu > .el-sub-menu__title {
+      padding-left: 6px !important;
+      gap: 14px !important;
+
+      .el-sub-menu__icon-arrow {
+        position: absolute !important;
+        left: 6px !important;
+      }
+    }
+
+    /* 日志管理是二级分组，但其分组入口与同级一级分组保持对齐。 */
+    .el-sub-menu .el-menu .el-sub-menu.align-root-menu > .el-sub-menu__title {
+      padding-left: 26px !important;
+      gap: 14px !important;
+
+      .el-sub-menu__icon-arrow {
+        position: absolute !important;
+        left: 6px !important;
+      }
+    }
+
     .el-sub-menu.is-opened > .el-sub-menu__title .el-sub-menu__icon-arrow {
       transform: rotate(0deg) !important;
     }
