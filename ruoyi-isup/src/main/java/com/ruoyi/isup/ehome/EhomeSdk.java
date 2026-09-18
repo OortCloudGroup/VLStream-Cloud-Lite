@@ -12,6 +12,7 @@ import java.util.List;
 
 /** SDK adapter. Device info command and native layouts follow ruoyi-qs-nvr (MIT). */
 @Component
+@lombok.extern.slf4j.Slf4j
 public class EhomeSdk {
     private final EhomeConfig config;
     private final EhomeRuntime runtime;
@@ -56,13 +57,15 @@ public class EhomeSdk {
         return result;
     }
 
-    public int open(int loginId, int channel, int streamType) {
+    public int open(int loginId, int channel, int streamType, String deviceIp) {
         if (!streamReady()) throw new ServiceException("EHome 取流服务未启动");
         HCISUPCMS.NET_EHOME_PREVIEWINFO_IN_V11 input = new HCISUPCMS.NET_EHOME_PREVIEWINFO_IN_V11();
         input.iChannel = channel;
         input.dwStreamType = streamType;
         input.dwLinkMode = 0;
-        EhomeNative.copy(config.getPublicHost(), input.struStreamSever.szIP);
+        String address = EhomeAddressResolver.resolve(config.getPublicHost(), deviceIp);
+        EhomeNative.copy(address, input.struStreamSever.szIP);
+        log.info("EHome preview request login={}, channel={}, type={}, destination={}:{}", loginId, channel, streamType, address, streamPort());
         input.struStreamSever.wPort = (short) streamPort();
         input.write();
         HCISUPCMS.NET_EHOME_PREVIEWINFO_OUT output = new HCISUPCMS.NET_EHOME_PREVIEWINFO_OUT();
@@ -71,6 +74,7 @@ public class EhomeSdk {
             throw new ServiceException("设备取流失败，SDK 错误码：" + CMS.hCEhomeCMS.NET_ECMS_GetLastError());
         }
         output.read();
+        log.info("EHome preview session={}", output.lSessionID);
         return output.lSessionID;
     }
 
@@ -87,6 +91,7 @@ public class EhomeSdk {
         if (!CMS.hCEhomeCMS.NET_ECMS_StartPushRealStream(loginId, input, output)) {
             throw new ServiceException("设备推流失败，SDK 错误码：" + CMS.hCEhomeCMS.NET_ECMS_GetLastError());
         }
+        log.info("EHome push accepted login={}, session={}", loginId, sessionId);
     }
 
     public void close(int loginId, int sessionId) {

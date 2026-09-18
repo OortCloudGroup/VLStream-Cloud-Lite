@@ -53,115 +53,32 @@ public class SMS {
      *
      * @return
      */
-    private static boolean CreateSDKInstance() {
-        if (hcISUPSMS == null) {
-            synchronized (HCISUPSMS.class) {
-                String strDllPath = "";
-                try {
-                    if (osSelect.isWindows())
-                        //win系统加载库路径
-                        strDllPath = System.getProperty("user.dir") + "\\ruoyi-isup\\win-lib\\HCISUPStream.dll";
-                    else if (osSelect.isLinux())
-                        //Linux系统加载库路径
-                        strDllPath = System.getProperty("user.dir") + "/ruoyi-isup/linux-lib/libHCISUPStream.so";
-                    hcISUPSMS = (HCISUPSMS) Native.loadLibrary(strDllPath, HCISUPSMS.class);
-                } catch (Exception ex) {
-                    log.error("loadLibrary: " + strDllPath + " Error: " + ex.getMessage());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-//    @PostConstruct
     public void SMS_Init() {
-        if (hcISUPSMS == null) {
-            if (!CreateSDKInstance()) {
-                log.error("加载SMS SDK 失败");
-                return;
-            }
+        hcISUPSMS = com.ruoyi.isup.ehome.HikSdkLibraries.load("Stream", HCISUPSMS.class);
+        String[] pair = com.ruoyi.isup.ehome.HikSdkLibraries.cryptoPair();
+        for (int index = 0; index < pair.length; index++) {
+            HCISUPCMS.BYTE_ARRAY path = new HCISUPCMS.BYTE_ARRAY(256);
+            path.byValue = com.ruoyi.isup.ehome.HikSdkLibraries.pathBuffer(com.ruoyi.isup.ehome.HikSdkLibraries.required(pair[index]).getAbsolutePath());
+            path.write();
+            if (!hcISUPSMS.NET_ESTREAM_SetSDKInitCfg(index, path.getPointer())) throw new IllegalStateException("Stream dependency configuration failed: " + index);
         }
-        //根据系统加载对应的库
-        if (osSelect.isWindows()) {
-            HCISUPCMS.BYTE_ARRAY ptrByteArrayCrypto = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathCrypto = System.getProperty("user.dir") + "\\ruoyi-isup\\win-lib\\libeay32.dll"; //Linux版本是libcrypto.so库文件的路径
-            System.arraycopy(strPathCrypto.getBytes(), 0, ptrByteArrayCrypto.byValue, 0, strPathCrypto.length());
-            ptrByteArrayCrypto.write();
-            if (!hcISUPSMS.NET_ESTREAM_SetSDKInitCfg(0, ptrByteArrayCrypto.getPointer())) {
-                System.out.println("NET_ESTREAM_SetSDKInitCfg 0 failed, error:" + hcISUPSMS.NET_ESTREAM_GetLastError());
-            }
-
-            HCISUPCMS.BYTE_ARRAY ptrByteArraySsl = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathSsl = System.getProperty("user.dir") + "\\ruoyi-isup\\win-lib\\ssleay32.dll";    //Linux版本是libssl.so库文件的路径
-            System.arraycopy(strPathSsl.getBytes(), 0, ptrByteArraySsl.byValue, 0, strPathSsl.length());
-            ptrByteArraySsl.write();
-            if (!hcISUPSMS.NET_ESTREAM_SetSDKInitCfg(1, ptrByteArraySsl.getPointer())) {
-                System.out.println("NET_ESTREAM_SetSDKInitCfg 1 failed, error:" + hcISUPSMS.NET_ESTREAM_GetLastError());
-            }
-            //流媒体初始化
-            boolean b = hcISUPSMS.NET_ESTREAM_Init();
-            if(b){
-                log.info("SMS 流媒体初始化成功!");
-                SMS_StartListen();
-            }else {
-                log.error("SMS 流媒体初始化失败! 错误码:"+ hcISUPSMS.NET_ESTREAM_GetLastError());
-            }
-            //设置HCAapSDKCom组件库文件夹所在路径
-            HCISUPCMS.BYTE_ARRAY ptrByteArrayCom = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathCom = System.getProperty("user.dir") + "\\ruoyi-isup\\win-lib\\HCAapSDKCom";      //只支持绝对路径，建议使用英文路径
-            System.arraycopy(strPathCom.getBytes(), 0, ptrByteArrayCom.byValue, 0, strPathCom.length());
-            ptrByteArrayCom.write();
-            if (!hcISUPSMS.NET_ESTREAM_SetSDKLocalCfg(5, ptrByteArrayCom.getPointer())) {
-                System.out.println("NET_ESTREAM_SetSDKLocalCfg 5 failed, error:" + hcISUPSMS.NET_ESTREAM_GetLastError());
-            }
-            hcISUPSMS.NET_ESTREAM_SetLogToFile(3, "..\\EHomeSDKLog", false);
-        } else if (osSelect.isLinux()) {
-            //设置libcrypto.so所在路径
-            HCISUPCMS.BYTE_ARRAY ptrByteArrayCrypto = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathCrypto = System.getProperty("user.dir") + "/ruoyi-isup/linux-lib/libcrypto.so"; //Linux版本是libcrypto.so库文件的路径
-            System.arraycopy(strPathCrypto.getBytes(), 0, ptrByteArrayCrypto.byValue, 0, strPathCrypto.length());
-            ptrByteArrayCrypto.write();
-            if (!hcISUPSMS.NET_ESTREAM_SetSDKInitCfg(0, ptrByteArrayCrypto.getPointer())) {
-                System.out.println("NET_ESTREAM_SetSDKInitCfg 0 failed, error:" + hcISUPSMS.NET_ESTREAM_GetLastError());
-            }
-            //设置libssl.so所在路径
-            HCISUPCMS.BYTE_ARRAY ptrByteArraySsl = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathSsl = System.getProperty("user.dir") + "/ruoyi-isup/linux-lib/libssl.so";    //Linux版本是libssl.so库文件的路径
-            System.arraycopy(strPathSsl.getBytes(), 0, ptrByteArraySsl.byValue, 0, strPathSsl.length());
-            ptrByteArraySsl.write();
-            if (!hcISUPSMS.NET_ESTREAM_SetSDKInitCfg(1, ptrByteArraySsl.getPointer())) {
-                System.out.println("NET_ESTREAM_SetSDKInitCfg 1 failed, error:" + hcISUPSMS.NET_ESTREAM_GetLastError());
-            }
-            //流媒体初始化
-            boolean b = hcISUPSMS.NET_ESTREAM_Init();
-            if(b){
-                log.info("SMS 流媒体初始化成功!");
-                SMS_StartListen();
-            }else {
-                log.error("SMS 流媒体初始化失败! 错误码:"+ hcISUPSMS.NET_ESTREAM_GetLastError());
-            }
-            //设置HCAapSDKCom组件库文件夹所在路径
-            HCISUPCMS.BYTE_ARRAY ptrByteArrayCom = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathCom = System.getProperty("user.dir") + "/ruoyi-isup/linux-lib/HCAapSDKCom/";      //只支持绝对路径，建议使用英文路径
-            System.arraycopy(strPathCom.getBytes(), 0, ptrByteArrayCom.byValue, 0, strPathCom.length());
-            ptrByteArrayCom.write();
-            if (!hcISUPSMS.NET_ESTREAM_SetSDKLocalCfg(5, ptrByteArrayCom.getPointer())) {
-                System.out.println("NET_ESTREAM_SetSDKLocalCfg 5 failed, error:" + hcISUPSMS.NET_ESTREAM_GetLastError());
-            }
-            hcISUPSMS.NET_ESTREAM_SetLogToFile(3, "./EHomeSDKLog", false);
+        HCISUPCMS.BYTE_ARRAY components = new HCISUPCMS.BYTE_ARRAY(256);
+        components.byValue = com.ruoyi.isup.ehome.HikSdkLibraries.pathBuffer(new java.io.File(com.ruoyi.isup.ehome.HikSdkLibraries.directory(), "HCAapSDKCom").getAbsolutePath());
+        components.write();
+        if (!hcISUPSMS.NET_ESTREAM_Init()) throw new IllegalStateException("Stream initialization failed: " + hcISUPSMS.NET_ESTREAM_GetLastError());
+        if (!hcISUPSMS.NET_ESTREAM_SetSDKLocalCfg(5, components.getPointer())) {
+            throw new IllegalStateException("Stream component path configuration failed: " + hcISUPSMS.NET_ESTREAM_GetLastError());
         }
-
+        String sdkLog = System.getProperty("ehome.sdk.log-path");
+        if (sdkLog != null) hcISUPSMS.NET_ESTREAM_SetLogToFile(3, sdkLog, false);
+        log.info("Hikvision Stream SDK {} initialized", com.ruoyi.isup.ehome.HikSdkLibraries.version(hcISUPSMS.NET_ESTREAM_GetBuildVersion()));
+        SMS_StartListen();
     }
-
-    /**
-     * 开启实时预览监听(带界面窗口)
-     */
     public void SMS_StartListen() {
         if (fPREVIEW_NEWLINK_CB == null) {
             fPREVIEW_NEWLINK_CB = new FPREVIEW_NEWLINK_CB();
         }
-        struPreviewListen.struIPAdress.szIP=isupConfig.getIp().getBytes();
+        com.ruoyi.isup.ehome.EhomeNative.copy(isupConfig.getIp(), struPreviewListen.struIPAdress.szIP);
         struPreviewListen.struIPAdress.wPort = (short) isupConfig.getSmsServerPort(); //流媒体服务器监听端口
         struPreviewListen.fnNewLinkCB = fPREVIEW_NEWLINK_CB; //预览连接请求回调函数
         struPreviewListen.pUser = null;
@@ -172,10 +89,21 @@ public class SMS {
         if (SmsHandle <0) {
             log.error("SMS流媒体服务监听失败, 错误码:"+hcISUPSMS.NET_ESTREAM_GetLastError());
             hcISUPSMS.NET_ESTREAM_Fini();
+            throw new IllegalStateException("Stream listener failed");
         }
         else {
             String StreamListenInfo = new String(struPreviewListen.struIPAdress.szIP).trim() + "_" + struPreviewListen.struIPAdress.wPort;
             log.info("SMS流媒体服务:" + StreamListenInfo + "监听成功!");
+        }
+    }
+
+    @javax.annotation.PreDestroy
+    public void stopSms() {
+        int handle = listenHandle;
+        listenHandle = -1;
+        if (handle >= 0 && hcISUPSMS != null) {
+            hcISUPSMS.NET_ESTREAM_StopListenPreview(handle);
+            hcISUPSMS.NET_ESTREAM_Fini();
         }
     }
 
@@ -186,6 +114,10 @@ public class SMS {
     public class FPREVIEW_NEWLINK_CB implements HCISUPSMS.PREVIEW_NEWLINK_CB {
         @Override
         public boolean invoke(int lLinkHandle, HCISUPSMS.NET_EHOME_NEWLINK_CB_MSG pNewLinkCBMsg, Pointer pUserData) {
+            log.info("EHome incoming stream handle={}, device={}, serial={}, session={}, channel={}, type={}",
+                    lLinkHandle, com.ruoyi.isup.ehome.EhomeNative.text(pNewLinkCBMsg.szDeviceID),
+                    com.ruoyi.isup.ehome.EhomeNative.text(pNewLinkCBMsg.sDeviceSerial),
+                    pNewLinkCBMsg.iSessionID, pNewLinkCBMsg.dwChannelNo, pNewLinkCBMsg.byStreamType);
 
             if (ehomePreviews.getObject().link(lLinkHandle,
                     com.ruoyi.isup.ehome.EhomeNative.text(pNewLinkCBMsg.szDeviceID),

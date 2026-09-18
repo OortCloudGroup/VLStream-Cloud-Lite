@@ -7,11 +7,14 @@ import java.io.*;
 import java.util.concurrent.*;
 
 /** Bounded PS to FLV remuxing. Native callback threads never block on the media server. */
+@lombok.extern.slf4j.Slf4j
 public class EhomeMediaPipe implements AutoCloseable {
     private final PacketInput input = new PacketInput();
     private final CompletableFuture<String> ready;
     private final Thread worker;
     private volatile boolean running = true;
+    private long received;
+    private volatile String stage = "等待设备视频数据";
     public EhomeMediaPipe(String url, CompletableFuture<String> ready) {
         this.ready = ready;
         worker = new Thread(() -> run(url), "ehome-media");
@@ -19,6 +22,8 @@ public class EhomeMediaPipe implements AutoCloseable {
         worker.start();
     }
     public void accept(byte[] bytes) {
+        if (received == 0) log.info("EHome first media data bytes={}", bytes.length);
+        received += bytes.length;
         if (running && !input.offer(bytes)) { ready.complete("false"); close(); }
     }
     public boolean running() { return running; }
@@ -28,10 +33,13 @@ public class EhomeMediaPipe implements AutoCloseable {
             grabber.setOption("probesize", "1048576");
             grabber.setOption("analyzeduration", "1000000");
             grabber.start();
+            stage = "连接流媒体服务器";
+            log.info("EHome demux ready width={}, height={}, audio={}, codec={}", grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels(), grabber.getVideoCodecName());
             try (FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(url, grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels())) {
                 recorder.setFormat("flv");
                 recorder.setOption("rw_timeout", "5000000");
                 recorder.start(grabber.getFormatContext());
+                stage = "转发视频数据";
                 AVPacket packet;
                 while (running && (packet = grabber.grabPacket()) != null) {
                     recorder.recordPacket(packet);
@@ -39,6 +47,8 @@ public class EhomeMediaPipe implements AutoCloseable {
                 }
             }
         } catch (Exception e) {
+            log.warn("EHome media failed stage={}, bytes={}, reason={}", stage, received,
+                    String.valueOf(e.getMessage()).replaceAll("(?i)(rtmp|https?)://[^\\s]+", "[media-url]"));
             // Native error text can contain signed media URLs.
             ready.complete("false");
         } finally {

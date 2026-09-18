@@ -39,20 +39,53 @@
 ```yaml
 ehome:
   enabled: true
-  public-host: 127.0.0.1
+  linux-enabled: false # Linux 基础接入显式设为 true；Windows 沿用应用初始化
+  public-host: "" # 默认按通往设备的路由自动选择本机 IPv4；公网/NAT 时填写设备可达地址
   default-dept-id: 100
   media-public-host: 127.0.0.1 # 浏览器能访问的 ZLMediaKit 地址
   media-rtmp-port: 1935
+  media-http-port: 8090 # 浏览器可访问的 ZLM HTTP 端口，默认继承 media.http-port
   media-http-scheme: http
   # media-push-sign: 外部 ZLM 的有效推流签名；默认沿用当前项目基于 media.secret 的摘要
 ```
 
-设备填写 `ehome.public-host` 和 `isup.cmsServer.Port`，服务端将 `ehome.public-host:isup.smsServer.Port` 告知设备用于推流。
-本机默认只监听回环地址；外部设备需要将 `isup.IP` 配置为实际网卡地址或 `0.0.0.0`，并将 `ehome.public-host` 配置为设备可达地址。
+`isup.IP` 默认 `0.0.0.0`，只控制服务监听，不作为发给设备的连接地址。设备填写可达的服务器局域网地址和 `isup.cmsServer.Port`。
+`ehome.public-host` 默认为空：取流时根据设备上报的 IP，查询操作系统路由选择实际本机 IPv4，UDP connect 不发送数据。多网卡设备按各自路由选择。公网/NAT 或容器桥接时显式配置 `ehome.public-host`，它优先于自动选择。通配、回环及无法确定的地址会报错，不会发给设备。
 注册端口按部署需要开放 TCP/UDP，取流使用 TCP。NAT 环境须映射同号端口。
 媒体 API 地址、HTTP 端口、密钥继续使用现有 `media.*` 配置。
 
-当前原生初始化沿用现有应用生命周期。Windows 的 CMS/Stream 回调按版本和预览会话分发；Linux 现有 SDK 默认兼容性保护仍保留，未初始化时返回明确的未就绪状态，不擅自启用可能使 JVM 崩溃的库。Linux 真机部署前需替换并验证兼容的 SDK 运行时及对应回调适配。
+Windows x86_64 与 Linux x86_64 现在使用相同的 CMS/Stream 初始化、协议分发和预览回调。Linux 通过 `ehome.linux-enabled=true` 启用，优先于历史 `isup-linux64.enabled` 分支，避免重复 CMS 监听；历史报警/存储分支的默认值保持不变。
+
+仓库中的 Windows 与 Linux CMS/Stream 原生库均已实测报告 SDK **2.5.1.35**。SDK 版本不是设备协议版本，不是每个协议版本各放一套库。库已在仓库中，本次没有下载或替换厂商二进制；补齐的是加载方式、Linux 运行路径和镜像携带。
+
+加载器固定使用当前包配套的 OpenSSL 库；Linux 通过 `RTLD_NOW | RTLD_DEEPBIND` 加载，减少和 FFmpeg、其他 SDK 的符号冲突。Windows 与两个 Linux 环境都测试了先加载 FFmpeg 再初始化海康库，未复现崩溃。此结果不覆盖所有外部库组合。
+
+SDK 目录默认是项目根下 `ruoyi-isup/win-lib` 或 `ruoyi-isup/linux-lib`；可设置 `EHOME_SDK_PATH` 或 JVM 参数 `-Dehome.sdk.path=...` 指向完整配套 SDK 目录。不要只替换单个 OpenSSL 文件。当前自带二进制仅支持 x86_64，ARM64 / 32 位会在加载前给出明确错误。
+
+### Docker 启用
+
+主 Dockerfile 已将完整 `ruoyi-isup/linux-lib` 复制到 `/app/ruoyi-isup/linux-lib`，并补充系统依赖。更新代码后需要重新构建镜像，旧镜像不含本次适配。
+
+```powershell
+# 在 .env 中配置真实地址，不要照抄示例地址用于部署
+# EHOME_PUBLIC_HOST=设备可达的服务器IPv4地址
+# EHOME_MEDIA_PUBLIC_HOST=浏览器可达的ZLM地址
+# EHOME_MEDIA_HTTP_PORT=浏览器可达的ZLM端口（overlay 默认8081）
+docker compose -f compose.yaml -f compose.ehome.yaml config --quiet
+docker compose -f compose.yaml -f compose.ehome.yaml up -d
+```
+
+`compose.ehome.yaml` 只增加后端的 EHome 参数及注册 TCP/UDP、取流 TCP 端口映射；ZLM 使用现有部署。发布工作流已将这个可选配置加入未来发行附件。
+
+### 双平台验证记录（2026-09-17）
+
+- Windows x86_64 / Corretto 8：CMS、Stream 初始化，SDK版本读取，独立测试端口 TCP 连接及资源释放通过。
+- Debian 12 x86_64 / Java 8（隔离 Docker）：同上通过。
+- Ubuntu 22.04 x86_64 / Temurin 8（与 Dockerfile 相同基础镜像）：同上通过。
+- 上述测试均先加载 FFmpeg，再加载海康 SDK；容器无外部网络、不连接业务数据库或真实设备。
+- 文件清单与 SHA-256：`docs/ehome-sdk-manifest.json`；测试日志：`codex/ehome-sdk/`。
+- 官方新包下载页要求登录与授权，本次未取得新包，未以第三方同名库替换现有二进制。
+- 无设备条件下，不能完成 2.x / 3.x / 4.x 的真实注册和视频兼容验收。3.x 仍是待型号确认的协议分支。
 
 ## 数据与权限
 
@@ -85,4 +118,8 @@ rtk npm run build:prod -- --outDir ../codex/ehome/dist
 构建与测试报告保存在项目根目录 `codex/ehome`。页面和弹窗已通过真实浏览器检查，离线弹窗使用临时浏览器响应验证，并已恢复真实列表，未向数据库插入测试设备。
 通过编译、模拟回调、接口和页面检查不等于真实摄像机已完成注册与视频播放；仍需提供实际型号及协议版本进行最终验收。
 
-本次验证：13 项 EHome 回归测试、2 项协议权限测试通过；全应用 Java 8 编译和前端生产构建通过。当前本地服务状态接口显示注册、取流均就绪，列表及版本筛选请求返回 HTTP 200。Flyway 已应用 1.2.8。EHome 列表为空，尚无真机注册或播放验证。
+2026-09-16 页面验证：13 项 EHome 回归测试、2 项协议权限测试通过；全应用 Java 8 编译和前端生产构建通过。状态接口显示注册、取流均就绪，列表及版本筛选请求返回 HTTP 200。Flyway 已应用 1.2.8。
+
+2026-09-17 双平台补齐验证：17 项 EHome/SDK/启动分支测试和 2 项协议权限测试通过；全应用 Java 8 构建通过，Compose overlay 检查通过。三种操作系统环境的原生初始化、版本读取、监听与释放实测通过。
+
+2026-09-17 真机验证更新：设备 J88137763 的 Windows EHome 4.0 注册、通道查询、主码流 H.264 1920×1080、子码流 H.264 704×480 实际浏览器画面均通过。修复了 SDK 组件路径须在 Init 后设置的问题，并将 EHome 播放器调整为软件解码以处理本次子码流黑屏。自动选址等22项测试通过。详情见 `codex/ehome-device-test/playback-verified.md`；2.x/3.x及Linux真机仍未验证。

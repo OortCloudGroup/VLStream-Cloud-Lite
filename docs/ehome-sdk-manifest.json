@@ -1,0 +1,355 @@
+{
+  "sdkVersion": "2.5.1.35",
+  "verifiedPlatforms": [
+    "windows-x86_64",
+    "linux-x86_64"
+  ],
+  "provenance": "Existing repository vendor bundle; Windows file version and native runtime version agree. No new vendor binary downloaded.",
+  "files": [
+    {
+      "path": "ruoyi-isup/win-lib/AudioIntercom.dll",
+      "size": 2688512,
+      "sha256": "508f733bf0213f0c202d0463f160c579911095bc4c4b26b13efa3bdc2229527e"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/AudioRender.dll",
+      "size": 158720,
+      "sha256": "8c669212975494d3cbcedd48ebd3f4cb6275a6eed2a0ff9e3cdac7d03d666eb6"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/d3dx9_43.dll",
+      "size": 2401112,
+      "sha256": "84b900dbd7fa978d6e0caee26fc54f2f61d92c9c75d10b35f00e3e82cd1d67b4"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/GdiPlus.dll",
+      "size": 2166272,
+      "sha256": "222095f88914695b96330e4f5f9ff7a55d670b1117ae378b636ac0daea638ccd"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCCore.dll",
+      "size": 3133440,
+      "sha256": "56217d75fef6ee27cc137cba33cdb9013040fd7f624ccf6b29c811540cf59f7f"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCISUPAlarm.dll",
+      "size": 1911296,
+      "sha256": "891956844d1c6bbf045cb6dfca6e309d665f2ef68fb5379ef4d45db1c7fcb16c"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCISUPCMS.dll",
+      "size": 2326016,
+      "sha256": "576a8cc95ef7a5331f25d5e3a4561aa964d9cb946a73a0b36c046a3c1fd32b9c"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCISUPSS.dll",
+      "size": 1395712,
+      "sha256": "c227b07e2e4dded06826c22c4506091df7503ae103666fb072e7aa5f5ed6ff05"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCISUPStream.dll",
+      "size": 2243584,
+      "sha256": "64e97eb85cf893a9dab24a880e5699777c6df79a64a5700c7af75d8bd8b32ae8"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDK.dll",
+      "size": 1187840,
+      "sha256": "319fcfea892e29f1c296b53aaebfff47f2c78e7103b378149289f934a895c180"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetUtils.dll",
+      "size": 1212928,
+      "sha256": "dccfca34c90e0d9a1f817820cc18bdba7cb88b14b3b8a821cc752ace21625a2c"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/hlog.dll",
+      "size": 1267200,
+      "sha256": "0bdd53e07633ae7d07bdc6352f74c822c2d78681d1a510577c5d87c114e223b5"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HmMerge.dll",
+      "size": 385536,
+      "sha256": "24ee52a06d24a4f509f36770c3fdd1a6b5ffae44ab52c03df274f9e1f2176125"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/hpr.dll",
+      "size": 151040,
+      "sha256": "103395e1e2e51c6cca0390e3be975d68b9fa70f1e859d9d97736725e72db3476"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HXVA.dll",
+      "size": 2238976,
+      "sha256": "eddfae0cf421c96244ba2547bb8ecd3c6f30ae0ac8923367930178ceaa3252e9"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/libcrypto-1_1-x64.dll",
+      "size": 2968064,
+      "sha256": "6c638558256a69a3b0b844d59655022402003d21b2508183a5f07476fc1ef8de"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/libeay32.dll",
+      "size": 1806848,
+      "sha256": "37691cea8a60a20c7871061fc801287035ea6ab3eb1a548376bcfe2b24c0af8e"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/libmmd.dll",
+      "size": 3249568,
+      "sha256": "6142bde15261bd7177252aa8f716560a5344004e1b97a0b3c6280fc10d22829b"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/libssl-1_1-x64.dll",
+      "size": 829952,
+      "sha256": "48869d6b2b6235a123e3bad233d29f3e50fa7bd5831d3a5dfe8cbd280c7209d6"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/MP_Render.dll",
+      "size": 406016,
+      "sha256": "f512846c63b26275c456badb2785300e14a43edaf5468cf8ec65c3d2411dc6ae"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/msvcr90.dll",
+      "size": 655872,
+      "sha256": "cf420aced0d810e1d75f6811dd986f2d9fded2fbb8d61fc9a7024520c475febb"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/NPQos.dll",
+      "size": 2089984,
+      "sha256": "18d607364fe4a85a14bff1fb6ca39e786610463d98d4b8aaeac2ed043a6b962e"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/OpenAL32.dll",
+      "size": 465920,
+      "sha256": "e6d36ed9f584a8d0cde651c4378fd8f7f3a7480adc42f2fe78a9ae9c19236e67"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/PlayCtrl.dll",
+      "size": 7728640,
+      "sha256": "5a620b0afa039ea3300a62b6dfd0ad605fc779a021e3e1a93531e80b91c7be8e"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/sqlite3.dll",
+      "size": 1127936,
+      "sha256": "522d7b1d91c5afb3c829a44118c7ec3311f04f3169abefaebe9ac6bf9f991b2a"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/ssleay32.dll",
+      "size": 432128,
+      "sha256": "0e326a8190d5d4aa73afcc3ae6090f79d5f8040bbcef167a8200d64252c35fa7"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/SuperRender.dll",
+      "size": 1869824,
+      "sha256": "a68e4b4384d7982535f9b8da259cc4f47de97d650cab15809174085eca673adc"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/YUVProcess.dll",
+      "size": 644096,
+      "sha256": "dadb3fc1c97143e0e95aee85b85880dbf5e104840cb2b4956a5b763b0fdc78c5"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/zlib1.dll",
+      "size": 169984,
+      "sha256": "9761a512da3d045e949ccb7818fedd89720fa930d9d1092ae63b4f96f84bb82c"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/ClientDemoDll/calib.dll",
+      "size": 92160,
+      "sha256": "2187da224306fac85a0813251d4b97a82ff235e63429de114d2b38b5c55d2c52"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/ClientDemoDll/iconv.dll",
+      "size": 888832,
+      "sha256": "6cd69191469bf13f0cea70837bac9b1e7871c116f5f6f18bef5a6a9575c020c9"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/ClientDemoDll/libcrypto-1_1-x64.dll",
+      "size": 2702336,
+      "sha256": "7be9058c95130da3edd05fb2056ac62bac5837c7378468d62a22fc10a09c7b44"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/ClientDemoDll/libssl-1_1-x64.dll",
+      "size": 642560,
+      "sha256": "8fb7847ab2dd26060b0e7bfb0fd2faf7c919bb40667e005b73557ca2624ec8ff"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/ClientDemoDll/libxml2.dll",
+      "size": 2219520,
+      "sha256": "7defb30ef09ec069049b0c6e37b10acf92797de031ee005b63ce4272123c4a28"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/ClientDemoDll/zlib1.dll",
+      "size": 77824,
+      "sha256": "91ec6085e862e1eedc254bf88efecd4fa67f486216ab3b1473915d15462e71bb"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCAapSDKCom/libiconv2.dll",
+      "size": 987648,
+      "sha256": "371decacb5a85c1df945697436d8db234cc9545301df745ec173b6e6694a74b6"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCAapSDKCom/msvcr90.dll",
+      "size": 655872,
+      "sha256": "cf420aced0d810e1d75f6811dd986f2d9fded2fbb8d61fc9a7024520c475febb"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCAapSDKCom/OpenAL32.dll",
+      "size": 609792,
+      "sha256": "8c9578a702a221cb950b920c43e8ee448a88dd90b1cf6ca57a017c61330c37c1"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCAapSDKCom/SystemTransform.dll",
+      "size": 465408,
+      "sha256": "ed6c994dfb348034fd1ea74dd05fba2da63d3d6d3dab479d63fe99897ec8574e"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/AnalyzeData.dll",
+      "size": 517120,
+      "sha256": "f025c7c8d0b5ea363cdc44b91045f28dd91fd2337b9c8abe11a44bc90a28f161"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/AudioIntercom.dll",
+      "size": 2392064,
+      "sha256": "3329b6f09af69f31721469ddaaca548e562099b0a5deec8325960659c89559a8"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/AudioRender.dll",
+      "size": 157696,
+      "sha256": "f70f35f98c8ae74ac19173f22dfeda6573f26de610782a500c953393e18745e6"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/HCAlarm.dll",
+      "size": 1191424,
+      "sha256": "caeee7038a200fe827677d777c294c0d24a935dea485ca495a37feb4cff3eac5"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/HCCoreDevCfg.dll",
+      "size": 1276416,
+      "sha256": "be473caff21fba39426a6d5695527f94bcbdcf35162fd4ad196d3e20f566c34c"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/HCDisplay.dll",
+      "size": 1272832,
+      "sha256": "cba15da2657133d1ece95bd82cff7ed5201be1ee9e227b95adc541463281aa62"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/HCGeneralCfgMgr.dll",
+      "size": 2066944,
+      "sha256": "7bc4d0c489de99728dc5c85a488869c20d97c5664b6925bf365e5be244de0b3e"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/HCIndustry.dll",
+      "size": 1627136,
+      "sha256": "5342b7b960d9ff0ce4944bb920b7a15968449adb709981fb47048ee216c44dee"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/HCPlayBack.dll",
+      "size": 1014272,
+      "sha256": "c47fdc3a5239afa579bc05549ff818a34f2feaa0a9380a3c1073d8ea571a6865"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/HCPreview.dll",
+      "size": 941056,
+      "sha256": "403d4ed6b47260c97ec323ffcb05df7880e3f777fb9830db180d6dd0f17b9c55"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/HCVoiceTalk.dll",
+      "size": 1301504,
+      "sha256": "ee1a0466940dbf76f03c93a2100a9b8d23e616387e16e92ac1a86c27546cd92a"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/libiconv2.dll",
+      "size": 987648,
+      "sha256": "371decacb5a85c1df945697436d8db234cc9545301df745ec173b6e6694a74b6"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/OpenAL32.dll",
+      "size": 465920,
+      "sha256": "e6d36ed9f584a8d0cde651c4378fd8f7f3a7480adc42f2fe78a9ae9c19236e67"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/StreamTransClient.dll",
+      "size": 936448,
+      "sha256": "463e39fe5a62fa7978797af803c31168be3d84ee17d9bcfedfc705064e14702a"
+    },
+    {
+      "path": "ruoyi-isup/win-lib/HCNetSDKCom/SystemTransform.dll",
+      "size": 863744,
+      "sha256": "151576ee6be37e8cd7f8ab9b5a20c13c012679044c399f94091bc88fee478b5b"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libcrypto.so",
+      "size": 2484814,
+      "sha256": "34912762b32ea3f594144f757805775551d7b52aed8cf8ebd078150e15b70b20"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libcrypto.so.1.0.0",
+      "size": 2484814,
+      "sha256": "34912762b32ea3f594144f757805775551d7b52aed8cf8ebd078150e15b70b20"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libHCISUPAlarm.so",
+      "size": 1635234,
+      "sha256": "28926e5e60c2b8c11d1ab09050f38d1c4b9a1c60740d6e8f44f4569a285855fa"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libHCISUPCMS.so",
+      "size": 2315376,
+      "sha256": "3440f80e3d58642262d93abbdb75fc6a375ca29049cbb76c7bda92afb2300a3f"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libHCISUPSS.so",
+      "size": 1698062,
+      "sha256": "7f5a8e187b742960032165ed5a777155caae3b180d0ab6e0904d4d63428ca5ea"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libHCISUPStream.so",
+      "size": 2101993,
+      "sha256": "6004a58189a1667ee0312d67c8dcd2dff85b9c1411ea4c01c80e669161d322c4"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libHCNetUtils.so",
+      "size": 1575696,
+      "sha256": "ff1a99b25d9fab0db3eab688a74d0a8ae4e4a8f01ca3b76bb8d246e4f0e66e68"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libhpr.so",
+      "size": 247800,
+      "sha256": "cf79fc312ae0df8d40d4e1c0831aac807dda4569ab256842a335b3b248df437f"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libNPQos.so",
+      "size": 2065696,
+      "sha256": "e7080f80d67ae72532928e3de0dcd98b4faff668de5c661e9e6116034ae9b0da"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libsqlite3.so",
+      "size": 3070071,
+      "sha256": "379187551f78850a625cb476170382bcb9c69c5948079b0f896932b43f2f26f1"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libssl.so",
+      "size": 495218,
+      "sha256": "37a83dec37c3ee5aa816093b525477244f7043ec2cac49449d2b8bf7a7aa1dcc"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libssl.so.1.0.0",
+      "size": 494738,
+      "sha256": "446f177be359751a3151712d48ea06754a9c37671ed5eed8acbf1899a059120b"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/libz.so",
+      "size": 103941,
+      "sha256": "e26c4459b51b2abb7ee7441c3c00e45650a3993ee96c9a0105a8314fbfba7918"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/HCAapSDKCom/libiconv2.so",
+      "size": 1268171,
+      "sha256": "da5d9957f5a00214ced49874bcee189659208f0b988e465f391264697f8b45c4"
+    },
+    {
+      "path": "ruoyi-isup/linux-lib/HCAapSDKCom/libSystemTransform.so",
+      "size": 370776,
+      "sha256": "a437f2ba4e8a106403133bf016fd1bb4760f7588c644575b0cb08eaa7a5f3f03"
+    }
+  ]
+}

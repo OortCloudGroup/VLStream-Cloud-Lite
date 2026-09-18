@@ -12,9 +12,10 @@ COPY . ./
 RUN mvn -B -pl ruoyi-admin -am package -DskipTests
 
 FROM eclipse-temurin:8-jre-jammy
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl libuuid1 libstdc++6 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=java-build /workspace/ruoyi-admin/target/ruoyi-admin.jar /app/app.jar
+COPY --from=java-build /workspace/ruoyi-isup/linux-lib/ /app/ruoyi-isup/linux-lib/
 COPY --from=ui-build /workspace/ruoyi-ui-vue3/dist /app/ui
 RUN mkdir -p /app/data/uploadPath /app/logs
 EXPOSE 8080 8116/udp

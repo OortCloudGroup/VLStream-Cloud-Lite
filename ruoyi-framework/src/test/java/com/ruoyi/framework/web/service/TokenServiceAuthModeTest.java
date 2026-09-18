@@ -17,6 +17,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,6 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -109,6 +111,15 @@ public class TokenServiceAuthModeTest
         request.addHeader("X-VLStream-Token", "Bearer local-vlstream-token");
 
         assertEquals("local-vlstream-token", tokenService.resolveAccessToken(request));
+    }
+
+    @Test
+    public void federatedProtocolPermissionsIncludeEhome()
+    {
+        @SuppressWarnings("unchecked")
+        Set<String> permissions = (Set<String>) ReflectionTestUtils.getField(tokenService,
+                "VLSTREAM_PROTOCOL_PERMISSIONS");
+        assertTrue(permissions.contains("ehome:*"));
     }
 
     @Test

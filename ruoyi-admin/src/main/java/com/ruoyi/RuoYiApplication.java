@@ -32,9 +32,14 @@ import java.util.Collections;
 @EnableScheduling
 @EnableCaching
 public class RuoYiApplication extends SpringBootServletInitializer {
+    private static final String DEVTOOLS_RESTART_ENABLED = "spring.devtools.restart.enabled";
+
     private static ConfigurableApplicationContext context;
 
     public static void main(String[] args) {
+        if (System.getProperty(DEVTOOLS_RESTART_ENABLED) == null) {
+            System.setProperty(DEVTOOLS_RESTART_ENABLED, Boolean.FALSE.toString());
+        }
         SpringApplication.run(RuoYiApplication.class, args);
         System.out.println("(♥◠‿◠)ﾉﾞ  ruoyi-wvp启动成功   ლ(´ڡ`ლ)ﾞ  \n" +
                 "\n" +

@@ -33,7 +33,20 @@ public class EhomeController extends BaseController {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("registrationReady", sdk.ready());
         result.put("streamReady", sdk.streamReady());
-        result.put("host", sdk.publicHost());
+        Set<String> hosts = new LinkedHashSet<>();
+        if (sdk.publicHost() != null && !sdk.publicHost().trim().isEmpty()) hosts.add(sdk.publicHost().trim());
+        else {
+            for (EhomeDevice device : devices.list(new EhomeDevice())) {
+                if (!"ON".equals(device.getStatus())) continue;
+                try { hosts.add(EhomeAddressResolver.resolve(null, device.getIpAddress())); }
+                catch (ServiceException ignored) { }
+            }
+            if (hosts.isEmpty()) hosts.addAll(EhomeAddressResolver.localAddresses());
+        }
+        result.put("host", hosts.size() == 1 ? hosts.iterator().next() : "");
+        result.put("serverAddresses", hosts);
+        result.put("addressMode", sdk.publicHost() == null || sdk.publicHost().trim().isEmpty() ? "auto" : "explicit");
+        result.put("localAddresses", EhomeAddressResolver.localAddresses());
         result.put("registrationPort", sdk.registrationPort());
         result.put("streamPort", sdk.streamPort());
         result.put("message", sdk.statusMessage());

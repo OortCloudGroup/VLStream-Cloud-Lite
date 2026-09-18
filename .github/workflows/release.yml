@@ -43,7 +43,7 @@ jobs:
         run: |
           package="apaas-wvp-server-${{ github.ref_name }}"
           mkdir -p "dist/$package/sql/init" "dist/$package/sql/upgrade" "dist/$package/zlm"
-          cp compose.yaml compose.external.yaml .env.example Dockerfile .dockerignore README.md DEPLOYMENT.md RELEASE_NOTES.md "dist/$package/"
+          cp compose.yaml compose.external.yaml compose.ehome.yaml .env.example Dockerfile .dockerignore README.md DEPLOYMENT.md RELEASE_NOTES.md "dist/$package/"
           cp deploy/release/sql/init/10-ry-wvp.sql "dist/$package/sql/init/"
           cp -a deploy/release/sql/upgrade/. "dist/$package/sql/upgrade/"
           cp deploy/release/zlm/Dockerfile deploy/release/zlm/config.ini deploy/release/zlm/entrypoint-release.sh "dist/$package/zlm/"

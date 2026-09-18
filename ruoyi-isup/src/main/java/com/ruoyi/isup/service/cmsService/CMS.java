@@ -56,101 +56,28 @@ public class CMS {
      *
      * @return
      */
-    private static boolean CreateSDKInstance() {
-        if (hCEhomeCMS == null) {
-            synchronized (HCISUPCMS.class) {
-                String strDllPath = "";
-                try {
-                    //System.setProperty("jna.debug_load", "true");
-                    if (osSelect.isWindows()) {
-                        //win系统加载库路径(路径不要带中文)
-                        strDllPath = System.getProperty("user.dir") + "\\ruoyi-isup\\win-lib\\HCISUPCMS.dll";
-                        hCEhomeCMS = (HCISUPCMS) Native.loadLibrary(strDllPath, HCISUPCMS.class);
-                    } else if (osSelect.isLinux()) {
-                        //Linux系统加载库路径(路径不要带中文)
-                        strDllPath = System.getProperty("user.dir") + "/ruoyi-isup/linux-lib/libHCISUPCMS.so";
-                        hCEhomeCMS = (HCISUPCMS) Native.loadLibrary(strDllPath, HCISUPCMS.class);
-                    }
-                } catch (Exception ex) {
-                    log.info("加载: " + strDllPath + " 错误: " + ex.getMessage());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-
-    /**
-     * cms服务初始化，开启监听
-     *
-     * @throws IOException
-     */
     public void cMS_Init() throws IOException {
-        if (hCEhomeCMS == null) {
-            if (!CreateSDKInstance()) {
-                log.error("加载CMS SDK 失败");
-                return;
-            }
+        hCEhomeCMS = com.ruoyi.isup.ehome.HikSdkLibraries.load("CMS", HCISUPCMS.class);
+        String[] pair = com.ruoyi.isup.ehome.HikSdkLibraries.cryptoPair();
+        for (int index = 0; index < pair.length; index++) {
+            HCISUPCMS.BYTE_ARRAY path = new HCISUPCMS.BYTE_ARRAY(256);
+            path.byValue = com.ruoyi.isup.ehome.HikSdkLibraries.pathBuffer(com.ruoyi.isup.ehome.HikSdkLibraries.required(pair[index]).getAbsolutePath());
+            path.write();
+            if (!hCEhomeCMS.NET_ECMS_SetSDKInitCfg(index, path.getPointer())) throw new IOException("CMS dependency configuration failed: " + index);
         }
-
-        if (osSelect.isWindows()) {
-            HCISUPCMS.BYTE_ARRAY ptrByteArrayCrypto = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathCrypto = System.getProperty("user.dir") + "\\ruoyi-isup\\win-lib\\libeay32.dll"; //Linux版本是libcrypto.so库文件的路径
-            System.arraycopy(strPathCrypto.getBytes(), 0, ptrByteArrayCrypto.byValue, 0, strPathCrypto.length());
-            ptrByteArrayCrypto.write();
-            hCEhomeCMS.NET_ECMS_SetSDKInitCfg(0, ptrByteArrayCrypto.getPointer());
-
-            //设置libssl.so所在路径
-            HCISUPCMS.BYTE_ARRAY ptrByteArraySsl = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathSsl = System.getProperty("user.dir") + "\\ruoyi-isup\\win-lib\\ssleay32.dll";    //Linux版本是libssl.so库文件的路径
-            System.arraycopy(strPathSsl.getBytes(), 0, ptrByteArraySsl.byValue, 0, strPathSsl.length());
-            ptrByteArraySsl.write();
-            hCEhomeCMS.NET_ECMS_SetSDKInitCfg(1, ptrByteArraySsl.getPointer());
-            //注册服务初始化
-            boolean binit = hCEhomeCMS.NET_ECMS_Init();
-            if (binit) {
-                log.info("CMS 注册中心初始化成功!");
-            } else {
-                log.error("CMS 注册中心初始化失败! 错误码:" + hCEhomeCMS.NET_ECMS_GetLastError());
-            }
-            //设置HCAapSDKCom组件库文件夹所在路径
-            HCISUPCMS.BYTE_ARRAY ptrByteArrayCom = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathCom = System.getProperty("user.dir") + "\\ruoyi-isup\\win-lib\\HCAapSDKCom";        //只支持绝对路径，建议使用英文路径
-            System.arraycopy(strPathCom.getBytes(), 0, ptrByteArrayCom.byValue, 0, strPathCom.length());
-            ptrByteArrayCom.write();
-            hCEhomeCMS.NET_ECMS_SetSDKLocalCfg(5, ptrByteArrayCom.getPointer());
-
-        } else if (osSelect.isLinux()) {
-            HCISUPCMS.BYTE_ARRAY ptrByteArrayCrypto = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathCrypto = System.getProperty("user.dir") + "/ruoyi-isup/linux-lib/libcrypto.so"; //Linux版本是libcrypto.so库文件的路径
-            System.arraycopy(strPathCrypto.getBytes(), 0, ptrByteArrayCrypto.byValue, 0, strPathCrypto.length());
-            ptrByteArrayCrypto.write();
-            hCEhomeCMS.NET_ECMS_SetSDKInitCfg(0, ptrByteArrayCrypto.getPointer());
-
-            //设置libssl.so所在路径
-            HCISUPCMS.BYTE_ARRAY ptrByteArraySsl = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathSsl = System.getProperty("user.dir") + "/ruoyi-isup/linux-lib/libssl.so";    //Linux版本是libssl.so库文件的路径
-            System.arraycopy(strPathSsl.getBytes(), 0, ptrByteArraySsl.byValue, 0, strPathSsl.length());
-            ptrByteArraySsl.write();
-            hCEhomeCMS.NET_ECMS_SetSDKInitCfg(1, ptrByteArraySsl.getPointer());
-            //注册服务初始化
-            boolean binit = hCEhomeCMS.NET_ECMS_Init();
-            if (binit) {
-                log.info("CMS 注册中心初始化成功!");
-            } else {
-                log.error("CMS 注册中心初始化失败! 错误码:" + hCEhomeCMS.NET_ECMS_GetLastError());
-            }
-            //设置HCAapSDKCom组件库文件夹所在路径
-            HCISUPCMS.BYTE_ARRAY ptrByteArrayCom = new HCISUPCMS.BYTE_ARRAY(256);
-            String strPathCom = System.getProperty("user.dir") + "/ruoyi-isup/linux-lib/HCAapSDKCom/";        //只支持绝对路径，建议使用英文路径
-            System.arraycopy(strPathCom.getBytes(), 0, ptrByteArrayCom.byValue, 0, strPathCom.length());
-            ptrByteArrayCom.write();
-            hCEhomeCMS.NET_ECMS_SetSDKLocalCfg(5, ptrByteArrayCom.getPointer());
+        HCISUPCMS.BYTE_ARRAY components = new HCISUPCMS.BYTE_ARRAY(256);
+        components.byValue = com.ruoyi.isup.ehome.HikSdkLibraries.pathBuffer(new java.io.File(com.ruoyi.isup.ehome.HikSdkLibraries.directory(), "HCAapSDKCom").getAbsolutePath());
+        components.write();
+        if (!hCEhomeCMS.NET_ECMS_Init()) throw new IOException("CMS initialization failed: " + hCEhomeCMS.NET_ECMS_GetLastError());
+        if (!hCEhomeCMS.NET_ECMS_SetSDKLocalCfg(5, components.getPointer())) {
+            throw new IOException("CMS component path configuration failed: " + hCEhomeCMS.NET_ECMS_GetLastError());
         }
+        String sdkLog = System.getProperty("ehome.sdk.log-path");
+        if (sdkLog != null) hCEhomeCMS.NET_ECMS_SetLogToFile(3, sdkLog, false);
+        log.info("Hikvision CMS SDK {} initialized", com.ruoyi.isup.ehome.HikSdkLibraries.version(hCEhomeCMS.NET_ECMS_GetBuildVersion()));
     }
-
     public void startCmsListen() {
+        if (hCEhomeCMS == null) throw new IllegalStateException("CMS SDK has not been initialized");
         ehomeRegistration.resetOnlineState();
         if (fRegisterCallBack == null) {
             fRegisterCallBack = new FRegisterCallBack();
@@ -165,10 +92,20 @@ public class CMS {
         if (CmsHandle < 0) {
             log.error("CMS注册中心监听失败, 错误码:" + hCEhomeCMS.NET_ECMS_GetLastError());
             hCEhomeCMS.NET_ECMS_Fini();
-            return;
+            throw new IllegalStateException("CMS listener failed");
         }
         String CmsListenInfo = new String(struCMSListenPara.struAddress.szIP).trim() + "_" + struCMSListenPara.struAddress.wPort;
         log.info("CMS注册服务器:" + CmsListenInfo + "监听成功!");
+    }
+
+    @javax.annotation.PreDestroy
+    public void stopCms() {
+        int handle = CmsHandle;
+        CmsHandle = -1;
+        if (handle >= 0 && hCEhomeCMS != null) {
+            hCEhomeCMS.NET_ECMS_StopListen(handle);
+            hCEhomeCMS.NET_ECMS_Fini();
+        }
     }
 
     /**

@@ -27,7 +27,7 @@ public class EhomePreviewTest {
     @Test public void lastViewerOwnsCleanupAndOtherUsersCannotStopIt() throws Exception {
         EhomeSdk sdk = mock(EhomeSdk.class);
         when(sdk.channels(9)).thenReturn(Collections.singletonList(new EhomeSdk.Channel(33,"33")));
-        when(sdk.open(9,33,0)).thenReturn(42);
+        when(sdk.open(9,33,0,null)).thenReturn(42);
         EhomeMediaPipe pipe = mock(EhomeMediaPipe.class);
         when(pipe.running()).thenReturn(true);
         EhomePreviews previews = new EhomePreviews(sdk) {
@@ -37,7 +37,7 @@ public class EhomePreviewTest {
         EhomeDevice device = device();
         String first = (String)previews.start(device,33,0,1L).get("sessionId");
         String second = (String)previews.start(device,33,0,2L).get("sessionId");
-        verify(sdk,times(1)).open(9,33,0);
+        verify(sdk,times(1)).open(9,33,0,null);
         try { previews.stop(second,1L); fail(); } catch (ServiceException expected) { }
         previews.stop(first,1L);
         verify(sdk,never()).close(9,42);
@@ -50,7 +50,7 @@ public class EhomePreviewTest {
     @Test public void pushFailureReleasesNativeSessionAndPipe() throws Exception {
         EhomeSdk sdk = mock(EhomeSdk.class);
         when(sdk.channels(9)).thenReturn(Collections.singletonList(new EhomeSdk.Channel(33,"33")));
-        when(sdk.open(9,33,0)).thenReturn(42);
+        when(sdk.open(9,33,0,null)).thenReturn(42);
         doThrow(new ServiceException("push failed")).when(sdk).push(9,42,"4.0");
         EhomeMediaPipe pipe = mock(EhomeMediaPipe.class);
         EhomePreviews previews = new EhomePreviews(sdk) {

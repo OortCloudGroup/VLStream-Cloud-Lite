@@ -58,9 +58,18 @@ public class HaikangCommandLineRunnerImpl implements CommandLineRunner {
     @Autowired
     private IsupLinuxConfig isupLinuxConfig;
 
+    @Autowired
+    private com.ruoyi.isup.ehome.EhomeConfig ehomeConfig;
+
     @Override
     public void run(String... args) throws Exception {
-        if(osSelect.isLinux() && isupLinuxConfig.isEnabled()){
+        if (osSelect.isLinux() && ehomeConfig.isEnabled() && ehomeConfig.isLinuxEnabled()) {
+            // Reuse the same CMS/Stream adapter and version dispatch as Windows.
+            // Do not also start the historical Linux CMS listener on the same port.
+            sms.SMS_Init();
+            cms.cMS_Init();
+            cms.startCmsListen();
+        } else if(osSelect.isLinux() && isupLinuxConfig.isEnabled()){
             //初始化报警服务
             alarmService.init();
             alarmService.startAlarmListen();
@@ -87,7 +96,7 @@ public class HaikangCommandLineRunnerImpl implements CommandLineRunner {
             cms.cMS_Init();
             cms.startCmsListen();
         } else if (osSelect.isLinux()) {
-            log.warn("Linux ISUP 原生服务未启用，跳过 ISUP SDK 初始化；如需启用请设置 isup-linux64.enabled=true");
+            log.warn("Linux 海康原生服务未启用；EHome 基础接入设置 ehome.linux-enabled=true，历史报警/存储分支设置 isup-linux64.enabled=true");
         }
 
 

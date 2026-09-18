@@ -20,7 +20,7 @@ public class EhomePreviews {
     @Value("${media.ip}") private String mediaHost;
     @Value("${ehome.media-public-host:${media.ip}}") private String mediaPublicHost;
     @Value("${ehome.media-rtmp-port:1935}") private int rtmpPort;
-    @Value("${media.http-port}") private int httpPort;
+    @Value("${ehome.media-http-port:${media.http-port}}") private int httpPort;
     @Value("${ehome.media-http-scheme:http}") private String httpScheme;
     @Value("${ehome.media-push-sign:}") private String pushSign;
     @Value("${media.secret}") private String mediaSecret;
@@ -48,7 +48,7 @@ public class EhomePreviews {
                 synchronized (stream) {
                     stream.pipe = createPipe("rtmp://" + mediaHost + ":" + rtmpPort + "/haikang/" + stream.mediaId + "?sign=" + sign, stream.ready);
                 }
-                int nativeId = sdk.open(stream.loginId, channel, streamType);
+                int nativeId = sdk.open(stream.loginId, channel, streamType, device.getIpAddress());
                 synchronized (stream) {
                     if (stream.closed) { sdk.close(stream.loginId, nativeId); throw new ServiceException("设备已离线"); }
                     stream.nativeId = nativeId;

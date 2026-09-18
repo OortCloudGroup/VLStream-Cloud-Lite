@@ -1,0 +1,22 @@
+# Opt-in overlay: docker compose -f compose.yaml -f compose.ehome.yaml up -d
+# Set EHOME_PUBLIC_HOST to the IPv4 address devices can reach before enabling.
+services:
+  wvp-backend:
+    environment:
+      EHOME_ENABLED: "true"
+      EHOME_LINUX_ENABLED: "true"
+      EHOME_SDK_PATH: /app/ruoyi-isup/linux-lib
+      EHOME_PUBLIC_HOST: ${EHOME_PUBLIC_HOST:?Set the device-reachable IPv4 address}
+      EHOME_MEDIA_PUBLIC_HOST: ${EHOME_MEDIA_PUBLIC_HOST:-${EHOME_PUBLIC_HOST}}
+      EHOME_MEDIA_HTTP_PORT: ${EHOME_MEDIA_HTTP_PORT:-8081}
+      EHOME_MEDIA_RTMP_PORT: "1935"
+      ISUP_IP: "0.0.0.0"
+      ISUP_CMSSERVER_PORT: ${EHOME_REGISTRATION_PORT:-7660}
+      ISUP_SMSSERVER_PORT: ${EHOME_STREAM_PORT:-7665}
+      ISUP_SMSSERVER_LISTENPORT: ${EHOME_STREAM_PORT:-7665}
+      # Use the unified CMS/Stream callback path, not a second legacy CMS listener.
+      ISUP_LINUX64_ENABLED: "false"
+    ports:
+      - "${EHOME_REGISTRATION_PORT:-7660}:${EHOME_REGISTRATION_PORT:-7660}/tcp"
+      - "${EHOME_REGISTRATION_PORT:-7660}:${EHOME_REGISTRATION_PORT:-7660}/udp"
+      - "${EHOME_STREAM_PORT:-7665}:${EHOME_STREAM_PORT:-7665}/tcp"

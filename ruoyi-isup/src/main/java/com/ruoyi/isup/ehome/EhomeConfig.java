@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "ehome")
 public class EhomeConfig {
     private boolean enabled = true;
-    @org.springframework.beans.factory.annotation.Value("${ehome.public-host:${isup.IP:127.0.0.1}}")
-    private String publicHost;
+    /** Explicit opt-in for native Linux runtime; unsupported architectures fail before loading. */
+    private boolean linuxEnabled = false;
+    /** Optional NAT/public address. Empty means choose the local source address per device route. */
+    private String publicHost = "";
     private Long defaultDeptId = 100L;
 }

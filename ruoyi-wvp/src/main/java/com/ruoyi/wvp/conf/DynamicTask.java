@@ -7,6 +7,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
@@ -36,6 +37,18 @@ public class DynamicTask {
         threadPoolTaskScheduler.setAwaitTerminationSeconds(10);
         threadPoolTaskScheduler.setThreadNamePrefix("dynamicTask-");
         threadPoolTaskScheduler.initialize();
+    }
+
+    @PreDestroy
+    public void destroy() {
+        for (ScheduledFuture<?> future : futureMap.values()) {
+            future.cancel(false);
+        }
+        futureMap.clear();
+        runnableMap.clear();
+        if (threadPoolTaskScheduler != null) {
+            threadPoolTaskScheduler.shutdown();
+        }
     }
 
     /**
