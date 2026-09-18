@@ -13,6 +13,9 @@
 body {
   height: 100%;
   margin: 0;
+  background-color: var(--layout-bg);
+  color: var(--el-text-color-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;

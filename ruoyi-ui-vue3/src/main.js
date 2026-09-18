@@ -5,9 +5,10 @@ import Cookies from 'js-cookie'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
-import locale from 'element-plus/es/locale/lang/zh-cn'
+import i18n from '@/i18n'
 
 import '@/assets/styles/index.scss' // global css
+import '@/assets/styles/i18n.scss'
 import '@/assets/css/iconfont.css' // global css
 
 import App from './App'
@@ -86,6 +87,7 @@ app.component('DetailPageHeader', DetailPageHeader)
 
 app.use(router)
 app.use(store)
+app.use(i18n)
 app.use(plugins)
 app.use(elementIcons)
 app.component('svg-icon', SvgIcon)
@@ -94,8 +96,7 @@ directive(app)
 
 // 使用element-plus 并且设置全局的大小
 app.use(ElementPlus, {
-  locale: locale,
-  // 支持 large、default、small
+  // 支持 large、default、small；语言由根级 el-config-provider 动态切换
   size: Cookies.get('size') || 'default'
 })
 

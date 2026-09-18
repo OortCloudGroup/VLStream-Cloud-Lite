@@ -1,5 +1,6 @@
 <template>
   <div class="login">
+    <language-switch class="login-language" />
     <div class="login-box">
       <el-form
         v-if="authMode === 'local'"
@@ -8,7 +9,7 @@
         :rules="loginRules"
         class="login-form"
       >
-        <h3 class="title">{{ title }}</h3>
+        <h3 class="title">{{ $t('login.productTitle') }}</h3>
         <el-form-item v-if="giteeStar === 'true'">
           <el-text class="mx-1">给本项目 star 后即可访问：</el-text>
           <el-link type="primary" href="https://gitee.com/xiaochemgzi/RuoYi-Wvp" target="_blank">
@@ -21,7 +22,7 @@
             type="text"
             size="large"
             autocomplete="off"
-            placeholder="账号"
+            :placeholder="$t('login.account')"
           >
             <template #prefix>
               <svg-icon icon-class="user" class="el-input__icon input-icon" />
@@ -34,7 +35,7 @@
             type="password"
             size="large"
             autocomplete="off"
-            placeholder="密码"
+            :placeholder="$t('login.password')"
             @keyup.enter="handleLogin"
           >
             <template #prefix>
@@ -47,7 +48,7 @@
             v-model="loginForm.code"
             size="large"
             autocomplete="off"
-            placeholder="验证码"
+            :placeholder="$t('login.captcha')"
             style="width: 63%"
             @keyup.enter="handleLogin"
           >
@@ -56,10 +57,10 @@
             </template>
           </el-input>
           <div class="login-code">
-            <img :src="codeUrl" class="login-code-img" alt="验证码" @click="getCode" />
+            <img :src="codeUrl" class="login-code-img" :alt="$t('login.captcha')" @click="getCode" />
           </div>
         </el-form-item>
-        <el-checkbox v-model="loginForm.rememberMe" style="margin: 0 0 25px 0">记住密码</el-checkbox>
+        <el-checkbox v-model="loginForm.rememberMe" style="margin: 0 0 25px 0">{{ $t('login.remember') }}</el-checkbox>
         <el-form-item style="width: 100%">
           <el-button
             :loading="loading"
@@ -68,30 +69,30 @@
             style="width: 100%"
             @click.prevent="handleLogin"
           >
-            <span v-if="!loading">登 录</span>
-            <span v-else>登 录 中...</span>
+            <span v-if="!loading">{{ $t('login.signIn') }}</span>
+            <span v-else>{{ $t('login.signingIn') }}</span>
           </el-button>
           <div v-if="register" style="float: right">
-            <router-link class="link-type" to="/register">立即注册</router-link>
+            <router-link class="link-type" to="/register">{{ $t('login.register') }}</router-link>
           </div>
         </el-form-item>
       </el-form>
 
       <div v-else class="sso-panel">
-        <h3 class="title">{{ title }}</h3>
-        <p v-if="authModeLoading">正在读取登录方式...</p>
-        <template v-else-if="authModeError">
-          <p class="mode-error">{{ authModeError }}</p>
-          <el-button type="primary" @click="loadAuthMode">重新加载</el-button>
+        <h3 class="title">{{ $t('login.productTitle') }}</h3>
+        <p v-if="authModeLoading">{{ $t('login.loadingMode') }}</p>
+        <template v-else-if="authModeError || authModeErrorKey">
+          <p class="mode-error">{{ authModeErrorKey ? $t(authModeErrorKey) : authModeError }}</p>
+          <el-button type="primary" @click="loadAuthMode">{{ $t('login.reload') }}</el-button>
         </template>
         <template v-else>
-          <p>当前启用统一身份认证</p>
-          <p class="sso-tip">请从统一平台进入本系统。</p>
+          <p>{{ $t('login.ssoEnabled') }}</p>
+          <p class="sso-tip">{{ $t('login.ssoTip') }}</p>
         </template>
       </div>
 
       <div class="el-login-footer">
-        <span>Copyright © 2024-2025 视频监控平台 All Rights Reserved.</span>
+        <span>Copyright © 2024-2026 {{ $t('login.copyright') }}</span>
       </div>
     </div>
 
@@ -127,16 +128,19 @@ import { getAuthMode, getCodeImg, giteeLogin } from '@/api/login'
 import { getConfigKey } from '@/api/system/config'
 import { decrypt, encrypt } from '@/utils/jsencrypt'
 import useUserStore from '@/store/modules/user'
+import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
+import { useI18n } from 'vue-i18n'
 
-const title = import.meta.env.VITE_APP_TITLE
 const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
 const { proxy } = getCurrentInstance()
+const { t } = useI18n()
 
 const authMode = ref('')
 const authModeLoading = ref(true)
 const authModeError = ref('')
+const authModeErrorKey = ref('')
 const loginForm = ref({
   username: '',
   password: '',
@@ -145,12 +149,12 @@ const loginForm = ref({
   uuid: '',
   publicCode: ''
 })
-const loginRules = {
-  username: [{ required: true, trigger: 'blur', message: '请输入您的账号' }],
-  password: [{ required: true, trigger: 'blur', message: '请输入您的密码' }],
-  code: [{ required: true, trigger: 'change', message: '请输入验证码' }],
+const loginRules = computed(() => ({
+  username: [{ required: true, trigger: 'blur', message: t('login.accountRequired') }],
+  password: [{ required: true, trigger: 'blur', message: t('login.passwordRequired') }],
+  code: [{ required: true, trigger: 'change', message: t('login.captchaRequired') }],
   publicCode: [{ required: true, trigger: 'change', message: '请输入公众号 code' }]
-}
+}))
 
 const codeUrl = ref('')
 const loading = ref(false)
@@ -169,21 +173,24 @@ watch(route, (newRoute) => {
 async function loadAuthMode() {
   authModeLoading.value = true
   authModeError.value = ''
+  authModeErrorKey.value = ''
   try {
     const response = await getAuthMode()
     const mode = String(response.mode || '').toLowerCase()
     if (mode !== 'sso' && mode !== 'local') {
-      throw new Error('后端返回了不支持的登录方式')
+      authModeErrorKey.value = 'login.unsupportedMode'
+      return
     }
     authMode.value = mode
     if (mode === 'local') {
       initializeLocalLogin().catch(error => {
-        proxy.$modal.msgError(error?.message || '本地登录初始化失败，请稍后重试')
+        proxy.$modal.msgError(error?.message || t('login.localInitFailed'))
       })
     }
   } catch (error) {
     authMode.value = ''
-    authModeError.value = error?.message || '无法读取后端登录方式，请检查后端服务'
+    authModeError.value = error?.message || ''
+    authModeErrorKey.value = 'login.modeLoadFailed'
   } finally {
     authModeLoading.value = false
   }
@@ -196,7 +203,7 @@ async function initializeLocalLogin() {
   const giteeCode = route.query && route.query.code
   if (giteeCode === 'true') {
     await login()
-    proxy.$modal.msgSuccess('登录成功')
+    proxy.$modal.msgSuccess(t('login.success'))
   } else if (giteeCode === 'false') {
     proxy.$modal.msgError('登录失败：请先点 star 再登录')
   }
@@ -307,6 +314,27 @@ onMounted(loadAuthMode)
   height: 100%;
   background-image: url('../assets/images/bg-url.png');
   background-size: cover;
+}
+
+.login-language {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
+  color: #606266;
+}
+
+:global(html[dir="rtl"]) .login-language {
+  right: auto;
+  left: 24px;
+}
+
+:global(html[dir="rtl"]) .login {
+  justify-content: flex-start;
+}
+
+:global(html[dir="rtl"]) .login-box {
+  border-radius: 0 25px 25px 0;
 }
 
 .title {

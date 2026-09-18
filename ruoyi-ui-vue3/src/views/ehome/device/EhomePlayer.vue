@@ -16,7 +16,7 @@ onMounted(() => {
   if (!window.Jessibuca) { message.value = '播放器加载失败，请刷新页面'; return }
   player = new window.Jessibuca({
     container: container.value, decoder: '/jessibuca/decoder.js', isFlv: true,
-    isNotMute: false, useMSE: true, videoBuffer: 0.3, loadingTimeout: 15,
+    isNotMute: false, useMSE: false, useWCS: false, videoBuffer: 0.3, loadingTimeout: 15,
     loadingText: '正在连接视频…', showBandwidth: true,
     operateBtns: { fullscreen: true, screenshot: true, audio: true }
   })

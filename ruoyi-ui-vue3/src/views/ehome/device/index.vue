@@ -7,7 +7,7 @@
       </header>
 
       <div class="connection-strip">
-        <div><span class="status-dot" :class="{ online: service.registrationReady }" /><strong>{{ service.registrationReady ? '注册服务就绪' : '注册服务未就绪' }}</strong><span class="service-address">{{ service.host || '—' }}<span v-if="service.registrationPort">:{{ service.registrationPort }}</span></span></div>
+        <div><span class="status-dot" :class="{ online: service.registrationReady }" /><strong>{{ service.registrationReady ? '注册服务就绪' : '注册服务未就绪' }}</strong><span class="service-address">{{ service.host || (service.serverAddresses || []).join(' / ') || '暂无可用地址' }}<span v-if="service.registrationPort">:{{ service.registrationPort }}</span></span></div>
         <el-button link type="primary" @click="guide = true">接入指南 <el-icon><ArrowRight /></el-icon></el-button>
       </div>
       <el-alert v-if="serviceLoaded && !service.registrationReady" :title="service.message || '接入服务未启动'" type="warning" :closable="false" show-icon class="service-warning" />
@@ -48,7 +48,7 @@
     <div class="guide-intro"><span>EHome</span><h2>让设备主动连接平台</h2><p>适用于旧版海康平台接入。无需填写设备 RTSP 地址。</p></div>
     <ol class="guide-steps">
       <li><h3>开启设备的平台接入</h3><p>登录摄像机或 NVR 的配置页面，进入「网络 → 高级配置 → 平台接入」，启用 EHome。</p></li>
-      <li><h3>填写服务器参数</h3><div class="guide-values"><div><span>服务器地址</span><strong>{{ service.host || '—' }}</strong><el-button link type="primary" @click="copy(service.host)">复制</el-button></div><div><span>注册端口</span><strong>{{ service.registrationPort || '—' }}</strong><el-button link type="primary" @click="copy(service.registrationPort)">复制</el-button></div><div><span>取流端口</span><strong>{{ service.streamPort || '—' }}</strong></div></div><p>设备 ID 请保持唯一。跨网络接入时使用设备可达的服务器地址，并映射注册及取流端口。</p></li>
+      <li><h3>填写服务器参数</h3><div class="guide-values"><div><span>服务器地址</span><strong>{{ service.host || (service.serverAddresses || []).join(' / ') || '暂无可用地址' }}</strong><el-button link type="primary" @click="copy(service.host)">复制</el-button></div><div><span>注册端口</span><strong>{{ service.registrationPort || '—' }}</strong><el-button link type="primary" @click="copy(service.registrationPort)">复制</el-button></div><div><span>取流端口</span><strong>{{ service.streamPort || '—' }}</strong></div></div><p v-if="service.addressMode === 'auto'">本机地址：{{ (service.localAddresses || []).join('、') || '未检测到' }}。设备端填写同一网络可达的本机地址，平台取流时会自动选择对应网卡。</p><p>设备 ID 请保持唯一。公网或 NAT 环境请配置对外地址并映射端口。</p></li>
       <li><h3>选择设备支持的协议版本</h3><p>2.x 与 4.x 按各自流程取流；3.x 需要按设备型号联调确认。不要选择 ISUP 5.0。</p></li>
       <li><h3>保存并等待上线</h3><p>设备注册成功后自动出现在此列表。点击「通道 / 预览」，选择通道和主 / 子码流即可查看视频。</p></li>
     </ol>

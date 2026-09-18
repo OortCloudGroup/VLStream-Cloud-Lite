@@ -15,6 +15,7 @@
     <product-nav class="navbar-center" />
 
     <div class="right-menu">
+      <language-switch class="right-menu-item" />
       <div class="avatar-container">
         <el-dropdown @command="handleCommand" class="right-menu-item hover-effect" trigger="click">
           <div class="avatar-wrapper">
@@ -25,13 +26,13 @@
           <template #dropdown>
             <el-dropdown-menu>
               <router-link to="/user/profile">
-                <el-dropdown-item>个人中心</el-dropdown-item>
+                <el-dropdown-item>{{ $t('account.profile') }}</el-dropdown-item>
               </router-link>
               <el-dropdown-item command="setLayout" v-if="settingsStore.showSettings">
-                <span>布局设置</span>
+                <span>{{ $t('account.layout') }}</span>
               </el-dropdown-item>
               <el-dropdown-item divided command="logout">
-                <span>退出登录</span>
+                <span>{{ $t('account.logout') }}</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -45,14 +46,17 @@
 import { ElMessageBox } from 'element-plus'
 import Hamburger from '@/components/Hamburger'
 import ProductNav from '@/components/ProductNav/index.vue'
+import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
 import brandLogo from '@/assets/logo/vls-brand.png'
 import useAppStore from '@/store/modules/app'
 import useUserStore from '@/store/modules/user'
 import useSettingsStore from '@/store/modules/settings'
+import { useI18n } from 'vue-i18n'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
 const settingsStore = useSettingsStore()
+const { t } = useI18n()
 
 function toggleSideBar() {
   appStore.toggleSideBar()
@@ -72,9 +76,9 @@ function handleCommand(command) {
 }
 
 function logout() {
-  ElMessageBox.confirm('确定注销并退出系统吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('account.logoutConfirm'), t('common.prompt'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(() => {
     userStore.logOut().then(() => {
@@ -96,8 +100,10 @@ function setLayout() {
   padding: 0 20px;
   display: flex;
   align-items: center;
-  background: transparent;
+  background: var(--navbar-bg);
+  color: var(--navbar-text);
   box-sizing: border-box;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .navbar-left {
@@ -154,7 +160,7 @@ function setLayout() {
   margin-right: 8px;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.06);
+    background: var(--navbar-hover);
   }
 
   :deep(.hamburger) {
@@ -191,7 +197,7 @@ function setLayout() {
       transition: background 0.2s;
 
       &:hover {
-        background: rgba(0, 0, 0, 0.08);
+        background: var(--navbar-hover);
       }
     }
   }
@@ -222,5 +228,10 @@ function setLayout() {
       color: var(--el-color-primary);
     }
   }
+}
+
+:global(html[dir="rtl"]) .right-menu {
+  margin-left: 0;
+  margin-right: auto;
 }
 </style>

@@ -1,0 +1,47 @@
+html {
+  font-family: Inter, "Noto Sans", "Noto Sans CJK SC", "Noto Sans Arabic", "Noto Sans JP", "Noto Sans KR", Arial, sans-serif;
+}
+
+html[lang="ar-SA"] {
+  font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+}
+
+html[lang="ja-JP"] {
+  font-family: "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+}
+
+html[lang="ko-KR"] {
+  font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+html[dir="rtl"] {
+  body,
+  #app {
+    direction: rtl;
+  }
+
+  .el-menu,
+  .el-form,
+  .el-dialog,
+  .el-message-box,
+  .el-dropdown-menu,
+  .el-notification {
+    text-align: right;
+  }
+
+  .el-input__prefix { left: auto; right: 0; }
+  .el-input__suffix { right: auto; left: 0; }
+  .el-input--prefix .el-input__wrapper { padding-left: 11px; padding-right: 30px; }
+  .el-input--suffix .el-input__wrapper { padding-right: 11px; padding-left: 30px; }
+}
+
+html[lang="de-DE"],
+html[lang="fr-FR"],
+html[lang="es-MX"],
+html[lang="ru-RU"] {
+  .el-button,
+  .el-menu-item,
+  .el-sub-menu__title {
+    min-width: max-content;
+  }
+}

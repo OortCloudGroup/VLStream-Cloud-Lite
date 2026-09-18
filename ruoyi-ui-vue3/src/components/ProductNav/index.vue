@@ -7,7 +7,7 @@
       :class="{ 'is-active': activeGroup === tab.key }"
       @click="handleSelect(tab.key)"
     >
-      {{ tab.title }}
+      {{ translateRouteTitle(tab.title) }}
     </div>
   </div>
 </template>
@@ -16,6 +16,7 @@
 import { PRODUCT_TABS, buildSidebarByGroup, findFirstMenuPath, resolveGroupByRoute } from '@/utils/menuGroups'
 import usePermissionStore from '@/store/modules/permission'
 import useAppStore from '@/store/modules/app'
+import { translateRouteTitle } from '@/i18n'
 
 const route = useRoute()
 const router = useRouter()
@@ -91,7 +92,7 @@ defineExpose({ applyGroup, syncFromRoute })
   line-height: 64px;
   padding: 0 20px;
   font-size: 18px;
-  color: rgba(51, 51, 51, 0.38);
+  color: var(--top-nav-text);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;

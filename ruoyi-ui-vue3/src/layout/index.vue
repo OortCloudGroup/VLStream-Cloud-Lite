@@ -73,7 +73,9 @@ function setLayout() {
   position: relative;
   height: 100%;
   width: 100%;
-  background: #f0f2f5;
+  background: var(--layout-bg);
+  color: var(--el-text-color-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
   display: flex;
   flex-direction: column;
 
@@ -87,7 +89,8 @@ function setLayout() {
   flex-shrink: 0;
   width: 100%;
   z-index: 1002;
-  background: transparent;
+  background: var(--navbar-bg);
+  transition: background-color 0.2s ease;
 }
 
 .layout-body {

@@ -67,12 +67,20 @@ $--color-info: #909399;
 // CSS变量定义
 :root {
   /* 亮色模式变量 */
+  --layout-bg: #f0f2f5;
+  --content-bg: #ffffff;
   --sidebar-bg: transparent;
   --sidebar-text: rgba(0, 0, 0, 0.65);
   --menu-hover: transparent;
+  --sidebar-active-bg: var(--el-color-primary-light-9, rgba(64, 158, 255, 0.1));
   
   --navbar-bg: transparent;
   --navbar-text: #303133;
+  --navbar-hover: rgba(0, 0, 0, 0.06);
+  --top-nav-text: rgba(51, 51, 51, 0.38);
+
+  --scrollbar-track: #f1f1f1;
+  --scrollbar-thumb: #c0c0c0;
   
   /* splitpanes default-theme 变量 */
   --splitpanes-default-bg: #ffffff;
@@ -82,6 +90,8 @@ $--color-info: #909399;
 // 暗黑模式变量
 html.dark {
   /* 默认通用 */
+  --layout-bg: #0f1115;
+  --content-bg: #141414;
   --el-bg-color: #141414;
   --el-bg-color-overlay: #1d1e1f;
   --el-text-color-primary: #ffffff;
@@ -93,12 +103,17 @@ html.dark {
   --sidebar-bg: #141414;
   --sidebar-text: #ffffff;
   --menu-hover: #2d2d2d;
+  --sidebar-active-bg: rgba(64, 158, 255, 0.18);
   --menu-active-text: #{$menuActiveText};
 
   /* 顶部导航栏 */
   --navbar-bg: #141414;
   --navbar-text: #ffffff;
-  --navbar-hover: #141414;
+  --navbar-hover: #242628;
+  --top-nav-text: #a3a6ad;
+
+  --scrollbar-track: #1d1e1f;
+  --scrollbar-thumb: #4c4d4f;
 
   /* 标签栏 */
   --tags-bg: #141414;

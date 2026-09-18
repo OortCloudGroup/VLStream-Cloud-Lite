@@ -54,8 +54,9 @@ function addIframe() {
   width: 100%;
   position: relative;
   overflow: hidden;
-  background: #ffffff;
+  background: var(--content-bg);
   border-radius: 10px 10px 0 0;
+  transition: background-color 0.2s ease;
   display: flex;
   flex-direction: column;
 }
@@ -84,11 +85,11 @@ function addIframe() {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #f1f1f1;
+  background-color: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #c0c0c0;
+  background-color: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 </style>

@@ -4,7 +4,7 @@
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path, onlyOneChild.query)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
           <svg-icon :icon-class="resolveIcon(onlyOneChild.meta?.icon || item.meta?.icon)"/>
-          <template #title><span class="menu-title" :title="hasTitle(onlyOneChild.meta.title)">{{ onlyOneChild.meta.title }}</span></template>
+          <template #title><span class="menu-title" :title="hasTitle(translateRouteTitle(onlyOneChild.meta.title))">{{ translateRouteTitle(onlyOneChild.meta.title) }}</span></template>
         </el-menu-item>
       </app-link>
     </template>
@@ -21,7 +21,7 @@
     >
       <template v-if="item.meta" #title>
         <svg-icon :icon-class="resolveIcon(item.meta?.icon)" />
-        <span class="menu-title" :title="hasTitle(item.meta.title)">{{ item.meta.title }}</span>
+        <span class="menu-title" :title="hasTitle(translateRouteTitle(item.meta.title))">{{ translateRouteTitle(item.meta.title) }}</span>
       </template>
 
       <sidebar-item
@@ -40,6 +40,7 @@
 import { isExternal } from '@/utils/validate'
 import AppLink from './Link'
 import { getNormalPath } from '@/utils/ruoyi'
+import { translateRouteTitle } from '@/i18n'
 
 const props = defineProps({
   // route object
@@ -104,7 +105,7 @@ function resolvePath(routePath, routeQuery) {
 }
 
 function hasTitle(title){
-  if (title.length > 5) {
+  if (title && title.length > 5) {
     return title;
   } else {
     return "";

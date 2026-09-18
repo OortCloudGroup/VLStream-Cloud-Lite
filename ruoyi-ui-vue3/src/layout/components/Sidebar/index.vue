@@ -6,7 +6,7 @@
         :default-active="activeMenu"
         :collapse="isCollapse"
         background-color="transparent"
-        text-color="rgba(0, 0, 0, 0.65)"
+        text-color="var(--sidebar-text)"
         :unique-opened="true"
         :active-text-color="theme"
         :collapse-transition="false"
@@ -80,8 +80,8 @@ const activeMenu = computed(() => {
     width: 100% !important;
     background-color: transparent !important;
     --el-menu-bg-color: transparent;
-    --el-menu-hover-bg-color: var(--el-color-primary-light-9, rgba(64, 158, 255, 0.1));
-    --el-menu-text-color: rgba(0, 0, 0, 0.65);
+    --el-menu-hover-bg-color: var(--sidebar-active-bg);
+    --el-menu-text-color: var(--sidebar-text);
     --el-menu-active-color: var(--el-color-primary);
   }
 }
