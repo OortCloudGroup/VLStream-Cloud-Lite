@@ -22,7 +22,7 @@ The default Compose file starts five independent services: MySQL, Redis, EMQX
 service image. The WVP image
 also contains the compiled browser UI, so no separate frontend service is
 needed. The backend image is
-`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.5`.
+`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.6`.
 
 Use an existing MySQL, Redis, ZLMediaKit, and MQTT Broker installation with:
 
@@ -68,6 +68,26 @@ Firmware and OTA storage is optional. Before using it, set
 and `VLSTREAM_WVP_PUBLIC_URL` in `.env`. The public image intentionally contains
 no MinIO endpoint or credential defaults.
 
+## Optional EHome native integration
+
+The default Compose deployment keeps EHome disabled and runs the standard five
+services. On an x86_64 host with the required native SDK rights, enable the
+opt-in overlay after setting `EHOME_PUBLIC_HOST` to an IPv4 address reachable by
+the devices:
+
+```powershell
+docker compose -f compose.yaml -f compose.ehome.yaml config --quiet
+docker compose -f compose.yaml -f compose.ehome.yaml up -d
+```
+
+The overlay exposes EHome registration on TCP/UDP `7660` and stream control on
+TCP `7665` by default. Override `EHOME_REGISTRATION_PORT`,
+`EHOME_STREAM_PORT`, `EHOME_MEDIA_PUBLIC_HOST`, and `EHOME_MEDIA_HTTP_PORT` for
+the actual network topology. Native SDK startup and smoke checks were verified
+on x86_64 environments, but real-device compatibility remains device/model and
+protocol-version specific; Linux real-device validation and EHome 2.x/3.x
+compatibility are not claimed by this release.
+
 The packaged ZLMediaKit image is configured with the same `ZLM_SECRET` passed
 to WVP. `ZLM_PUBLIC_HOST` must be the DNS name or public IP devices and browsers
 can reach, not necessarily the Docker service name.
@@ -108,7 +128,7 @@ migrations must never be edited, deleted, or renamed.
 
 ## Protocols and native SDKs
 
-GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.5 base deployment.
+GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.6 base deployment.
 ISUP and Dahua integrations are optional/experimental: their native SDK shared
 libraries, dependency completeness, and redistribution terms have not been
 verified for this public Linux image. They are not enabled by the default
