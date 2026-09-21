@@ -1,17 +1,17 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
-      <el-form-item label="收藏夹名称" prop="favoritesName">
+      <el-form-item :label="$tp('收藏夹名称')" prop="favoritesName">
         <el-input
           v-model="queryParams.favoritesName"
-          placeholder="请输入收藏夹名称"
+          :placeholder="$tp('请输入收藏夹名称')"
           clearable
           @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="Search" @click="handleQuery">{{ $tp("搜索") }}</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -23,7 +23,7 @@
           icon="Plus"
           @click="handleAdd"
           v-hasPermi="['wvp:favorites:add']"
-        >新增</el-button>
+        >{{ $tp("新增") }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -33,7 +33,7 @@
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['wvp:favorites:edit']"
-        >修改</el-button>
+        >{{ $tp("修改") }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -43,7 +43,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['wvp:favorites:remove']"
-        >删除</el-button>
+        >{{ $tp("删除") }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -52,25 +52,25 @@
           icon="Download"
           @click="handleExport"
           v-hasPermi="['wvp:favorites:export']"
-        >导出</el-button>
+        >{{ $tp("导出") }}</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="favoritesList" @selection-change="handleSelectionChange" border>
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" align="center" width="60">
+      <el-table-column :label="$tp('序号')" align="center" width="60">
         <template #default="scope">
           {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="收藏夹名称" align="center" prop="favoritesName" />
-      <el-table-column label="备注" align="center" prop="remark" show-overflow-tooltip />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$tp('收藏夹名称')" align="center" prop="favoritesName" />
+      <el-table-column :label="$tp('备注')" align="center" prop="remark" show-overflow-tooltip />
+      <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wvp:favorites:edit']">修改</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wvp:favorites:remove']">删除</el-button>
-          <el-button link type="primary" icon="VideoCamera" @click="handleCamera(scope.row)" v-hasPermi="['wvp:favoritesChannel:list']">设备</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wvp:favorites:edit']">{{ $tp("修改") }}</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wvp:favorites:remove']">{{ $tp("删除") }}</el-button>
+          <el-button link type="primary" icon="VideoCamera" @click="handleCamera(scope.row)" v-hasPermi="['wvp:favoritesChannel:list']">{{ $tp("设备") }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -83,21 +83,21 @@
       @pagination="getList"
     />
 
-    <el-dialog title="收藏设备" v-model="openCamera" width="65%" append-to-body>
+    <el-dialog :title="$tp('收藏设备')" v-model="openCamera" width="65%" append-to-body>
       <el-table v-loading="loadingCamera" :data="listCamera" border>
-        <el-table-column label="序号" align="center" width="60">
+        <el-table-column :label="$tp('序号')" align="center" width="60">
           <template #default="scope">
             {{ scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column label="设备名称" align="center" prop="gbName" />
-        <el-table-column label="设备ID" align="center" prop="gbParentid" />
-        <el-table-column label="通道ID" align="center" prop="gbDeviceid" />
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <el-table-column :label="$tp('设备名称')" align="center" prop="gbName" />
+        <el-table-column :label="$tp('设备ID')" align="center" prop="gbParentid" />
+        <el-table-column :label="$tp('通道ID')" align="center" prop="gbDeviceid" />
+        <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width">
           <template #default="scope">
             <el-button v-if="checkPermi(['wvp:play:start'])"
                        icon="VideoPlay" type="text" @click="start(scope.row)">
-              播放
+              {{ $tp("播放") }}
             </el-button>
           </template>
         </el-table-column>
@@ -112,7 +112,7 @@
       />
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body>
+    <el-dialog :title="$tp('播放视频')" v-model="openPlay" width="65%" append-to-body>
       <div class="player" v-if="openPlay">
         <Jessibuca v-if="openPlay" ref="flv" :visible.sync="showVideoDialog"
                    :videoUrl="flv" :error="videoError" :message="videoError" height="100px"
@@ -121,19 +121,19 @@
     </el-dialog>
 
     <!-- 添加或修改国标通道收藏对话框 -->
-    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="open" width="32%" append-to-body>
       <el-form ref="favoritesRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="收藏夹名称" prop="favoritesName">
-          <el-input v-model="form.favoritesName" placeholder="请输入收藏夹名称" maxlength="30" show-word-limit />
+        <el-form-item :label="$tp('收藏夹名称')" prop="favoritesName">
+          <el-input v-model="form.favoritesName" :placeholder="$tp('请输入收藏夹名称')" maxlength="30" show-word-limit />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" maxlength="200" show-word-limit />
+        <el-form-item :label="$tp('备注')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="$tp('请输入内容')" maxlength="200" show-word-limit />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -167,7 +167,7 @@ const data = reactive({
     favoritesName: null,
   },
   rules: {
-    favoritesName: [{ required: true, message: '收藏夹名称不能为空', trigger: 'blur' }],
+    favoritesName: [{ required: true, get message() { return translatePhrase("收藏夹名称不能为空") }, trigger: 'blur' }],
   }
 });
 
@@ -294,13 +294,13 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updateFavorites(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(translatePhrase("修改成功"));
           open.value = false;
           getList();
         });
       } else {
         addFavorites(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(translatePhrase("新增成功"));
           open.value = false;
           getList();
         });
@@ -312,11 +312,11 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除国标通道收藏编号为"' + _ids + '"的数据项？').then(function() {
+  proxy.$modal.confirm(translatePhrase("是否确认删除国标通道收藏编号为\"") + _ids + translatePhrase("\"的数据项？")).then(function() {
     return delFavorites(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {});
 }
 

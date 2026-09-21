@@ -1,20 +1,20 @@
 <template>
   <div>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
-        <el-form-item label="设备编码" prop="deviceId">
-          <el-input v-model="queryParams.deviceId" placeholder="请输入客户端名称" clearable disabled />
+        <el-form-item :label="$tp('设备编码')" prop="deviceId">
+          <el-input v-model="queryParams.deviceId" :placeholder="$tp('请输入客户端名称')" clearable disabled />
         </el-form-item>
-        <el-form-item label="数据时间">
+        <el-form-item :label="$tp('数据时间')">
           <el-date-picker v-model="queryParams.startTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
-                          placeholder="选择开始时间" align="center">
+                          :placeholder="$tp('选择开始时间')" align="center">
           </el-date-picker>
           <el-date-picker v-model="queryParams.endTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
-                          placeholder="选择结束时间" align="center">
+                          :placeholder="$tp('选择结束时间')" align="center">
           </el-date-picker>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+          <el-button type="primary" icon="Search" @click="handleQuery">{{ $tp("搜索") }}</el-button>
+          <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -27,7 +27,7 @@
           <el-table-column v-if="item.show" :key="index" :prop="item.prop" :label="item.label"
                            :formatter="item.formatter" align="center" show-overflow-tooltip />
         </template>
-        <el-table-column label="图片列表" align="center" show-overflow-tooltip>
+        <el-table-column :label="$tp('图片列表')" align="center" show-overflow-tooltip>
           <template #default="scope">
             <el-row>
               <el-col :span="12" v-for="(image, index) in scope.row.subImageList.SubImageInfoObject" :key="index">
@@ -36,11 +36,11 @@
             </el-row>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="100">
+        <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width" fixed="right" width="100">
           <template #default="scope">
             <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                        style="color: #f56c6c"
-                       v-hasPermi="['viid:face:remove']">删除
+                       v-hasPermi="['viid:face:remove']">{{ $tp("删除") }}
             </el-button>
           </template>
         </el-table-column>
@@ -84,18 +84,18 @@ const queryParams = ref({
 
 
 const tableColumns = ref([
-  { prop: 'deviceId', label: '设备编码', show: true },
-  { prop: 'genderCode', label: '性别', show: true },
-  { prop: 'ageUpLimit', label: '年龄', show: true },
-  { prop: 'faceAppearTime', label: '人脸出现时间', show: true },
-  { prop: 'faceDisAppearTime', label: '人脸消失时间', show: true },
+  { prop: 'deviceId', get label() { return translatePhrase("设备编码") }, show: true },
+  { prop: 'genderCode', get label() { return translatePhrase("性别") }, show: true },
+  { prop: 'ageUpLimit', get label() { return translatePhrase("年龄") }, show: true },
+  { prop: 'faceAppearTime', get label() { return translatePhrase("人脸出现时间") }, show: true },
+  { prop: 'faceDisAppearTime', get label() { return translatePhrase("人脸消失时间") }, show: true },
 ]);
 
 function handleDelete(row) {
-  proxy.$modal.confirm('是否确认人脸编号为"' + row.id + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认人脸编号为\"") + row.id + translatePhrase("\"的数据项？")).then(function () {
     delFaces(row.id).then(response => {
       if (response.success) {
-        proxy.$modal.msgSuccess('删除成功');
+        proxy.$modal.msgSuccess(translatePhrase("删除成功"));
         getList();
       }
     })

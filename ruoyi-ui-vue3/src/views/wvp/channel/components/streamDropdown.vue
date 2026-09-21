@@ -1,7 +1,7 @@
 <template>
   <el-dropdown v-if="streamInfo" trigger="click" @command="copyUrl">
     <el-button :icon="ArrowDownBold">
-      更多地址
+      {{ $tp("更多地址") }}
     </el-button>
     <template #dropdown>
       <el-dropdown-menu>
@@ -128,17 +128,17 @@ const props = defineProps({
 // 复制 URL 的方法
 const copyUrl = (url) => {
   if (!url) {
-    ElMessage.error('内容为空，无法复制');
+    ElMessage.error(translatePhrase("内容为空，无法复制"));
     return;
   }
 
   // 使用 Clipboard API
   navigator.clipboard.writeText(url).then(
       () => {
-        ElMessage.success('成功拷贝到粘贴板');
+        ElMessage.success(translatePhrase("成功拷贝到粘贴板"));
       },
       () => {
-        ElMessage.error('复制失败，请重试');
+        ElMessage.error(translatePhrase("复制失败，请重试"));
       }
   );
 };

@@ -5,7 +5,7 @@
          <div class="searchHeight_out flexRowAC">
             <search-height-box
                keyword="userName"
-               placeholder="请输入用户名称、登录地址等关键词"
+               :placeholder="$tp('请输入用户名称、登录地址等关键词')"
                :data="searchData"
                @handle="searchResetFn"
             />
@@ -20,24 +20,24 @@
          :data="onlineList.slice((pageNum - 1) * pageSize, pageNum * pageSize)"
          style="width: 100%;"
       >
-         <el-table-column label="序号" :width="clacPXToVW(55)" type="index" align="center">
+         <el-table-column :label="$tp('序号')" :width="clacPXToVW(55)" type="index" align="center">
             <template #default="scope">
                <span>{{ (pageNum - 1) * pageSize + scope.$index + 1 }}</span>
             </template>
          </el-table-column>
-         <el-table-column label="会话编号" align="center" prop="tokenId" :show-overflow-tooltip="true" />
-         <el-table-column label="登录名称" align="center" prop="userName" :show-overflow-tooltip="true" />
-         <el-table-column label="所属部门" align="center" prop="deptName" :show-overflow-tooltip="true" />
-         <el-table-column label="主机" align="center" prop="ipaddr" :show-overflow-tooltip="true" />
-         <el-table-column label="登录地点" align="center" prop="loginLocation" :show-overflow-tooltip="true" />
-         <el-table-column label="操作系统" align="center" prop="os" :show-overflow-tooltip="true" />
-         <el-table-column label="浏览器" align="center" prop="browser" :show-overflow-tooltip="true" />
-         <el-table-column label="登录时间" align="center" prop="loginTime">
+         <el-table-column :label="$tp('会话编号')" align="center" prop="tokenId" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('登录名称')" align="center" prop="userName" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('所属部门')" align="center" prop="deptName" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('主机')" align="center" prop="ipaddr" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('登录地点')" align="center" prop="loginLocation" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('操作系统')" align="center" prop="os" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('浏览器')" align="center" prop="browser" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('登录时间')" align="center" prop="loginTime">
             <template #default="scope">
                <span>{{ parseTime(scope.row.loginTime) }}</span>
             </template>
          </el-table-column>
-         <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(120)">
+         <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(120)">
             <template #default="scope">
                <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
                   <div
@@ -46,7 +46,7 @@
                      v-hasPermi="['monitor:online:forceLogout']"
                   >
                      <el-icon><Delete /></el-icon>
-                     <span>强退</span>
+                     <span>{{ $tp("强退") }}</span>
                   </div>
                </div>
             </template>
@@ -75,7 +75,7 @@ const queryParams = ref({
 });
 
 const searchData = ref([
-  { label: '登录地址', value: 'ipaddr', type: 'text', default: '' }
+  { get label() { return translatePhrase("登录地址") }, value: 'ipaddr', type: 'text', default: '' }
 ]);
 
 /** 查询登录日志列表 */
@@ -98,11 +98,11 @@ function searchResetFn(val) {
 
 /** 强退按钮操作 */
 function handleForceLogout(row) {
-    proxy.$modal.confirm('是否确认强退名称为"' + row.userName + '"的用户?').then(function () {
+    proxy.$modal.confirm(translatePhrase("是否确认强退名称为\"") + row.userName + translatePhrase("\"的用户?")).then(function () {
   return forceLogout(row.tokenId);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {});
 }
 

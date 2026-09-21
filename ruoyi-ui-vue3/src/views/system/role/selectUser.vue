@@ -1,23 +1,23 @@
 <template>
    <!-- 授权用户 -->
-   <el-dialog title="选择用户" v-model="visible" width="50%" top="5vh" append-to-body>
+   <el-dialog :title="$tp('选择用户')" v-model="visible" width="50%" top="5vh" append-to-body>
       <div class="searchHeight_out flexRowAC" style="margin-bottom: 12px; justify-content: flex-end;">
-         <search-height-box keyword="userName" placeholder="请输入用户名称等关键词" :data="searchData" @handle="searchResetFn" />
+         <search-height-box keyword="userName" :placeholder="$tp('请输入用户名称等关键词')" :data="searchData" @handle="searchResetFn" />
          <export-excel-pdf />
       </div>
       <el-row>
          <table-self @row-click="clickRow" ref="refTable" :data="userList" @selection-change="handleSelectionChange" height="260px" class="new_table" header-cell-class-name="header_tenant_cell" stripe>
             <el-table-column type="selection" :width="clacPXToVW(55)"></el-table-column>
-            <el-table-column label="用户名称" prop="userName" :show-overflow-tooltip="true" />
-            <el-table-column label="用户昵称" prop="nickName" :show-overflow-tooltip="true" />
-            <el-table-column label="邮箱" prop="email" :show-overflow-tooltip="true" />
-            <el-table-column label="手机" prop="phonenumber" :show-overflow-tooltip="true" />
-            <el-table-column label="状态" align="center" prop="status">
+            <el-table-column :label="$tp('用户名称')" prop="userName" :show-overflow-tooltip="true" />
+            <el-table-column :label="$tp('用户昵称')" prop="nickName" :show-overflow-tooltip="true" />
+            <el-table-column :label="$tp('邮箱')" prop="email" :show-overflow-tooltip="true" />
+            <el-table-column :label="$tp('手机')" prop="phonenumber" :show-overflow-tooltip="true" />
+            <el-table-column :label="$tp('状态')" align="center" prop="status">
                <template #default="scope">
                   <dict-tag :options="sys_normal_disable" :value="scope.row.status" />
                </template>
             </el-table-column>
-            <el-table-column label="创建时间" align="center" prop="createTime" :width="clacPXToVW(180)">
+            <el-table-column :label="$tp('创建时间')" align="center" prop="createTime" :width="clacPXToVW(180)">
                <template #default="scope">
                   <span>{{ parseTime(scope.row.createTime) }}</span>
                </template>
@@ -33,8 +33,8 @@
       </el-row>
       <template #footer>
          <div class="dialog-footer">
-            <el-button type="primary" @click="handleSelectUser">确 定</el-button>
-            <el-button @click="visible = false">取 消</el-button>
+            <el-button type="primary" @click="handleSelectUser">{{ $tp("确 定") }}</el-button>
+            <el-button @click="visible = false">{{ $tp("取 消") }}</el-button>
          </div>
       </template>
    </el-dialog>
@@ -67,7 +67,7 @@ const queryParams = reactive({
 });
 
 const searchData = [
-  { label: '手机号码', value: 'phonenumber', type: 'text', default: '' }
+  { get label() { return translatePhrase("手机号码") }, value: 'phonenumber', type: 'text', default: '' }
 ];
 
 // 显示弹框
@@ -114,7 +114,7 @@ function handleSelectUser() {
   const roleId = queryParams.roleId;
   const uIds = userIds.value.join(",");
   if (uIds == "") {
-    proxy.$modal.msgError("请选择要分配的用户");
+    proxy.$modal.msgError(translatePhrase("请选择要分配的用户"));
     return;
   }
   authUserSelectAll({ roleId: roleId, userIds: uIds }).then(res => {

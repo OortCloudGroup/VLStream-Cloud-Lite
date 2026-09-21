@@ -1,29 +1,29 @@
 <template>
-  <el-dialog title="添加标记" v-model="visible" width="50%" append-to-body>
+  <el-dialog :title="$tp('添加标记')" v-model="visible" width="50%" append-to-body>
     <el-form ref="markRef" :model="form" :rules="rules" label-width="120px">
-      <el-form-item label="国标通道id" prop="channelId">
-        <el-input v-model="form.channelId" placeholder="请输入通道id" maxlength="30" disabled show-word-limit />
+      <el-form-item :label="$tp('国标通道id')" prop="channelId">
+        <el-input v-model="form.channelId" :placeholder="$tp('请输入通道id')" maxlength="30" disabled show-word-limit />
       </el-form-item>
-      <el-form-item label="国标通道名称" prop="gbName">
-        <el-input v-model="form.gbName" placeholder="请输入国标通道名称" maxlength="30" disabled show-word-limit />
+      <el-form-item :label="$tp('国标通道名称')" prop="gbName">
+        <el-input v-model="form.gbName" :placeholder="$tp('请输入国标通道名称')" maxlength="30" disabled show-word-limit />
       </el-form-item>
-      <el-form-item label="国标设备id" prop="gbParentid">
-        <el-input v-model="form.gbParentid" placeholder="请输入国标设备id" maxlength="30" disabled show-word-limit />
+      <el-form-item :label="$tp('国标设备id')" prop="gbParentid">
+        <el-input v-model="form.gbParentid" :placeholder="$tp('请输入国标设备id')" maxlength="30" disabled show-word-limit />
       </el-form-item>
-      <el-form-item label="国标通道id" prop="gbDeviceid">
-        <el-input v-model="form.gbDeviceid" placeholder="请输入国标通道id" maxlength="30" disabled show-word-limit />
+      <el-form-item :label="$tp('国标通道id')" prop="gbDeviceid">
+        <el-input v-model="form.gbDeviceid" :placeholder="$tp('请输入国标通道id')" maxlength="30" disabled show-word-limit />
       </el-form-item>
-      <el-form-item label="选择标记" prop="markId">
+      <el-form-item :label="$tp('选择标记')" prop="markId">
         <el-select v-model="form.markId" clearable filterable remote :remote-method="loadMarksOptions"
-                   placeholder="请选择标记">
+                   :placeholder="$tp('请选择标记')">
           <el-option v-for="item in markOptions" :key="item.id" :value="item.id" :label="item.markName"/>
         </el-select>
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="handleCancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+        <el-button @click="handleCancel">{{ $tp("取 消") }}</el-button>
       </div>
     </template>
   </el-dialog>
@@ -64,11 +64,11 @@ const form = reactive({
 })
 
 const rules = reactive({
-  channelId: [{ required: true, message: '请输入国标通道id', trigger: 'blur' }],
-  gbName: [{ required: true, message: '请输入国标通道名称', trigger: 'blur' }],
-  gbParentid: [{ required: true, message: '请输入国标设备id', trigger: 'blur' }],
-  gbDeviceid: [{ required: true, message: '请输入国标通道id', trigger: 'blur' }],
-  markId: [{ required: true, message: '请选择标记', trigger: 'change' }]
+  channelId: [{ required: true, get message() { return translatePhrase("请输入国标通道id") }, trigger: 'blur' }],
+  gbName: [{ required: true, get message() { return translatePhrase("请输入国标通道名称") }, trigger: 'blur' }],
+  gbParentid: [{ required: true, get message() { return translatePhrase("请输入国标设备id") }, trigger: 'blur' }],
+  gbDeviceid: [{ required: true, get message() { return translatePhrase("请输入国标通道id") }, trigger: 'blur' }],
+  markId: [{ required: true, get message() { return translatePhrase("请选择标记") }, trigger: 'change' }]
 })
 
 // 监听器
@@ -108,7 +108,7 @@ const submitForm = () => {
         handleCancel()
         emit('success')
       }).catch(() => {
-        ElMessage.error('操作失败')
+        ElMessage.error(translatePhrase("操作失败"))
       })
     }
   })

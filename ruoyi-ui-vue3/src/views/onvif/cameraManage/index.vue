@@ -1,18 +1,18 @@
 <template>
   <DeviceClassificationLayout protocol-type="ONVIF" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
   <div class="app-container">
-    <el-alert title="ONVIF协议 16的设备可以使用Digest/WS,2.20版本使用WS" type="success" style="margin-bottom: 10px;" :closable="false" />
+    <el-alert :title="$tp('ONVIF协议 16的设备可以使用Digest/WS,2.20版本使用WS')" type="success" style="margin-bottom: 10px;" :closable="false" />
     <div class="toolbar-with-search">
       <div class="toolbar-left">
         <button type="button" class="exportBtn newBtn flexRowAC" @click="handleWSDiscovery" v-hasPermi="['onvif:device:WSDiscovery']">
-          <el-icon class="BtnImg"><Search /></el-icon>发现设备
+          <el-icon class="BtnImg"><Search /></el-icon>{{ $tp("发现设备") }}
         </button>
         <button-group :button-list="toolbarButtons" />
       </div>
       <div class="searchHeight_out flexRowAC">
         <search-height-box
           keyword="name"
-          placeholder="请输入设备名称、IP等关键词"
+          :placeholder="$tp('请输入设备名称、IP等关键词')"
           :data="searchData"
           @handle="searchResetFn"
         />
@@ -30,14 +30,14 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" :width="clacPXToVW(55)" align="center"/>
-      <el-table-column label="所属部门" align="center" prop="deptName" show-overflow-tooltip/>
-      <el-table-column label="名称" align="center" prop="name" show-overflow-tooltip/>
+      <el-table-column :label="$tp('所属部门')" align="center" prop="deptName" show-overflow-tooltip/>
+      <el-table-column :label="$tp('名称')" align="center" prop="name" show-overflow-tooltip/>
       <el-table-column label="ip" align="center" prop="ip" show-overflow-tooltip/>
-      <el-table-column label="地址" align="center" prop="addressMap" show-overflow-tooltip/>
-      <el-table-column label="设备厂商" align="center" prop="firm" show-overflow-tooltip/>
-      <el-table-column label="设备型号" align="center" prop="model" show-overflow-tooltip/>
-      <el-table-column label="用户名" align="center" prop="userName" :width="clacPXToVW(100)"/>
-      <el-table-column label="密码" align="center" prop="password" :width="clacPXToVW(150)">
+      <el-table-column :label="$tp('地址')" align="center" prop="addressMap" show-overflow-tooltip/>
+      <el-table-column :label="$tp('设备厂商')" align="center" prop="firm" show-overflow-tooltip/>
+      <el-table-column :label="$tp('设备型号')" align="center" prop="model" show-overflow-tooltip/>
+      <el-table-column :label="$tp('用户名')" align="center" prop="userName" :width="clacPXToVW(100)"/>
+      <el-table-column :label="$tp('密码')" align="center" prop="password" :width="clacPXToVW(150)">
         <template #default="scope">
           <div class="password-container">
             <span v-if="!passwordVisibility[scope.row.id]">******</span>
@@ -48,36 +48,36 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="播放类型" align="center" prop="playType" :width="clacPXToVW(100)">
+      <el-table-column :label="$tp('播放类型')" align="center" prop="playType" :width="clacPXToVW(100)">
         <template #default="scope">
-          <el-tag type="primary" v-if="scope.row.playType === '1'">本地</el-tag>
-          <el-tag type="primary" v-if="scope.row.playType === '2'">推流</el-tag>
+          <el-tag type="primary" v-if="scope.row.playType === '1'">{{ $tp("本地") }}</el-tag>
+          <el-tag type="primary" v-if="scope.row.playType === '2'">{{ $tp("推流") }}</el-tag>
           <el-tag type="primary" v-if="scope.row.playType === '3'">EasyNTS</el-tag>
         </template>
       </el-table-column>
-      <el-table-column key="streamId" label="流id" prop="streamId" min-width="150" align="center" show-overflow-tooltip/>
-      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+      <el-table-column key="streamId" :label="$tp('流id')" prop="streamId" min-width="150" align="center" show-overflow-tooltip/>
+      <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(220)">
         <template #default="scope">
           <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
             <div class="new_table_svg_group" @click.stop="handleView(scope.row)" v-hasPermi="['onvif:device:play']">
-              <span>播放</span>
+              <span>{{ $tp("播放") }}</span>
             </div>
             <div class="new_table_svg_group" @click.stop="handleUpdate(scope.row)" v-hasPermi="['onvif:device:edit']">
-              <span>修改</span>
+              <span>{{ $tp("修改") }}</span>
             </div>
             <el-dropdown
               @command="(command)=>{moreClick(command, scope.row)}"
               v-if="checkPermi(['onvif:device:edit', 'onvif:device:remove'])"
             >
               <div class="new_table_svg_group" @click.stop>
-                <span>更多</span>
+                <span>{{ $tp("更多") }}</span>
                 <el-icon><ArrowDown /></el-icon>
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="viewUrls">全部地址</el-dropdown-item>
-                  <el-dropdown-item command="handleMap" v-if="checkPermi(['onvif:device:edit'])">修改位置</el-dropdown-item>
-                  <el-dropdown-item command="handleDelete" style="color: #f56c6c" v-if="checkPermi(['onvif:device:remove'])">删除</el-dropdown-item>
+                  <el-dropdown-item command="viewUrls">{{ $tp("全部地址") }}</el-dropdown-item>
+                  <el-dropdown-item command="handleMap" v-if="checkPermi(['onvif:device:edit'])">{{ $tp("修改位置") }}</el-dropdown-item>
+                  <el-dropdown-item command="handleDelete" style="color: #f56c6c" v-if="checkPermi(['onvif:device:remove'])">{{ $tp("删除") }}</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -95,20 +95,20 @@
     />
 
     <!-- 修改onvif 设备对话框 -->
-    <el-dialog :title="title" v-model="open" width="65%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="open" width="65%" append-to-body>
       <el-form ref="deviceRef" :model="form" :rules="rules" label-width="120px">
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="所属部门" prop="deptId">
+            <el-form-item :label="$tp('所属部门')" prop="deptId">
               <el-tree-select v-model="form.deptId" :data="enabledDeptOptions"
                               :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id"
-                              placeholder="请选择归属部门" check-strictly/>
+                              :placeholder="$tp('请选择归属部门')" check-strictly/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="设备名称" prop="userName">
-              <el-input v-model="form.name" placeholder="请输入设备名称"/>
+            <el-form-item :label="$tp('设备名称')" prop="userName">
+              <el-input v-model="form.name" :placeholder="$tp('请输入设备名称')"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -116,68 +116,68 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="ip" prop="ip">
-              <el-input v-model="form.ip" placeholder="请输入ip"/>
+              <el-input v-model="form.ip" :placeholder="$tp('请输入ip')"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="用户名" prop="userName">
-              <el-input v-model="form.userName" placeholder="请输入用户名"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="密码" prop="password">
-              <el-input v-model="form.password" placeholder="请输入密码"/>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="12">
-            <el-form-item label="固件版本" prop="firmwareVersion">
-              <el-input v-model="form.firmwareVersion" placeholder="请输入固件版本" disabled/>
-            </el-form-item>
-          </el-col>
-
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="设备厂商" prop="firm">
-              <el-input v-model="form.firm" placeholder="请输入设备厂商" disabled/>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="设备型号" prop="model">
-              <el-input v-model="form.model" placeholder="请输入设备型号" disabled/>
+            <el-form-item :label="$tp('用户名')" prop="userName">
+              <el-input v-model="form.userName" :placeholder="$tp('请输入用户名')"/>
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="播放类型" prop="playType">
+            <el-form-item :label="$tp('密码')" prop="password">
+              <el-input v-model="form.password" :placeholder="$tp('请输入密码')"/>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">
+            <el-form-item :label="$tp('固件版本')" prop="firmwareVersion">
+              <el-input v-model="form.firmwareVersion" :placeholder="$tp('请输入固件版本')" disabled/>
+            </el-form-item>
+          </el-col>
+
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item :label="$tp('设备厂商')" prop="firm">
+              <el-input v-model="form.firm" :placeholder="$tp('请输入设备厂商')" disabled/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$tp('设备型号')" prop="model">
+              <el-input v-model="form.model" :placeholder="$tp('请输入设备型号')" disabled/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item :label="$tp('播放类型')" prop="playType">
               <el-radio-group v-model="form.playType">
-                <el-radio value="1">本地</el-radio>
-                <el-radio value="2">推流</el-radio>
+                <el-radio value="1">{{ $tp("本地") }}</el-radio>
+                <el-radio value="2">{{ $tp("推流") }}</el-radio>
                 <el-radio value="3">EasyNTS</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
-            <el-form-item label="流id" prop="streamId" v-if="form.playType === '2'">
-              <el-input v-model="form.streamId" placeholder="请输入流id" maxlength="100" show-word-limit/>
+            <el-form-item :label="$tp('流id')" prop="streamId" v-if="form.playType === '2'">
+              <el-input v-model="form.streamId" :placeholder="$tp('请输入流id')" maxlength="100" show-word-limit/>
             </el-form-item>
-            <el-form-item label="EasyNTS地址" prop="easyNTSUrl" v-if="form.playType === '3'">
-              <el-input v-model="form.easyNTSUrl" type="textarea" placeholder="请输入EasyNTS地址" maxlength="200"
+            <el-form-item :label="$tp('EasyNTS地址')" prop="easyNTSUrl" v-if="form.playType === '3'">
+              <el-input v-model="form.easyNTSUrl" type="textarea" :placeholder="$tp('请输入EasyNTS地址')" maxlength="200"
                         show-word-limit/>
             </el-form-item>
-            <el-form-item label="默认播放地址" prop="url" v-if="form.playType === '1'">
+            <el-form-item :label="$tp('默认播放地址')" prop="url" v-if="form.playType === '1'">
               <el-select
                   v-model="form.url"
                   class="m-2"
-                  placeholder="请选择直播流地址"
+                  :placeholder="$tp('请选择直播流地址')"
                   size="large"
               >
                 <el-option
@@ -193,11 +193,11 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="通道" prop="channel">
+            <el-form-item :label="$tp('通道')" prop="channel">
               <el-select
                   v-model="form.channel"
                   class="m-2"
-                  placeholder="请选择通道"
+                  :placeholder="$tp('请选择通道')"
                   size="large"
               >
                 <el-option
@@ -213,34 +213,34 @@
         </el-row>
 
         <el-col :span="24">
-          <el-form-item label="备注" prop="remark">
-            <el-input v-model="form.remark" type="textarea" placeholder="请输入内容"/>
+          <el-form-item :label="$tp('备注')" prop="remark">
+            <el-input v-model="form.remark" type="textarea" :placeholder="$tp('请输入内容')"/>
           </el-form-item>
         </el-col>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 查看直播流地址 对话框 -->
-    <el-dialog :title="title" v-model="showUrl" width="50%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="showUrl" width="50%" append-to-body>
       <div v-for="(item,index) in urls" :key="index" style="margin-bottom: 10px;">
         <el-text type="primary" style="cursor: pointer;" @click="copyToClipboard(item)">{{ item }}</el-text>
       </div>
     </el-dialog>
 
     <!-- 播放弹窗 对话框 -->
-    <el-dialog :title="title" v-model="showPaly" width="55%" @opened="openedPaly" @close="closePaly">
+    <el-dialog :title="$tp(title)" v-model="showPaly" width="55%" @opened="openedPaly" @close="closePaly">
       <div style="background: #000000">
         <Hikvision :rtsp="rtspUrl" v-if="showPaly && (playType === '1' || playType === '3') "/>
       </div>
       <div>
         <el-tabs v-if="playType === '2'" v-model="activeName" type="card" :stretch="true">
-          <el-tab-pane label="flv播放" name="flv">
+          <el-tab-pane :label="$tp('flv播放')" name="flv">
             <el-row>
               <el-col :span="24">
                 <div class="player" v-if="activeName === 'flv'">
@@ -264,9 +264,9 @@
 
         <el-tabs v-model="tabActiveName" type="card" :stretch="true" style="margin-top: 10px;">
 
-          <el-tab-pane label="WS控制台" name="control">
+          <el-tab-pane :label="$tp('WS控制台')" name="control">
             <el-tabs v-model="playTabsName" style="width: 100%;" @tab-click="handleplayTabsClick">
-              <el-tab-pane label="云台" name="absolute">
+              <el-tab-pane :label="$tp('云台')" name="absolute">
                 <div style="display: grid; height: 180px; overflow: auto">
                   <!-- 左侧控制区域 -->
                   <div style="display: grid; grid-template-columns: 100px auto;">
@@ -311,11 +311,11 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="预置点" name="presets">
+              <el-tab-pane :label="$tp('预置点')" name="presets">
                 <div style="display: flex; align-items: center;">
                   <el-input style="width: 300px; margin-right: 10px;" v-model="presetName"
-                            placeholder="请输入预置点名称"/>
-                  <el-button type="primary" @click="presetAdd">添 加</el-button>
+                            :placeholder="$tp('请输入预置点名称')"/>
+                  <el-button type="primary" @click="presetAdd">{{ $tp("添 加") }}</el-button>
                 </div>
                 <div style="margin-top: 10px;">
                   <el-tag v-loading="showPresets" closable @close="closePresets(item)" @click="gotoPresets(item)"
@@ -328,7 +328,7 @@
             </el-tabs>
           </el-tab-pane>
 
-          <el-tab-pane label="onvif-java控制台" name="onvifJava">
+          <el-tab-pane :label="$tp('onvif-java控制台')" name="onvifJava">
             <div style="display: grid; height: 180px; overflow: auto">
               <!-- 左侧控制区域 -->
               <div style="display: grid; grid-template-columns: 100px auto;">
@@ -377,49 +377,49 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="title" v-model="openAdd" width="50%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="openAdd" width="50%" append-to-body>
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form ref="probeRef" :model="probeForm" :rules="rules" label-width="120px">
-            <el-form-item label="所属部门" prop="deptId">
+            <el-form-item :label="$tp('所属部门')" prop="deptId">
               <el-tree-select v-model="probeForm.deptId" :data="enabledDeptOptions"
                               :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id"
-                              placeholder="请选择归属部门" check-strictly/>
+                              :placeholder="$tp('请选择归属部门')" check-strictly/>
             </el-form-item>
-            <el-form-item label="设备名称" prop="name">
-              <el-input v-model="probeForm.name" placeholder="请输入设备名称"/>
+            <el-form-item :label="$tp('设备名称')" prop="name">
+              <el-input v-model="probeForm.name" :placeholder="$tp('请输入设备名称')"/>
             </el-form-item>
             <el-form-item label="ONVIF IP" prop="ip">
-              <el-input v-model="probeForm.ip" placeholder="请输入ONVIF IP"/>
+              <el-input v-model="probeForm.ip" :placeholder="$tp('请输入ONVIF IP')"/>
             </el-form-item>
-            <el-form-item label="ONVIF用户名" prop="username">
-              <el-input v-model="probeForm.username" placeholder="请输入ONVIF用户名"/>
+            <el-form-item :label="$tp('ONVIF用户名')" prop="username">
+              <el-input v-model="probeForm.username" :placeholder="$tp('请输入ONVIF用户名')"/>
             </el-form-item>
-            <el-form-item label="ONVIF密码" prop="password">
-              <el-input v-model="probeForm.password" placeholder="请输入ONVIF密码"/>
+            <el-form-item :label="$tp('ONVIF密码')" prop="password">
+              <el-input v-model="probeForm.password" :placeholder="$tp('请输入ONVIF密码')"/>
             </el-form-item>
           </el-form>
           <div style="display: flex; justify-content: space-around;">
-            <el-button type="primary" @click="submitDetectionForm" v-hasPermi="['onvif:service:getInfo']">探 测
+            <el-button type="primary" @click="submitDetectionForm" v-hasPermi="['onvif:service:getInfo']">{{ $tp("探 测") }}
             </el-button>
           </div>
         </el-col>
         <el-col :span="12">
           <el-form ref="resultRef" :model="resultForm" :rules="rulesResult" label-width="120px">
-            <el-form-item label="厂商" prop="firm">
-              <el-input v-model="resultForm.firm" placeholder="请输入厂商" disabled/>
+            <el-form-item :label="$tp('厂商')" prop="firm">
+              <el-input v-model="resultForm.firm" :placeholder="$tp('请输入厂商')" disabled/>
             </el-form-item>
-            <el-form-item label="型号" prop="model">
-              <el-input v-model="resultForm.model" placeholder="请输入型号" disabled/>
+            <el-form-item :label="$tp('型号')" prop="model">
+              <el-input v-model="resultForm.model" :placeholder="$tp('请输入型号')" disabled/>
             </el-form-item>
-            <el-form-item label="固件版本" prop="firmwareVersion">
-              <el-input v-model="resultForm.firmwareVersion" placeholder="请输入固件版本" disabled/>
+            <el-form-item :label="$tp('固件版本')" prop="firmwareVersion">
+              <el-input v-model="resultForm.firmwareVersion" :placeholder="$tp('请输入固件版本')" disabled/>
             </el-form-item>
-            <el-form-item label="通道" prop="channel">
+            <el-form-item :label="$tp('通道')" prop="channel">
               <el-select
                   v-model="resultForm.channel"
                   class="m-2"
-                  placeholder="请选择通道"
+                  :placeholder="$tp('请选择通道')"
                   size="large"
                   :disabled="disabledAdd"
               >
@@ -432,25 +432,25 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="播放类型" prop="playType">
+            <el-form-item :label="$tp('播放类型')" prop="playType">
               <el-radio-group v-model="resultForm.playType">
-                <el-radio value="1">本地</el-radio>
-                <el-radio value="2">推流</el-radio>
+                <el-radio value="1">{{ $tp("本地") }}</el-radio>
+                <el-radio value="2">{{ $tp("推流") }}</el-radio>
                 <el-radio value="3">EasyNTS</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="流id" prop="streamId" v-if="resultForm.playType === '2'">
-              <el-input v-model="resultForm.streamId" placeholder="请输入流id" maxlength="100" show-word-limit/>
+            <el-form-item :label="$tp('流id')" prop="streamId" v-if="resultForm.playType === '2'">
+              <el-input v-model="resultForm.streamId" :placeholder="$tp('请输入流id')" maxlength="100" show-word-limit/>
             </el-form-item>
-            <el-form-item label="EasyNTS地址" prop="easyNTSUrl" v-if="resultForm.playType === '3'">
-              <el-input v-model="resultForm.easyNTSUrl" type="textarea" placeholder="请输入EasyNTS地址" maxlength="200"
+            <el-form-item :label="$tp('EasyNTS地址')" prop="easyNTSUrl" v-if="resultForm.playType === '3'">
+              <el-input v-model="resultForm.easyNTSUrl" type="textarea" :placeholder="$tp('请输入EasyNTS地址')" maxlength="200"
                         show-word-limit/>
             </el-form-item>
-            <el-form-item label="直播流地址" prop="url" v-if="resultForm.playType === '1'">
+            <el-form-item :label="$tp('直播流地址')" prop="url" v-if="resultForm.playType === '1'">
               <el-select
                   v-model="resultForm.url"
                   class="m-2"
-                  placeholder="请选择直播流地址"
+                  :placeholder="$tp('请选择直播流地址')"
                   size="large"
                   :disabled="disabledAdd"
               >
@@ -465,10 +465,10 @@
             </el-form-item>
             <div style="display: flex;justify-content: center">
               <el-button type="primary" @click="getChannel" :disabled="disabledAdd"
-                         v-hasPermi="['onvif:service:getChannelToken']">获取通道
+                         v-hasPermi="['onvif:service:getChannelToken']">{{ $tp("获取通道") }}
               </el-button>
               <el-button type="primary" @click="submitResultForm" :disabled="disabledAdd"
-                         v-hasPermi="['onvif:device:add']">添 加
+                         v-hasPermi="['onvif:device:add']">{{ $tp("添 加") }}
               </el-button>
             </div>
           </el-form>
@@ -476,30 +476,30 @@
       </el-row>
     </el-dialog>
 
-    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
+    <el-dialog :title="$tp('修改地址')" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
 
     <!--发现设备-->
     <el-dialog title="WSDiscovery" v-model="showWS" width="65%" append-to-body>
       <el-steps :active="stepsName" finish-status="success" align-center>
-        <el-step title="设备认证" />
-        <el-step title="添加设备" />
+        <el-step :title="$tp('设备认证')" />
+        <el-step :title="$tp('添加设备')" />
       </el-steps>
       <el-table :data="listWS" border v-if="stepsName === 0">
         <el-table-column label="ip" align="center" prop="ip" show-overflow-tooltip/>
-        <el-table-column label="访问地址" align="center" prop="hostName" show-overflow-tooltip />
-        <el-table-column label="用户名" align="center">
+        <el-table-column :label="$tp('访问地址')" align="center" prop="hostName" show-overflow-tooltip />
+        <el-table-column :label="$tp('用户名')" align="center">
           <template #default="{ row }">
-            <el-input v-model="row.username" placeholder="请输入用户名"></el-input>
+            <el-input v-model="row.username" :placeholder="$tp('请输入用户名')"></el-input>
           </template>
         </el-table-column>
-        <el-table-column label="密码" align="center">
+        <el-table-column :label="$tp('密码')" align="center">
           <template #default="{ row }">
-            <el-input v-model="row.password" placeholder="请输入密码" show-password></el-input>
+            <el-input v-model="row.password" :placeholder="$tp('请输入密码')" show-password></el-input>
           </template>
         </el-table-column>
-        <el-table-column label="认证方式" align="center">
+        <el-table-column :label="$tp('认证方式')" align="center">
           <template #default="{ row }">
             <el-radio-group v-model="row.auth">
               <el-radio value="1" size="large">WS-Usemame token</el-radio>
@@ -507,11 +507,11 @@
             </el-radio-group>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="180">
+        <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width" fixed="right" width="180">
           <template #default="scope">
             <div style="display:flex; align-items: center;justify-content: center">
               <el-button link type="primary" icon="Check" @click="handleAuth(scope.row)"
-                         v-hasPermi="['onvif:device:auth']">认证
+                         v-hasPermi="['onvif:device:auth']">{{ $tp("认证") }}
               </el-button>
             </div>
           </template>
@@ -524,39 +524,39 @@
             <el-form ref="resultRef" :model="resultForm" :rules="rulesResult2" label-width="120px">
               <el-row :gutter="20">
                 <el-col :span="12">
-                  <el-form-item label="所属部门" prop="deptId">
+                  <el-form-item :label="$tp('所属部门')" prop="deptId">
                   <el-tree-select v-model="resultForm.deptId" :data="enabledDeptOptions"
                                   :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id"
-                                  placeholder="请选择归属部门" check-strictly/>
+                                  :placeholder="$tp('请选择归属部门')" check-strictly/>
                   </el-form-item>
-                  <el-form-item label="设备名称" prop="name">
-                    <el-input v-model="resultForm.name" placeholder="请输入设备名称"/>
+                  <el-form-item :label="$tp('设备名称')" prop="name">
+                    <el-input v-model="resultForm.name" :placeholder="$tp('请输入设备名称')"/>
                   </el-form-item>
                   <el-form-item label="ONVIF IP" prop="ip">
-                    <el-input v-model="resultForm.ip" placeholder="请输入ONVIF IP"/>
+                    <el-input v-model="resultForm.ip" :placeholder="$tp('请输入ONVIF IP')"/>
                   </el-form-item>
-                  <el-form-item label="ONVIF用户名" prop="username">
-                    <el-input v-model="resultForm.username" placeholder="请输入ONVIF用户名"/>
+                  <el-form-item :label="$tp('ONVIF用户名')" prop="username">
+                    <el-input v-model="resultForm.username" :placeholder="$tp('请输入ONVIF用户名')"/>
                   </el-form-item>
-                  <el-form-item label="ONVIF密码" prop="password">
-                    <el-input v-model="resultForm.password" placeholder="请输入ONVIF密码"/>
+                  <el-form-item :label="$tp('ONVIF密码')" prop="password">
+                    <el-input v-model="resultForm.password" :placeholder="$tp('请输入ONVIF密码')"/>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="厂商" prop="firm">
-                    <el-input v-model="resultForm.firm" placeholder="请输入厂商" disabled/>
+                  <el-form-item :label="$tp('厂商')" prop="firm">
+                    <el-input v-model="resultForm.firm" :placeholder="$tp('请输入厂商')" disabled/>
                   </el-form-item>
-                  <el-form-item label="型号" prop="model">
-                    <el-input v-model="resultForm.model" placeholder="请输入型号" disabled/>
+                  <el-form-item :label="$tp('型号')" prop="model">
+                    <el-input v-model="resultForm.model" :placeholder="$tp('请输入型号')" disabled/>
                   </el-form-item>
-                  <el-form-item label="固件版本" prop="firmwareVersion">
-                    <el-input v-model="resultForm.firmwareVersion" placeholder="请输入固件版本" disabled/>
+                  <el-form-item :label="$tp('固件版本')" prop="firmwareVersion">
+                    <el-input v-model="resultForm.firmwareVersion" :placeholder="$tp('请输入固件版本')" disabled/>
                   </el-form-item>
-                  <el-form-item label="通道" prop="channel">
+                  <el-form-item :label="$tp('通道')" prop="channel">
                     <el-select
                         v-model="resultForm.channel"
                         class="m-2"
-                        placeholder="请选择通道"
+                        :placeholder="$tp('请选择通道')"
                         size="large"
                     >
                       <el-option
@@ -568,25 +568,25 @@
                       </el-option>
                     </el-select>
                   </el-form-item>
-                  <el-form-item label="播放类型" prop="playType">
+                  <el-form-item :label="$tp('播放类型')" prop="playType">
                     <el-radio-group v-model="resultForm.playType">
-                      <el-radio value="1">本地</el-radio>
-                      <el-radio value="2">推流</el-radio>
+                      <el-radio value="1">{{ $tp("本地") }}</el-radio>
+                      <el-radio value="2">{{ $tp("推流") }}</el-radio>
                       <el-radio value="3">EasyNTS</el-radio>
                     </el-radio-group>
                   </el-form-item>
-                  <el-form-item label="流id" prop="streamId" v-if="resultForm.playType === '2'">
-                    <el-input v-model="resultForm.streamId" placeholder="请输入流id" maxlength="100" show-word-limit/>
+                  <el-form-item :label="$tp('流id')" prop="streamId" v-if="resultForm.playType === '2'">
+                    <el-input v-model="resultForm.streamId" :placeholder="$tp('请输入流id')" maxlength="100" show-word-limit/>
                   </el-form-item>
-                  <el-form-item label="EasyNTS地址" prop="easyNTSUrl" v-if="resultForm.playType === '3'">
-                    <el-input v-model="resultForm.easyNTSUrl" type="textarea" placeholder="请输入EasyNTS地址" maxlength="200"
+                  <el-form-item :label="$tp('EasyNTS地址')" prop="easyNTSUrl" v-if="resultForm.playType === '3'">
+                    <el-input v-model="resultForm.easyNTSUrl" type="textarea" :placeholder="$tp('请输入EasyNTS地址')" maxlength="200"
                               show-word-limit/>
                   </el-form-item>
-                  <el-form-item label="直播流地址" prop="url" v-if="resultForm.playType === '1'">
+                  <el-form-item :label="$tp('直播流地址')" prop="url" v-if="resultForm.playType === '1'">
                     <el-select
                         v-model="resultForm.url"
                         class="m-2"
-                        placeholder="请选择直播流地址"
+                        :placeholder="$tp('请选择直播流地址')"
                         size="large"
                     >
                       <el-option
@@ -602,7 +602,7 @@
               </el-row>
 
               <div style="display: flex;justify-content: center">
-                <el-button type="primary" @click="submitResultForm2" v-hasPermi="['onvif:device:add']">添 加
+                <el-button type="primary" @click="submitResultForm2" v-hasPermi="['onvif:device:add']">{{ $tp("添 加") }}
                 </el-button>
               </div>
             </el-form>
@@ -662,18 +662,18 @@ const showWS = ref(false);
 const total = ref(0);
 const searchData = ref([
   {
-    label: '所属部门',
+    get label() { return translatePhrase("所属部门") },
     value: 'deptId',
     type: 'tree-select',
     option: [],
     default: undefined
   },
   { label: 'ip', value: 'ip', type: 'text', default: undefined },
-  { label: '设备厂商', value: 'firm', type: 'text', default: undefined }
+  { get label() { return translatePhrase("设备厂商") }, value: 'firm', type: 'text', default: undefined }
 ]);
 const toolbarButtons = computed(() => [
-  { name: '修改', svg: 'edit', disabled: single.value, permi: ['onvif:device:edit'], clickFn: () => handleUpdate() },
-  { name: '删除', svg: 'delete', disabled: multiple.value, permi: ['onvif:device:remove'], clickFn: () => handleDelete() }
+  { get name() { return translatePhrase("修改") }, svg: 'edit', disabled: single.value, permi: ['onvif:device:edit'], clickFn: () => handleUpdate() },
+  { get name() { return translatePhrase("删除") }, svg: 'delete', disabled: multiple.value, permi: ['onvif:device:remove'], clickFn: () => handleDelete() }
 ]);
 const title = ref("");
 const brand = ref("");
@@ -716,52 +716,52 @@ const data = reactive({
     streamUris: null,
   },
   rules: {
-    id: [{required: true, message: "编号不能为空", trigger: "blur"}],
-    ip: [{required: true, message: "ip不能为空", trigger: "blur"}],
-    userName: [{required: true, message: "用户名不能为空", trigger: "blur"}],
-    password: [{required: true, message: "密码不能为空", trigger: "blur"}],
-    deptId: [{required: true, message: "请选择所属部门", trigger: 'blur'}],
-    name: [{required: true, message: "名称不能为空", trigger: 'blur'}],
-    url: [{required: true, message: "直播流地址不能为空", trigger: "blur"}],
+    id: [{required: true, get message() { return translatePhrase("编号不能为空") }, trigger: "blur"}],
+    ip: [{required: true, get message() { return translatePhrase("ip不能为空") }, trigger: "blur"}],
+    userName: [{required: true, get message() { return translatePhrase("用户名不能为空") }, trigger: "blur"}],
+    password: [{required: true, get message() { return translatePhrase("密码不能为空") }, trigger: "blur"}],
+    deptId: [{required: true, get message() { return translatePhrase("请选择所属部门") }, trigger: 'blur'}],
+    name: [{required: true, get message() { return translatePhrase("名称不能为空") }, trigger: 'blur'}],
+    url: [{required: true, get message() { return translatePhrase("直播流地址不能为空") }, trigger: "blur"}],
     streamId: [
-      {required: true, message: "流id不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("流id不能为空") }, trigger: "blur"}
     ],
     easyNTSUrl: [
-      {required: true, message: "EasyNTS播放地址不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("EasyNTS播放地址不能为空") }, trigger: "blur"}
     ],
-    channel: [{required: true, message: "通道不能为空", trigger: "blur"}],
+    channel: [{required: true, get message() { return translatePhrase("通道不能为空") }, trigger: "blur"}],
   },
   probeForm: {},
   rulesResult: {
-    firm: [{required: true, message: "设备厂商不能为空", trigger: "blur"}],
-    model: [{required: true, message: "设备型号不能为空", trigger: "blur"}],
-    firmwareVersion: [{required: true, message: "固件版本不能为空", trigger: "blur"}],
-    url: [{required: true, message: "直播流地址不能为空", trigger: "blur"}],
+    firm: [{required: true, get message() { return translatePhrase("设备厂商不能为空") }, trigger: "blur"}],
+    model: [{required: true, get message() { return translatePhrase("设备型号不能为空") }, trigger: "blur"}],
+    firmwareVersion: [{required: true, get message() { return translatePhrase("固件版本不能为空") }, trigger: "blur"}],
+    url: [{required: true, get message() { return translatePhrase("直播流地址不能为空") }, trigger: "blur"}],
     streamId: [
-      {required: true, message: "流id不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("流id不能为空") }, trigger: "blur"}
     ],
     easyNTSUrl: [
-      {required: true, message: "EasyNTS播放地址不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("EasyNTS播放地址不能为空") }, trigger: "blur"}
     ],
-    channel: [{required: true, message: "通道不能为空", trigger: "blur"}],
+    channel: [{required: true, get message() { return translatePhrase("通道不能为空") }, trigger: "blur"}],
   },
   rulesResult2: {
-    ip: [{required: true, message: "ip不能为空", trigger: "blur"}],
-    userName: [{required: true, message: "用户名不能为空", trigger: "blur"}],
-    password: [{required: true, message: "密码不能为空", trigger: "blur"}],
-    deptId: [{required: true, message: "请选择所属部门", trigger: 'blur'}],
-    name: [{required: true, message: "名称不能为空", trigger: 'blur'}],
-    firm: [{required: true, message: "设备厂商不能为空", trigger: "blur"}],
-    model: [{required: true, message: "设备型号不能为空", trigger: "blur"}],
-    firmwareVersion: [{required: true, message: "固件版本不能为空", trigger: "blur"}],
-    url: [{required: true, message: "直播流地址不能为空", trigger: "blur"}],
+    ip: [{required: true, get message() { return translatePhrase("ip不能为空") }, trigger: "blur"}],
+    userName: [{required: true, get message() { return translatePhrase("用户名不能为空") }, trigger: "blur"}],
+    password: [{required: true, get message() { return translatePhrase("密码不能为空") }, trigger: "blur"}],
+    deptId: [{required: true, get message() { return translatePhrase("请选择所属部门") }, trigger: 'blur'}],
+    name: [{required: true, get message() { return translatePhrase("名称不能为空") }, trigger: 'blur'}],
+    firm: [{required: true, get message() { return translatePhrase("设备厂商不能为空") }, trigger: "blur"}],
+    model: [{required: true, get message() { return translatePhrase("设备型号不能为空") }, trigger: "blur"}],
+    firmwareVersion: [{required: true, get message() { return translatePhrase("固件版本不能为空") }, trigger: "blur"}],
+    url: [{required: true, get message() { return translatePhrase("直播流地址不能为空") }, trigger: "blur"}],
     streamId: [
-      {required: true, message: "流id不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("流id不能为空") }, trigger: "blur"}
     ],
     easyNTSUrl: [
-      {required: true, message: "EasyNTS播放地址不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("EasyNTS播放地址不能为空") }, trigger: "blur"}
     ],
-    channel: [{required: true, message: "通道不能为空", trigger: "blur"}],
+    channel: [{required: true, get message() { return translatePhrase("通道不能为空") }, trigger: "blur"}],
   }
 });
 const {queryParams, form, rules, probeForm, rulesResult, rulesResult2} = toRefs(data);
@@ -844,9 +844,9 @@ const updateDialogMap = (value) => {
   updateDevice(form.value).then(res => {
     showMap.value = false;
     Destruction();
-    proxy.$modal.msgSuccess("操作成功");
+    proxy.$modal.msgSuccess(translatePhrase("操作成功"));
   }).catch(() => {
-    proxy.$modal.msgError("操作失败");
+    proxy.$modal.msgError(translatePhrase("操作失败"));
   })
 }
 
@@ -889,7 +889,7 @@ const submitDetectionForm = () => {
       resultForm.value.firmwareVersion = res.data.firmwareVersion;
       resultForm.value.streamUris = res.data.streamUris;
       disabledAdd.value = false;
-      proxy.$modal.msgSuccess("操作成功");
+      proxy.$modal.msgSuccess(translatePhrase("操作成功"));
     }
   });
 };
@@ -915,7 +915,7 @@ const submitResultForm = () => {
         channel: resultForm.value.channel,
       };
       await addDevice(data);
-      proxy.$modal.msgSuccess("操作成功");
+      proxy.$modal.msgSuccess(translatePhrase("操作成功"));
       probeForm.value = {};
       resultForm.value = {};
       openAdd.value = false;
@@ -945,7 +945,7 @@ const submitResultForm2 = () => {
         channel: resultForm.value.channel,
       };
       await addDevice(data);
-      proxy.$modal.msgSuccess("操作成功");
+      proxy.$modal.msgSuccess(translatePhrase("操作成功"));
       resultForm.value = {};
       showWS.value = false;
       stepsName.value = 0;
@@ -964,7 +964,7 @@ const presetAdd = async () => {
   }
   await addPreset(params).then(() => {
     getAllPreset();
-    proxy.$modal.msgSuccess("操作成功");
+    proxy.$modal.msgSuccess(translatePhrase("操作成功"));
   })
 }
 
@@ -977,7 +977,7 @@ const gotoPresets = async (row) => {
     presetToken: row.token,
   }
   await getGotoPreset(params);
-  proxy.$modal.msgSuccess("操作成功");
+  proxy.$modal.msgSuccess(translatePhrase("操作成功"));
 }
 
 const closePresets = async (row) => {
@@ -990,7 +990,7 @@ const closePresets = async (row) => {
   }
   await removePreset(params).then(() => {
     getAllPreset();
-    proxy.$modal.msgSuccess("操作成功");
+    proxy.$modal.msgSuccess(translatePhrase("操作成功"));
   });
 }
 const handleplayTabsClick = (tab, event) => {
@@ -1066,9 +1066,9 @@ function openedPaly() {
 
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(() => {
-    proxy.$modal.msgSuccess("复制成功！");
+    proxy.$modal.msgSuccess(translatePhrase("复制成功！"));
   }).catch((err) => {
-    proxy.$modal.msgError("复制失败，请重试！");
+    proxy.$modal.msgError(translatePhrase("复制失败，请重试！"));
   });
 }
 
@@ -1148,15 +1148,15 @@ function handleSelectionChange(selection) {
 
 function handleAuth(row) {
   if (!row.password || row.password.trim() === '') {
-    proxy.$modal.msgError("请输入用户名");
+    proxy.$modal.msgError(translatePhrase("请输入用户名"));
     return
   }
   if (!row.password || row.password.trim() === '') {
-    proxy.$modal.msgError("请输入密码");
+    proxy.$modal.msgError(translatePhrase("请输入密码"));
     return
   }
   if (!row.auth || !['1', '2'].includes(row.auth)) {
-    proxy.$modal.msgError("请选择认证方式");
+    proxy.$modal.msgError(translatePhrase("请选择认证方式"));
     return
   }
   addOnvif(row).then(res => {
@@ -1225,13 +1225,13 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updateDevice(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(translatePhrase("修改成功"));
           open.value = false;
           getList();
         });
       } else {
         addDevice(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(translatePhrase("新增成功"));
           open.value = false;
           getList();
         });
@@ -1243,11 +1243,11 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除onvif 设备编号为"' + _ids + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除onvif 设备编号为\"") + _ids + translatePhrase("\"的数据项？")).then(function () {
     return delDevice(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }

@@ -35,6 +35,7 @@ service.interceptors.request.use(config => {
   config.headers['appID'] = import.meta.env.VITE_APP_ID;
   config.headers['secretKey'] = import.meta.env.VITE_APP_SECRET;
   config.headers['Accept-Language'] = currentLocale.value;
+  config.headers['Content-Language'] = currentLocale.value;
   // get请求映射params参数
   if (config.method === 'get' && config.params) {
     let url = config.url + '?' + tansParams(config.params);

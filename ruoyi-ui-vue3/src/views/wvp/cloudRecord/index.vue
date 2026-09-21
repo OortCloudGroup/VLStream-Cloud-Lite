@@ -5,7 +5,7 @@
       <div class="searchHeight_out flexRowAC">
         <search-height-box
           keyword="query"
-          placeholder="请输入关键字"
+          :placeholder="$tp('请输入关键字')"
           :data="searchData"
           @handle="searchResetFn"
         />
@@ -21,26 +21,26 @@
       :data="recordList"
       current-row-key="id"
     >
-      <el-table-column prop="app" label="应用名" align="center" show-overflow-tooltip/>
-      <el-table-column prop="stream" label="流ID" align="center" show-overflow-tooltip/>
-      <el-table-column label="开始时间" align="center" show-overflow-tooltip>
+      <el-table-column prop="app" :label="$tp('应用名')" align="center" show-overflow-tooltip/>
+      <el-table-column prop="stream" :label="$tp('流ID')" align="center" show-overflow-tooltip/>
+      <el-table-column :label="$tp('开始时间')" align="center" show-overflow-tooltip>
         <template #default="scope">
           {{ formatTimeStamp(scope.row.startTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="结束时间" align="center" show-overflow-tooltip>
+      <el-table-column :label="$tp('结束时间')" align="center" show-overflow-tooltip>
         <template #default="scope">
           {{ formatTimeStamp(scope.row.endTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="时长" align="center">
+      <el-table-column :label="$tp('时长')" align="center">
         <template #default="scope">
           <el-tag v-if="scope.row.timeLen">{{ formatTime(scope.row.timeLen) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="fileName" label="文件名称" align="center" show-overflow-tooltip/>
-      <el-table-column prop="mediaServerId" label="流媒体" align="center" show-overflow-tooltip/>
-      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(180)">
+      <el-table-column prop="fileName" :label="$tp('文件名称')" align="center" show-overflow-tooltip/>
+      <el-table-column prop="mediaServerId" :label="$tp('流媒体')" align="center" show-overflow-tooltip/>
+      <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(180)">
         <template #default="scope">
           <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
             <div
@@ -49,7 +49,7 @@
               v-hasPermi="['wvp:record:play']"
             >
               <el-icon><View /></el-icon>
-              <span>播放</span>
+              <span>{{ $tp("播放") }}</span>
             </div>
             <div
               class="new_table_svg_group"
@@ -57,7 +57,7 @@
               v-hasPermi="['wvp:record:download']"
             >
               <el-icon><Download /></el-icon>
-              <span>下载</span>
+              <span>{{ $tp("下载") }}</span>
             </div>
           </div>
         </template>
@@ -72,7 +72,7 @@
         @pagination="getRecordList"
     />
 
-    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body>
+    <el-dialog :title="$tp('播放视频')" v-model="openPlay" width="65%" append-to-body>
       <div class="player">
         <easy-player class="player" :video-url="videoUrl" autoplay :live="true"></easy-player>
       </div>
@@ -126,7 +126,7 @@ function searchResetFn(val) {
 function initSearchData() {
   searchData.value = [
     {
-      label: '时间范围',
+      get label() { return translatePhrase("时间范围") },
       value: 'dateRange',
       type: 'daterange',
       startP: '开始时间',
@@ -135,7 +135,7 @@ function initSearchData() {
       default: []
     },
     {
-      label: '节点选择',
+      get label() { return translatePhrase("节点选择") },
       value: 'mediaServerId',
       type: 'select',
       option: (mediaServerList.value || []).map(item => ({ label: item.id, value: item.id })),
@@ -171,7 +171,7 @@ function formatTime(time) {
   if (second < 0) {
     second = 0;
   }
-  return (h > 0 ? h + `小时` : '') + (minute > 0 ? minute + '分' : '') + (second > 0 ? second + '秒' : '')
+  return (h > 0 ? h + translatePhrase("小时") : '') + (minute > 0 ? minute + translatePhrase("分") : '') + (second > 0 ? second + translatePhrase("秒") : '')
 }
 
 function downloadFile(file) {

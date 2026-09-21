@@ -32,14 +32,14 @@ export function formatTime(time, option) {
   const diff = (now - d) / 1000
 
   if (diff < 30) {
-    return '刚刚'
+    return translatePhrase("刚刚")
   } else if (diff < 3600) {
     // less 1 hour
-    return Math.ceil(diff / 60) + '分钟前'
+    return Math.ceil(diff / 60) + translatePhrase("分钟前")
   } else if (diff < 3600 * 24) {
-    return Math.ceil(diff / 3600) + '小时前'
+    return Math.ceil(diff / 3600) + translatePhrase("小时前")
   } else if (diff < 3600 * 24 * 2) {
-    return '1天前'
+    return translatePhrase("1天前")
   }
   if (option) {
     return parseTime(time, option)
@@ -47,13 +47,13 @@ export function formatTime(time, option) {
     return (
       d.getMonth() +
       1 +
-      '月' +
+      translatePhrase("月") +
       d.getDate() +
-      '日' +
+      translatePhrase("日") +
       d.getHours() +
-      '时' +
+      translatePhrase("时") +
       d.getMinutes() +
-      '分'
+      translatePhrase("分")
     )
   }
 }

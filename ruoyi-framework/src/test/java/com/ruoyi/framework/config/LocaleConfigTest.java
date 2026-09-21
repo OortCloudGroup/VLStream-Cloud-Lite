@@ -27,6 +27,22 @@ public class LocaleConfigTest
     }
 
     @Test
+    public void acceptsUnderscoreLocaleCode()
+    {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Accept-Language", "zh_CN");
+        assertEquals(Locale.SIMPLIFIED_CHINESE, resolver.resolveLocale(request));
+    }
+
+    @Test
+    public void honorsQualityValues()
+    {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Accept-Language", "de-DE;q=0.4,fr-FR;q=0.9,en-US;q=0.7");
+        assertEquals(Locale.FRANCE, resolver.resolveLocale(request));
+    }
+
+    @Test
     public void fallsBackToSimplifiedChineseForUnsupportedLocale()
     {
         MockHttpServletRequest request = new MockHttpServletRequest();

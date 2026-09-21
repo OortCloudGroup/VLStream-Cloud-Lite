@@ -14,7 +14,7 @@
       <i ref="uploadRef" class="editor-img-uploader"></i>
     </el-upload>
   </div>
-  <div class="editor">
+  <div class="editor" :style="editorLocaleStyle">
     <quill-editor
       ref="quillEditorRef"
       v-model:content="content"
@@ -38,6 +38,22 @@ const uploadUrl = ref(import.meta.env.VITE_APP_BASE_API + "/common/upload"); // 
 const headers = ref({
   Authorization: "Bearer " + getToken()
 });
+
+const editorLocaleStyle = computed(() => ({
+  '--ql-link-prompt': JSON.stringify(translatePhrase('请输入链接地址:')),
+  '--ql-save': JSON.stringify(translatePhrase('保存')),
+  '--ql-video-prompt': JSON.stringify(translatePhrase('请输入视频地址:')),
+  '--ql-text': JSON.stringify(translatePhrase('文本')),
+  '--ql-heading-1': JSON.stringify(translatePhrase('标题1')),
+  '--ql-heading-2': JSON.stringify(translatePhrase('标题2')),
+  '--ql-heading-3': JSON.stringify(translatePhrase('标题3')),
+  '--ql-heading-4': JSON.stringify(translatePhrase('标题4')),
+  '--ql-heading-5': JSON.stringify(translatePhrase('标题5')),
+  '--ql-heading-6': JSON.stringify(translatePhrase('标题6')),
+  '--ql-font-standard': JSON.stringify(translatePhrase('标准字体')),
+  '--ql-font-serif': JSON.stringify(translatePhrase('衬线字体')),
+  '--ql-font-monospace': JSON.stringify(translatePhrase('等宽字体'))
+}));
 
 const props = defineProps({
   /* 编辑器的内容 */
@@ -90,7 +106,7 @@ const options = ref({
       ["link", "image", "video"]                      // 链接、图片、视频
     ],
   },
-  placeholder: "请输入内容",
+  get placeholder() { return translatePhrase("请输入内容") },
   readOnly: props.readOnly
 });
 
@@ -133,14 +149,14 @@ function handleBeforeUpload(file) {
   const isJPG = type.includes(file.type);
   //检验文件格式
   if (!isJPG) {
-    proxy.$modal.msgError(`图片格式错误!`);
+    proxy.$modal.msgError(translatePhrase("图片格式错误!"));
     return false;
   }
   // 校检文件大小
   if (props.fileSize) {
     const isLt = file.size / 1024 / 1024 < props.fileSize;
     if (!isLt) {
-      proxy.$modal.msgError(`上传文件大小不能超过 ${props.fileSize} MB!`);
+      proxy.$modal.msgError(translatePhrase("上传文件大小不能超过 {fileSize} MB!", { fileSize: props.fileSize }));
       return false;
     }
   }
@@ -160,13 +176,13 @@ function handleUploadSuccess(res, file) {
     // 调整光标到最后
     quill.setSelection(length + 1);
   } else {
-    proxy.$modal.msgError("图片插入失败");
+    proxy.$modal.msgError(translatePhrase("图片插入失败"));
   }
 }
 
 // 上传失败处理
 function handleUploadError() {
-  proxy.$modal.msgError("图片插入失败");
+  proxy.$modal.msgError(translatePhrase("图片插入失败"));
 }
 </script>
 
@@ -182,15 +198,15 @@ function handleUploadError() {
   display: none;
 }
 .ql-snow .ql-tooltip[data-mode="link"]::before {
-  content: "请输入链接地址:";
+  content: var(--ql-link-prompt);
 }
 .ql-snow .ql-tooltip.ql-editing a.ql-action::after {
   border-right: 0px;
-  content: "保存";
+  content: var(--ql-save);
   padding-right: 0px;
 }
 .ql-snow .ql-tooltip[data-mode="video"]::before {
-  content: "请输入视频地址:";
+  content: var(--ql-video-prompt);
 }
 .ql-snow .ql-picker.ql-size .ql-picker-label::before,
 .ql-snow .ql-picker.ql-size .ql-picker-item::before {
@@ -210,42 +226,42 @@ function handleUploadError() {
 }
 .ql-snow .ql-picker.ql-header .ql-picker-label::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item::before {
-  content: "文本";
+  content: var(--ql-text);
 }
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
-  content: "标题1";
+  content: var(--ql-heading-1);
 }
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
-  content: "标题2";
+  content: var(--ql-heading-2);
 }
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
-  content: "标题3";
+  content: var(--ql-heading-3);
 }
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
-  content: "标题4";
+  content: var(--ql-heading-4);
 }
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="5"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="5"]::before {
-  content: "标题5";
+  content: var(--ql-heading-5);
 }
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="6"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="6"]::before {
-  content: "标题6";
+  content: var(--ql-heading-6);
 }
 .ql-snow .ql-picker.ql-font .ql-picker-label::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item::before {
-  content: "标准字体";
+  content: var(--ql-font-standard);
 }
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="serif"]::before {
-  content: "衬线字体";
+  content: var(--ql-font-serif);
 }
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="monospace"]::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="monospace"]::before {
-  content: "等宽字体";
+  content: var(--ql-font-monospace);
 }
 </style>

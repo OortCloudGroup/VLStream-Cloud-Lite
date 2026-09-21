@@ -1,18 +1,18 @@
 <template>
-  <el-dialog :title="dialog.title" v-model="dialog.visible" width="32%" append-to-body>
+  <el-dialog :title="$tp(dialog.title)" v-model="dialog.visible" width="32%" append-to-body>
     <el-form ref="handleAddFormRef" :model="form" :rules="rules" label-width="100px">
-      <el-form-item label="设备序列号" prop="deviceSerial">
-        <el-input v-model="form.deviceSerial" show-word-limit :maxlength="50" placeholder="请输入设备序列号"/>
+      <el-form-item :label="$tp('设备序列号')" prop="deviceSerial">
+        <el-input v-model="form.deviceSerial" show-word-limit :maxlength="50" :placeholder="$tp('请输入设备序列号')"/>
       </el-form-item>
-      <el-form-item label="设备验证码" prop="validateCode">
-        <el-input v-model="form.validateCode" show-word-limit :maxlength="50" placeholder="请输入设备验证码"/>
+      <el-form-item :label="$tp('设备验证码')" prop="validateCode">
+        <el-input v-model="form.validateCode" show-word-limit :maxlength="50" :placeholder="$tp('请输入设备验证码')"/>
       </el-form-item>
     </el-form>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button :loading="buttonLoading" type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button :loading="buttonLoading" type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+        <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
       </div>
     </template>
   </el-dialog>
@@ -30,10 +30,10 @@ const form = ref({
 });
 const rules = ref({
   deviceSerial: [
-    {required: true, message: "请输入设备序列号", trigger: "blur"}
+    {required: true, get message() { return translatePhrase("请输入设备序列号") }, trigger: "blur"}
   ],
   validateCode: [
-    {required: true, message: "请输入设备验证码", trigger: "blur"}
+    {required: true, get message() { return translatePhrase("请输入设备验证码") }, trigger: "blur"}
   ]
 });
 
@@ -50,7 +50,7 @@ const dialog = reactive({
  */
 const show = async (configId) => {
   dialog.visible = true
-  dialog.title = "添加设备"
+  dialog.title = translatePhrase("添加设备")
   buttonLoading.value = false
   reset()
   form.value.configId = configId
@@ -72,7 +72,7 @@ const submitForm = () => {
     if (valid) {
       buttonLoading.value = true;
       await addDevice(form.value).finally(() => buttonLoading.value = false)
-      proxy?.$modal.msgSuccess("添加成功");
+      proxy?.$modal.msgSuccess(translatePhrase("添加成功"));
       dialog.visible = false;
       emit('success');
     }

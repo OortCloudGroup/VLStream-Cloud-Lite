@@ -104,13 +104,15 @@ function setLayout() {
   color: var(--navbar-text);
   box-sizing: border-box;
   transition: background-color 0.2s ease, color 0.2s ease;
+  gap: clamp(2px, 0.6vw, 10px);
+  overflow: hidden;
 }
 
 .navbar-left {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  min-width: 260px;
+  min-width: clamp(150px, 18vw, 260px);
   transition: min-width 0.28s;
 
   &.is-collapse {
@@ -180,7 +182,7 @@ function setLayout() {
   height: 100%;
   flex-shrink: 0;
   margin-left: auto;
-  min-width: 160px;
+  min-width: max-content;
   justify-content: flex-end;
 
   .right-menu-item {
@@ -233,5 +235,45 @@ function setLayout() {
 :global(html[dir="rtl"]) .right-menu {
   margin-left: 0;
   margin-right: auto;
+}
+
+:global(html[dir="rtl"]) .hamburger-container {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+@media (max-width: 1100px) {
+  .navbar {
+    padding-inline: 10px;
+  }
+
+  .navbar-left {
+    min-width: 130px;
+  }
+
+  .brand {
+    min-width: 120px;
+    overflow: hidden;
+  }
+
+  .right-menu .avatar-wrapper .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .navbar-left {
+    min-width: 42px;
+    max-width: 42px;
+    overflow: hidden;
+  }
+
+  .brand {
+    min-width: 42px;
+  }
+
+  .right-menu .right-menu-item {
+    padding-inline: 4px;
+  }
 }
 </style>

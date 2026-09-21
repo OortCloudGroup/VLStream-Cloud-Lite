@@ -2,21 +2,21 @@
   <div class="app-container">
     <el-card>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
-        <el-form-item label="设备标识" prop="apeId">
-          <el-input v-model="queryParams.apeId" placeholder="请输入设备标识" clearable/>
+        <el-form-item :label="$tp('设备标识')" prop="apeId">
+          <el-input v-model="queryParams.apeId" :placeholder="$tp('请输入设备标识')" clearable/>
         </el-form-item>
-        <el-form-item label="设备名称" prop="name">
-          <el-input v-model="queryParams.name" placeholder="请输入设备名称" clearable />
+        <el-form-item :label="$tp('设备名称')" prop="name">
+          <el-input v-model="queryParams.name" :placeholder="$tp('请输入设备名称')" clearable />
         </el-form-item>
-        <el-form-item label="是否在线" prop="isOnline">
-          <el-select v-model="queryParams.isOnline" clearable placeholder="请选择是否在线" style="width: 180px;">
-            <el-option label="在线" value="1" />
-            <el-option label="离线" value="2" />
+        <el-form-item :label="$tp('是否在线')" prop="isOnline">
+          <el-select v-model="queryParams.isOnline" clearable :placeholder="$tp('请选择是否在线')" style="width: 180px;">
+            <el-option :label="$tp('在线')" value="1" />
+            <el-option :label="$tp('离线')" value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+          <el-button type="primary" icon="Search" @click="handleQuery">{{ $tp("搜索") }}</el-button>
+          <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -28,7 +28,7 @@
               icon="Plus"
               @click="handleAdd"
               v-hasPermi="['viid:apedevice:add']"
-          >新增
+          >{{ $tp("新增") }}
           </el-button>
         </el-col>
         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -39,17 +39,17 @@
           <el-table-column v-if="item.show" :key="index" :prop="item.prop" :label="item.label" :formatter="item.formatter"
                            align="center" show-overflow-tooltip />
         </template>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="240">
+        <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width" fixed="right" width="240">
           <template #default="scope">
             <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                       v-hasPermi="['viid:apedevice:edit']">修改
+                       v-hasPermi="['viid:apedevice:edit']">{{ $tp("修改") }}
             </el-button>
             <el-button link type="primary" icon="Box" @click="handleGather(scope.row)"
-                       v-hasPermi="['viid:apedevice:gather']">采集列表
+                       v-hasPermi="['viid:apedevice:gather']">{{ $tp("采集列表") }}
             </el-button>
             <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                        style="color: #f56c6c"
-                       v-hasPermi="['viid:apedevice:remove']">删除
+                       v-hasPermi="['viid:apedevice:remove']">{{ $tp("删除") }}
             </el-button>
           </template>
         </el-table-column>
@@ -67,7 +67,7 @@
           v-model="open"
           :form-data="form"
           :is-add="addAndUpdate"
-          :title="title"
+          :title="$tp(title)"
           @submit="handleSubmit"
       />
 
@@ -102,28 +102,28 @@ const showSearch = ref(true);
 const addAndUpdate = ref(false);
 const form = ref({});
 const tableColumns = ref([
-  { prop: 'apeId', label: '设备标识', show: true },
-  { prop: 'name', label: '设备名称', show: true },
-  { prop: 'model', label: '设备型号', show: true },
-  { prop: 'ipAddr', label: '设备地址', show: true },
-  { prop: 'port', label: '设备端口', show: true },
-  { prop: 'longitude', label: '经度', show: true },
-  { prop: 'latitude', label: '纬度', show: true },
-  { prop: 'placeCode', label: '位置编码', show: true },
-  { prop: 'isOnline', label: '是否在线', show: true, formatter: onlineFormatter },
-  { prop: 'userId', label: '用户标识', show: true },
-  { prop: 'password', label: '口令', show: true }
+  { prop: 'apeId', get label() { return translatePhrase("设备标识") }, show: true },
+  { prop: 'name', get label() { return translatePhrase("设备名称") }, show: true },
+  { prop: 'model', get label() { return translatePhrase("设备型号") }, show: true },
+  { prop: 'ipAddr', get label() { return translatePhrase("设备地址") }, show: true },
+  { prop: 'port', get label() { return translatePhrase("设备端口") }, show: true },
+  { prop: 'longitude', get label() { return translatePhrase("经度") }, show: true },
+  { prop: 'latitude', get label() { return translatePhrase("纬度") }, show: true },
+  { prop: 'placeCode', get label() { return translatePhrase("位置编码") }, show: true },
+  { prop: 'isOnline', get label() { return translatePhrase("是否在线") }, show: true, formatter: onlineFormatter },
+  { prop: 'userId', get label() { return translatePhrase("用户标识") }, show: true },
+  { prop: 'password', get label() { return translatePhrase("口令") }, show: true }
 ]);
 const rules = ref({
-  apeId: [{ required: true, message: '设备标识不能为空', trigger: 'blur' }],
-  name: [{ required: true, message: '设备名称不能为空', trigger: 'blur' }],
-  longitude: [{ required: true, message: '卡口经度不能为空', trigger: 'blur' }],
-  latitude: [{ required: true, message: '卡口纬度不能为空', trigger: 'blur' }],
-  placeCode: [{ required: true, message: '位置编码不能为空', trigger: 'blur' }],
-  userId: [{ required: true, message: '用户标识不能为空', trigger: 'blur' }],
-  password: [{ required: true, message: '口令不能为空', trigger: 'blur' }],
-  ipAddr: [{ required: true, message: '设备地址不能为空', trigger: 'blur' }],
-  port: [{ required: true, message: '设备端口不能为空', trigger: 'blur' }]
+  apeId: [{ required: true, get message() { return translatePhrase("设备标识不能为空") }, trigger: 'blur' }],
+  name: [{ required: true, get message() { return translatePhrase("设备名称不能为空") }, trigger: 'blur' }],
+  longitude: [{ required: true, get message() { return translatePhrase("卡口经度不能为空") }, trigger: 'blur' }],
+  latitude: [{ required: true, get message() { return translatePhrase("卡口纬度不能为空") }, trigger: 'blur' }],
+  placeCode: [{ required: true, get message() { return translatePhrase("位置编码不能为空") }, trigger: 'blur' }],
+  userId: [{ required: true, get message() { return translatePhrase("用户标识不能为空") }, trigger: 'blur' }],
+  password: [{ required: true, get message() { return translatePhrase("口令不能为空") }, trigger: 'blur' }],
+  ipAddr: [{ required: true, get message() { return translatePhrase("设备地址不能为空") }, trigger: 'blur' }],
+  port: [{ required: true, get message() { return translatePhrase("设备端口不能为空") }, trigger: 'blur' }]
 });
 
 function handleGather(row){
@@ -143,7 +143,7 @@ function handleSubmit(data) {
   const request = addAndUpdate.value ? addApeDevice(data) : updateApeDevice(data);
   request.then(response => {
     if (response.success) {
-      proxy.$modal.msgSuccess("操作成功");
+      proxy.$modal.msgSuccess(translatePhrase("操作成功"));
       getList();
       open.value = false;
     }
@@ -158,7 +158,7 @@ async function submitForm() {
       if (addAndUpdate.value){
         addApeDevice(form.value).then(response => {
           if(response.success){
-            proxy.$modal.msgSuccess("操作成功");
+            proxy.$modal.msgSuccess(translatePhrase("操作成功"));
             getList();
             cancel();
           }
@@ -166,7 +166,7 @@ async function submitForm() {
       } else {
         updateApeDevice(form.value).then(response => {
           if(response.success){
-            proxy.$modal.msgSuccess("操作成功");
+            proxy.$modal.msgSuccess(translatePhrase("操作成功"));
             getList();
             cancel();
           }
@@ -178,9 +178,9 @@ async function submitForm() {
 
 function onlineFormatter(row, column, cellValue) {
   if (cellValue === '1') {
-    return h(ElTag, { type: 'success' }, { default: () => '在线' })
+    return h(ElTag, { type: 'success' }, { default: () => translatePhrase("在线") })
   } else {
-    return h(ElTag, { type: 'warning' }, { default: () => '离线' })
+    return h(ElTag, { type: 'warning' }, { default: () => translatePhrase("离线") })
   }
 }
 
@@ -203,10 +203,10 @@ const getServe = async (keyword, id) => {
 }
 
 function handleDelete(row) {
-  proxy.$modal.confirm('是否确认删除APE设备编号为"' + row.apeId + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除APE设备编号为\"") + row.apeId + translatePhrase("\"的数据项？")).then(function () {
     delApeDevices(row.apeId).then(response => {
       if (response.success) {
-        proxy.$modal.msgSuccess('删除成功')
+        proxy.$modal.msgSuccess(translatePhrase("删除成功"))
         getList()
       }
     })

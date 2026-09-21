@@ -5,7 +5,7 @@
             <button-group :button-list="toolbarButtons" />
          </div>
          <div class="searchHeight_out flexRowAC">
-            <search-height-box keyword="userName" placeholder="请输入用户名称、登录地址等关键词" :data="searchData" @handle="searchResetFn" />
+            <search-height-box keyword="userName" :placeholder="$tp('请输入用户名称、登录地址等关键词')" :data="searchData" @handle="searchResetFn" />
             <export-excel-pdf :item="{ isDisabledExcel: false }" @handle="handleExportType" />
          </div>
       </div>
@@ -23,19 +23,19 @@
          @sort-change="handleSortChange"
       >
          <el-table-column type="selection" :width="clacPXToVW(55)" align="center" />
-         <el-table-column label="访问编号" align="center" prop="infoId" />
-         <el-table-column label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']" />
-         <el-table-column label="地址" align="center" prop="ipaddr" :show-overflow-tooltip="true" />
-         <el-table-column label="登录地点" align="center" prop="loginLocation" :show-overflow-tooltip="true" />
-         <el-table-column label="操作系统" align="center" prop="os" :show-overflow-tooltip="true" />
-         <el-table-column label="浏览器" align="center" prop="browser" :show-overflow-tooltip="true" />
-         <el-table-column label="登录状态" align="center" prop="status">
+         <el-table-column :label="$tp('访问编号')" align="center" prop="infoId" />
+         <el-table-column :label="$tp('用户名称')" align="center" prop="userName" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']" />
+         <el-table-column :label="$tp('地址')" align="center" prop="ipaddr" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('登录地点')" align="center" prop="loginLocation" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('操作系统')" align="center" prop="os" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('浏览器')" align="center" prop="browser" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('登录状态')" align="center" prop="status">
             <template #default="scope">
                <dict-tag :options="sys_common_status" :value="scope.row.status" />
             </template>
          </el-table-column>
-         <el-table-column label="描述" align="center" prop="msg" :show-overflow-tooltip="true" />
-         <el-table-column label="访问时间" align="center" prop="loginTime" sortable="custom" :sort-orders="['descending', 'ascending']" :width="clacPXToVW(180)">
+         <el-table-column :label="$tp('描述')" align="center" prop="msg" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('访问时间')" align="center" prop="loginTime" sortable="custom" :sort-orders="['descending', 'ascending']" :width="clacPXToVW(180)">
             <template #default="scope">
                <span>{{ parseTime(scope.row.loginTime) }}</span>
             </template>
@@ -63,16 +63,16 @@ const logininforList = ref([]);
 const loading = ref(true);
 const showSearch = ref(true);
 const searchData = computed(() => [
-  { label: '登录地址', value: 'ipaddr', type: 'text', default: '' },
+  { get label() { return translatePhrase("登录地址") }, value: 'ipaddr', type: 'text', default: '' },
   {
-    label: '状态',
+    get label() { return translatePhrase("状态") },
     value: 'status',
     type: 'select',
     option: (sys_common_status.value || []).map(d => ({ label: d.label, value: d.value })),
     default: undefined
   },
   {
-    label: '登录时间',
+    get label() { return translatePhrase("登录时间") },
     value: 'dateRange',
     type: 'daterange',
     startP: '开始日期',
@@ -86,9 +86,9 @@ const single = ref(true);
 const multiple = ref(true);
 
 const toolbarButtons = computed(() => [
-  { name: '删除', svg: 'delete', disabled: multiple.value, permi: ['monitor:logininfor:remove'], clickFn: () => handleDelete() },
-  { name: '清空', svg: 'delete', permi: ['monitor:logininfor:remove'], clickFn: () => handleClean() },
-  { name: '解锁', svg: 'lock', disabled: single.value, permi: ['monitor:logininfor:unlock'], clickFn: () => handleUnlock() }
+  { get name() { return translatePhrase("删除") }, svg: 'delete', disabled: multiple.value, permi: ['monitor:logininfor:remove'], clickFn: () => handleDelete() },
+  { get name() { return translatePhrase("清空") }, svg: 'delete', permi: ['monitor:logininfor:remove'], clickFn: () => handleClean() },
+  { get name() { return translatePhrase("解锁") }, svg: 'lock', disabled: single.value, permi: ['monitor:logininfor:unlock'], clickFn: () => handleUnlock() }
 ]);
 const selectName = ref("");
 const total = ref(0);
@@ -157,31 +157,31 @@ function handleSortChange(column, prop, order) {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const infoIds = row?.infoId || ids.value;
-  proxy.$modal.confirm('是否确认删除访问编号为"' + infoIds + '"的数据项?').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除访问编号为\"") + infoIds + translatePhrase("\"的数据项?")).then(function () {
     return delLogininfor(infoIds);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {});
 }
 
 /** 清空按钮操作 */
 function handleClean() {
-  proxy.$modal.confirm("是否确认清空所有登录日志数据项?").then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认清空所有登录日志数据项?")).then(function () {
     return cleanLogininfor();
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("清空成功");
+    proxy.$modal.msgSuccess(translatePhrase("清空成功"));
   }).catch(() => {});
 }
 
 /** 解锁按钮操作 */
 function handleUnlock() {
   const username = selectName.value;
-  proxy.$modal.confirm('是否确认解锁用户"' + username + '"数据项?').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认解锁用户\"") + username + translatePhrase("\"数据项?")).then(function () {
     return unlockLogininfor(username);
   }).then(() => {
-    proxy.$modal.msgSuccess("用户" + username + "解锁成功");
+    proxy.$modal.msgSuccess(translatePhrase("用户") + username + translatePhrase("解锁成功"));
   }).catch(() => {});
 }
 

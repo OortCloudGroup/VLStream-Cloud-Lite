@@ -1,8 +1,8 @@
 <template>
   <div class="detail-page">
     <detail-page-header
-      parent-title="节点管理"
-      title="添加媒体服务器"
+      :parent-title="$tp('节点管理')"
+      :title="$tp('添加媒体服务器')"
       back-path="/gbmanger/node"
     />
     <div class="detail-body">
@@ -10,24 +10,24 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="IP" prop="ip">
-            <el-input v-model="form.ip" :disabled="nextStep" placeholder="请输入服务器绑定的 IP 地址"/>
+            <el-input v-model="form.ip" :disabled="nextStep" :placeholder="$tp('请输入服务器绑定的 IP 地址')"/>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="HTTP" prop="httpPort">
-            <el-input v-model="form.httpPort" :disabled="nextStep" placeholder="请输入HTTP 协议端口"/>
+            <el-input v-model="form.httpPort" :disabled="nextStep" :placeholder="$tp('请输入HTTP 协议端口')"/>
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="密钥" prop="secret">
-            <el-input v-model="form.secret" :disabled="nextStep" placeholder="请输入密钥"/>
+          <el-form-item :label="$tp('密钥')" prop="secret">
+            <el-input v-model="form.secret" :disabled="nextStep" :placeholder="$tp('请输入密钥')"/>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="类型" prop="type">
+          <el-form-item :label="$tp('类型')" prop="type">
             <el-select v-model="form.type" :disabled="nextStep">
               <el-option key="zlm" label="ZLMediaKit" value="zlm"></el-option>
               <!--            <el-option key="abl" label="ABLMediaServer" value="abl"></el-option>-->
@@ -38,7 +38,7 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item>
-            <el-button type="primary" @click="submitCheckMediaServerForm">测 试</el-button>
+            <el-button type="primary" @click="submitCheckMediaServerForm">{{ $tp("测 试") }}</el-button>
           </el-form-item>
         </el-col>
       </el-row>
@@ -48,13 +48,13 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="RTMP_PORT" prop="rtmpPort">
-            <el-input v-model="form.rtmpPort" placeholder="请输入媒体服务RTMP_PORT" clearable :disabled="form.defaultServer"></el-input>
+            <el-input v-model="form.rtmpPort" :placeholder="$tp('请输入媒体服务RTMP_PORT')" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
 
         </el-col>
         <el-col :span="12">
           <el-form-item label="RTMPS PORT" prop="rtmpSSlPort">
-            <el-input v-model="form.rtmpSSlPort" placeholder="请输入媒体服务RTMPS_PORT" clearable :disabled="form.defaultServer"></el-input>
+            <el-input v-model="form.rtmpSSlPort" :placeholder="$tp('请输入媒体服务RTMPS_PORT')" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -62,24 +62,24 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="HOOK IP" prop="hookIp">
-            <el-input v-model="form.hookIp" placeholder="请输入媒体服务HOOK_IP" clearable :disabled="form.defaultServer"></el-input>
+            <el-input v-model="form.hookIp" :placeholder="$tp('请输入媒体服务HOOK_IP')" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="SDP IP" prop="sdpIp">
-            <el-input v-model="form.sdpIp" placeholder="请输入媒体服务SDP_IP" clearable :disabled="form.defaultServer"></el-input>
+            <el-input v-model="form.sdpIp" :placeholder="$tp('请输入媒体服务SDP_IP')" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="流IP" prop="streamIp">
-            <el-input v-model="form.streamIp" placeholder="请输入媒体服务流IP" clearable :disabled="form.defaultServer"></el-input>
+          <el-form-item :label="$tp('流IP')" prop="streamIp">
+            <el-input v-model="form.streamIp" :placeholder="$tp('请输入媒体服务流IP')" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="自动配置媒体服务" >
+          <el-form-item :label="$tp('自动配置媒体服务')" >
             <el-switch v-model="form.autoConfig" :disabled="form.defaultServer"></el-switch>
           </el-form-item>
         </el-col>
@@ -88,12 +88,12 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="HTTPS PORT" prop="httpSSlPort">
-            <el-input v-model="form.httpSSlPort" placeholder="请输入媒体服务HTTPS_PORT" clearable :disabled="form.defaultServer"></el-input>
+            <el-input v-model="form.httpSSlPort" :placeholder="$tp('请输入媒体服务HTTPS_PORT')" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="收流端口模式" >
-            <el-switch  active-text="多端口" inactive-text="单端口" @change="portRangeChange" v-model="form.rtpEnable" :disabled="form.defaultServer"></el-switch>
+          <el-form-item :label="$tp('收流端口模式')" >
+            <el-switch  :active-text="$tp('多端口')" :inactive-text="$tp('单端口')" @change="portRangeChange" v-model="form.rtpEnable" :disabled="form.defaultServer"></el-switch>
           </el-form-item>
         </el-col>
       </el-row>
@@ -101,17 +101,17 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="RTSP PORT" prop="rtspPort">
-            <el-input v-model="form.rtspPort" placeholder="请输入媒体服务RTSP_PORT" clearable :disabled="form.defaultServer"></el-input>
+            <el-input v-model="form.rtspPort" :placeholder="$tp('请输入媒体服务RTSP_PORT')" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item v-if="!form.rtpEnable" label="收流端口" prop="rtpProxyPort">
+          <el-form-item v-if="!form.rtpEnable" :label="$tp('收流端口')" prop="rtpProxyPort">
             <el-input v-model.number="form.rtpProxyPort" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
-          <el-form-item v-if="form.rtpEnable" label="收流端口" >
-            <el-input v-model="rtpPortRange1" placeholder="起始" @change="portRangeChange" clearable style="width: 100px" prop="rtpPortRange1" :disabled="form.defaultServer"></el-input>
+          <el-form-item v-if="form.rtpEnable" :label="$tp('收流端口')" >
+            <el-input v-model="rtpPortRange1" :placeholder="$tp('起始')" @change="portRangeChange" clearable style="width: 100px" prop="rtpPortRange1" :disabled="form.defaultServer"></el-input>
             -
-            <el-input v-model="rtpPortRange2" placeholder="终止" @change="portRangeChange" clearable style="width: 100px" prop="rtpPortRange2" :disabled="form.defaultServer"></el-input>
+            <el-input v-model="rtpPortRange2" :placeholder="$tp('终止')" @change="portRangeChange" clearable style="width: 100px" prop="rtpPortRange2" :disabled="form.defaultServer"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -119,11 +119,11 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="RTSPS PORT" prop="rtspSSLPort">
-            <el-input v-model="form.rtspSSLPort" placeholder="请输入媒体服务RTSPS_PORT" clearable :disabled="form.defaultServer"></el-input>
+            <el-input v-model="form.rtspSSLPort" :placeholder="$tp('请输入媒体服务RTSPS_PORT')" clearable :disabled="form.defaultServer"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="录像管理服务端口" prop="recordAssistPort">
+          <el-form-item :label="$tp('录像管理服务端口')" prop="recordAssistPort">
             <el-input v-model.number="form.recordAssistPort" :disabled="form.defaultServer">
               <el-button v-if="form.recordAssistPort > 0" class="el-icon-check" slot="append" type="primary" @click="checkRecordServer"></el-button>
             </el-input>
@@ -134,8 +134,8 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item>
-            <el-button type="primary" @click="submitForm">提 交</el-button>
-            <el-button @click="cancel">取 消</el-button>
+            <el-button type="primary" @click="submitForm">{{ $tp("提 交") }}</el-button>
+            <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
           </el-form-item>
         </el-col>
       </el-row>
@@ -176,20 +176,20 @@ const isValidPort = (rule, value, callback) => { // 校验IP是否符合规则
 const data = reactive({
   form: {},
   rules: {
-    ip:  [{ required: true, validator: isValidIp, message: '请输入有效的IP地址', trigger: 'blur' }],
-    httpPort:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    secret: [{ required: true, message: "请输入secret", trigger: "blur" }],
-    httpSSlPort:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    recordAssistPort:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    rtmpPort:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    rtmpSSlPort:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    rtpPortRange1:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    rtpPortRange2:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    rtpProxyPort:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    rtspPort:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    rtspSSLPort:  [{ required: true, validator: isValidPort, message: '请输入有效的端口号', trigger: 'blur' }],
-    timeout_ms: [{ required: true, message: "请输入FFmpeg推流成功超时时间", trigger: "blur" }],
-    ffmpeg_cmd_key: [{ required: false, message: "请输入FFmpeg命令参数模板（可选）", trigger: "blur" }],
+    ip:  [{ required: true, validator: isValidIp, get message() { return translatePhrase("请输入有效的IP地址") }, trigger: 'blur' }],
+    httpPort:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    secret: [{ required: true, get message() { return translatePhrase("请输入secret") }, trigger: "blur" }],
+    httpSSlPort:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    recordAssistPort:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    rtmpPort:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    rtmpSSlPort:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    rtpPortRange1:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    rtpPortRange2:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    rtpProxyPort:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    rtspPort:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    rtspSSLPort:  [{ required: true, validator: isValidPort, get message() { return translatePhrase("请输入有效的端口号") }, trigger: 'blur' }],
+    timeout_ms: [{ required: true, get message() { return translatePhrase("请输入FFmpeg推流成功超时时间") }, trigger: "blur" }],
+    ffmpeg_cmd_key: [{ required: false, get message() { return translatePhrase("请输入FFmpeg命令参数模板（可选）") }, trigger: "blur" }],
   },
 });
 
@@ -240,7 +240,7 @@ const submitCheckMediaServerForm = () => {
         rtpPortRange2.value = 30500
         sendRtpPortRange1.value = 50000
         sendRtpPortRange2.value = 60000
-        proxy.$modal.msgSuccess("该ZLMediaKit可用");
+        proxy.$modal.msgSuccess(translatePhrase("该ZLMediaKit可用"));
       });
     }
   });
@@ -257,7 +257,7 @@ function submitForm() {
   proxy.$refs["wvpMediaServerFormRef"].validate(valid => {
     if(valid){
       saveWvpMediaServer(form.value).then(response => {
-        proxy.$modal.msgSuccess("新增成功");
+        proxy.$modal.msgSuccess(translatePhrase("新增成功"));
         cancel();
       })
     }

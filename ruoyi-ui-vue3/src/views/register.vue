@@ -8,7 +8,7 @@
           type="text" 
           size="large" 
           auto-complete="off" 
-          placeholder="账号"
+          :placeholder="$tp('账号')"
         >
           <template #prefix><svg-icon icon-class="user" class="el-input__icon input-icon" /></template>
         </el-input>
@@ -19,7 +19,7 @@
           type="password"
           size="large" 
           auto-complete="off"
-          placeholder="密码"
+          :placeholder="$tp('密码')"
           @keyup.enter="handleRegister"
         >
           <template #prefix><svg-icon icon-class="password" class="el-input__icon input-icon" /></template>
@@ -31,7 +31,7 @@
           type="password"
           size="large" 
           auto-complete="off"
-          placeholder="确认密码"
+          :placeholder="$tp('确认密码')"
           @keyup.enter="handleRegister"
         >
           <template #prefix><svg-icon icon-class="password" class="el-input__icon input-icon" /></template>
@@ -42,7 +42,7 @@
           size="large" 
           v-model="registerForm.code"
           auto-complete="off"
-          placeholder="验证码"
+          :placeholder="$tp('验证码')"
           style="width: 63%"
           @keyup.enter="handleRegister"
         >
@@ -60,11 +60,11 @@
           style="width:100%;"
           @click.prevent="handleRegister"
         >
-          <span v-if="!loading">注 册</span>
-          <span v-else>注 册 中...</span>
+          <span v-if="!loading">{{ $tp("注 册") }}</span>
+          <span v-else>{{ $tp("注 册 中...") }}</span>
         </el-button>
         <div style="float: right;">
-          <router-link class="link-type" :to="'/login'">使用已有账户登录</router-link>
+          <router-link class="link-type" :to="'/login'">{{ $tp("使用已有账户登录") }}</router-link>
         </div>
       </el-form-item>
     </el-form>
@@ -101,19 +101,19 @@ const equalToPassword = (rule, value, callback) => {
 
 const registerRules = {
   username: [
-    { required: true, trigger: "blur", message: "请输入您的账号" },
-    { min: 2, max: 20, message: "用户账号长度必须介于 2 和 20 之间", trigger: "blur" }
+    { required: true, trigger: "blur", get message() { return translatePhrase("请输入您的账号") } },
+    { min: 2, max: 20, get message() { return translatePhrase("用户账号长度必须介于 2 和 20 之间") }, trigger: "blur" }
   ],
   password: [
-    { required: true, trigger: "blur", message: "请输入您的密码" },
-    { min: 5, max: 20, message: "用户密码长度必须介于 5 和 20 之间", trigger: "blur" },
-    { pattern: /^[^<>"'|\\]+$/, message: "不能包含非法字符：< > \" ' \\\ |", trigger: "blur" }
+    { required: true, trigger: "blur", get message() { return translatePhrase("请输入您的密码") } },
+    { min: 5, max: 20, get message() { return translatePhrase("用户密码长度必须介于 5 和 20 之间") }, trigger: "blur" },
+    { pattern: /^[^<>"'|\\]+$/, get message() { return translatePhrase("不能包含非法字符：< > \" ' \\ |") }, trigger: "blur" }
   ],
   confirmPassword: [
-    { required: true, trigger: "blur", message: "请再次输入您的密码" },
+    { required: true, trigger: "blur", get message() { return translatePhrase("请再次输入您的密码") } },
     { required: true, validator: equalToPassword, trigger: "blur" }
   ],
-  code: [{ required: true, trigger: "change", message: "请输入验证码" }]
+  code: [{ required: true, trigger: "change", get message() { return translatePhrase("请输入验证码") } }]
 };
 
 const codeUrl = ref("");
@@ -126,7 +126,7 @@ function handleRegister() {
       loading.value = true;
       register(registerForm.value).then(res => {
         const username = registerForm.value.username;
-        ElMessageBox.alert("<font color='red'>恭喜你，您的账号 " + username + " 注册成功！</font>", "系统提示", {
+        ElMessageBox.alert(translatePhrase("<font color='red'>恭喜你，您的账号 ") + username + translatePhrase(" 注册成功！</font>"), translatePhrase("系统提示"), {
           dangerouslyUseHTMLString: true,
           type: "success",
         }).then(() => {

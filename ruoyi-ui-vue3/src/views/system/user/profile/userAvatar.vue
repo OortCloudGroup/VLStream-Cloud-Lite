@@ -1,7 +1,7 @@
 <template>
   <div class="user-info-head" @click="editCropper()">
-    <img :src="options.img" title="点击上传头像" class="img-circle img-lg" />
-    <el-dialog :title="title" v-model="open" width="50%" append-to-body @opened="modalOpened" @close="closeDialog">
+    <img :src="options.img" :title="$tp('点击上传头像')" class="img-circle img-lg" />
+    <el-dialog :title="$tp(title)" v-model="open" width="50%" append-to-body @opened="modalOpened" @close="closeDialog">
       <el-row>
         <el-col :xs="24" :md="12" :style="{ height: '350px' }">
           <vue-cropper
@@ -33,7 +33,7 @@
             :before-upload="beforeUpload"
           >
             <el-button>
-              选择
+              {{ $tp("选择") }}
               <el-icon class="el-icon--right"><Upload /></el-icon>
             </el-button>
           </el-upload>
@@ -51,7 +51,7 @@
           <el-button icon="RefreshRight" @click="rotateRight()"></el-button>
         </el-col>
         <el-col :lg="{ span: 2, offset: 6 }" :md="2">
-          <el-button type="primary" @click="uploadImg()">提 交</el-button>
+          <el-button type="primary" @click="uploadImg()">{{ $tp("提 交") }}</el-button>
         </el-col>
       </el-row>
     </el-dialog>
@@ -115,7 +115,7 @@ function changeScale(num) {
 /** 上传预处理 */
 function beforeUpload(file) {
   if (file.type.indexOf("image/") == -1) {
-    proxy.$modal.msgError("文件格式错误，请上传图片类型,如：JPG，PNG后缀的文件。");
+    proxy.$modal.msgError(translatePhrase("文件格式错误，请上传图片类型,如：JPG，PNG后缀的文件。"));
   } else {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -135,7 +135,7 @@ function uploadImg() {
       open.value = false;
       options.img = import.meta.env.VITE_APP_BASE_API + response.imgUrl;
       userStore.avatar = options.img;
-      proxy.$modal.msgSuccess("修改成功");
+      proxy.$modal.msgSuccess(translatePhrase("修改成功"));
       visible.value = false;
     });
   });

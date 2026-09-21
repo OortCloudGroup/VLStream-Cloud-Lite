@@ -1,17 +1,17 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="应用名称" prop="name">
+      <el-form-item :label="$tp('应用名称')" prop="name">
         <el-input
           v-model="queryParams.name"
-          placeholder="请输入应用名称"
+          :placeholder="$tp('请输入应用名称')"
           clearable
           @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="Search" @click="handleQuery">{{ $tp("搜索") }}</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -23,7 +23,7 @@
           icon="Plus"
           @click="handleAdd"
           v-hasPermi="['lecheng:lcConfig:add']"
-        >新增</el-button>
+        >{{ $tp("新增") }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -33,7 +33,7 @@
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['lecheng:lcConfig:edit']"
-        >修改</el-button>
+        >{{ $tp("修改") }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -43,7 +43,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['lecheng:lcConfig:remove']"
-        >删除</el-button>
+        >{{ $tp("删除") }}</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -52,7 +52,7 @@
           icon="Download"
           @click="handleExport"
           v-hasPermi="['lecheng:lcConfig:export']"
-        >导出</el-button>
+        >{{ $tp("导出") }}</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -60,19 +60,19 @@
     <el-table v-loading="loading" :data="lcConfigList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="id" align="center" prop="id" />
-      <el-table-column label="应用名称" align="center" prop="name" />
-      <el-table-column label="用户appKey" align="center" prop="appKey" />
-      <el-table-column label="用户secret" align="center" prop="secret" />
-      <el-table-column label="启用状态" align="center" prop="enable">
+      <el-table-column :label="$tp('应用名称')" align="center" prop="name" />
+      <el-table-column :label="$tp('用户appKey')" align="center" prop="appKey" />
+      <el-table-column :label="$tp('用户secret')" align="center" prop="secret" />
+      <el-table-column :label="$tp('启用状态')" align="center" prop="enable">
         <template #default="scope">
           <dict-tag :options="lecheng_enable" :value="scope.row.enable"/>
         </template>
       </el-table-column>
-      <el-table-column label="备注" align="center" prop="remark" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$tp('备注')" align="center" prop="remark" />
+      <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['lecheng:lcConfig:edit']">修改</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['lecheng:lcConfig:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['lecheng:lcConfig:edit']">{{ $tp("修改") }}</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['lecheng:lcConfig:remove']">{{ $tp("删除") }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -86,19 +86,19 @@
     />
 
     <!-- 添加或修改乐橙监控配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="open" width="32%" append-to-body>
       <el-form ref="lcConfigRef" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="应用名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入应用名称" />
+        <el-form-item :label="$tp('应用名称')" prop="name">
+          <el-input v-model="form.name" :placeholder="$tp('请输入应用名称')" />
         </el-form-item>
-        <el-form-item label="用户appKey" prop="appKey">
-          <el-input v-model="form.appKey" placeholder="请输入用户appKey" />
+        <el-form-item :label="$tp('用户appKey')" prop="appKey">
+          <el-input v-model="form.appKey" :placeholder="$tp('请输入用户appKey')" />
         </el-form-item>
-        <el-form-item label="用户secret" prop="secret">
-          <el-input v-model="form.secret" placeholder="请输入用户secret" />
+        <el-form-item :label="$tp('用户secret')" prop="secret">
+          <el-input v-model="form.secret" :placeholder="$tp('请输入用户secret')" />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
-          <el-select v-model="form.enable" placeholder="请选择启用状态">
+        <el-form-item :label="$tp('启用状态')" prop="enable">
+          <el-select v-model="form.enable" :placeholder="$tp('请选择启用状态')">
             <el-option
                 v-for="dict in lecheng_enable"
                 :key="dict.value"
@@ -107,14 +107,14 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
+        <el-form-item :label="$tp('备注')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="$tp('请输入内容')" />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -145,9 +145,9 @@ const data = reactive({
     name: null,
   },
   rules: {
-    appKey: [{ required: true, message: "请输入用户appKey", trigger: "blur" }],
-    secret: [{ required: true, message: "请输入用户secret", trigger: "blur" }],
-    name: [{ required: true, message: "请输入应用名称", trigger: "blur" }],
+    appKey: [{ required: true, get message() { return translatePhrase("请输入用户appKey") }, trigger: "blur" }],
+    secret: [{ required: true, get message() { return translatePhrase("请输入用户secret") }, trigger: "blur" }],
+    name: [{ required: true, get message() { return translatePhrase("请输入应用名称") }, trigger: "blur" }],
   }
 });
 
@@ -229,13 +229,13 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updateLcConfig(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(translatePhrase("修改成功"));
           open.value = false;
           getList();
         });
       } else {
         addLcConfig(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(translatePhrase("新增成功"));
           open.value = false;
           getList();
         });
@@ -247,11 +247,11 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除乐橙监控配置编号为"' + _ids + '"的数据项？').then(function() {
+  proxy.$modal.confirm(translatePhrase("是否确认删除乐橙监控配置编号为\"") + _ids + translatePhrase("\"的数据项？")).then(function() {
     return delLcConfig(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {});
 }
 

@@ -3,8 +3,8 @@
       <canvas ref="canvasElement" style="background-color:#000;width: 800px;height: 450px;"></canvas>
     </div>
     <div class="button">
-      <el-button type="primary" @click="playerPlay" :icon="VideoPause">播放</el-button>
-      <el-button type="primary" @click="playerStop" :icon="VideoPlay">关闭</el-button>
+      <el-button type="primary" @click="playerPlay" :icon="VideoPause">{{ $tp("播放") }}</el-button>
+      <el-button type="primary" @click="playerStop" :icon="VideoPlay">{{ $tp("关闭") }}</el-button>
     </div>
 
 </template>

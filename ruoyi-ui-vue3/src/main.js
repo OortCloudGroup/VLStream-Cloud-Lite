@@ -5,7 +5,7 @@ import Cookies from 'js-cookie'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
-import i18n from '@/i18n'
+import i18n, { translatePhrase } from '@/i18n'
 
 import '@/assets/styles/index.scss' // global css
 import '@/assets/styles/i18n.scss'
@@ -70,6 +70,7 @@ app.config.globalProperties.addDateRange = addDateRange
 app.config.globalProperties.selectDictLabel = selectDictLabel
 app.config.globalProperties.selectDictLabels = selectDictLabels
 app.config.globalProperties.clacPXToVW = clacPXToVW
+app.config.globalProperties.$tp = translatePhrase
 
 // 全局组件挂载
 app.component('DictTag', DictTag)

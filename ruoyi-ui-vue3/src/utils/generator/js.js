@@ -222,14 +222,14 @@ function buildBeforeUpload(conf) {
   if (conf.fileSize) {
     rightSizeCode = `let isRightSize = file.size / ${unitNum} < ${conf.fileSize}
     if(!isRightSize){
-      proxy.$modal.msgError('文件大小超过 ${conf.fileSize}${conf.sizeUnit}')
+      proxy.$modal.msgError(translatePhrase('文件大小超过 {size}{unit}', { size: ${conf.fileSize}, unit: '${conf.sizeUnit}' }))
     }`
     returnList.push('isRightSize')
   }
   if (conf.accept) {
     acceptCode = `let isAccept = new RegExp('${conf.accept}').test(file.type)
     if(!isAccept){
-      proxy.$modal.msgError('应该选择${conf.accept}类型的文件')
+      proxy.$modal.msgError(translatePhrase('应该选择 {type} 类型的文件', { type: '${conf.accept}' }))
     }`
     returnList.push('isAccept')
   }

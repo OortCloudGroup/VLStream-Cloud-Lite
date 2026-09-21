@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-tabs v-model="activeName" class="work-tabs" @tab-click="handleClick">
-      <el-tab-pane label="行政区划" name="region">
+      <el-tab-pane :label="$tp('行政区划')" name="region">
         <Region/>
       </el-tab-pane>
-      <el-tab-pane label="业务分组" name="group">
+      <el-tab-pane :label="$tp('业务分组')" name="group">
         <Group/>
       </el-tab-pane>
     </el-tabs>

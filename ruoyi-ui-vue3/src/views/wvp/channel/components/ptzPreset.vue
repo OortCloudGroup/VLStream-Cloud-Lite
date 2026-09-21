@@ -18,7 +18,7 @@
     <el-input
         v-if="inputVisible"
         v-model="ptzPresetId"
-        placeholder="预置位编号"
+        :placeholder="$tp('预置位编号')"
         addon-before="预置位编号"
         addon-after="(1-255)"
         style="width: 500px; vertical-align: bottom;"
@@ -26,14 +26,14 @@
         size="small"
     >
       <template #append>
-        <el-button @click="addPreset" style="width: 100px;">保存</el-button>
+        <el-button @click="addPreset" style="width: 100px;">{{ $tp("保存") }}</el-button>
         |
-        <el-button @click="cancel" style="width: 100px;">取消</el-button>
+        <el-button @click="cancel" style="width: 100px;">{{ $tp("取消") }}</el-button>
       </template>
     </el-input>
 
     <!-- 添加按钮 -->
-    <el-button v-else size="small" @click="showInput">+ 添加</el-button>
+    <el-button v-else size="small" @click="showInput">{{ $tp("+ 添加") }}</el-button>
   </div>
 </template>
 
@@ -117,7 +117,7 @@ const addPreset = async () => {
     loading.close();
     ElMessage({
       showClose: true,
-      message: error.message || '添加失败',
+      message: error.message || translatePhrase("添加失败"),
       type: 'error'
     });
   }
@@ -140,7 +140,7 @@ const gotoPreset = async (preset) => {
     await callPreset(url, {presetId: preset.presetId}).then(() => {
       ElMessage({
         showClose: true,
-        message: '调用成功',
+        message: translatePhrase("调用成功"),
         type: 'success'
       });
     }).catch(() => {
@@ -153,7 +153,7 @@ const gotoPreset = async (preset) => {
   } catch (error) {
     ElMessage({
       showClose: true,
-      message: error.message || '调用失败',
+      message: error.message || translatePhrase("调用失败"),
       type: 'error'
     });
   }
@@ -161,9 +161,9 @@ const gotoPreset = async (preset) => {
 
 // 删除预置位
 const delPreset = (preset) => {
-  ElMessageBox.confirm('确定删除此预置位？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(translatePhrase("确定删除此预置位？"), translatePhrase("提示"), {
+    confirmButtonText: translatePhrase("确定"),
+    cancelButtonText: translatePhrase("取消"),
     type: 'warning'
   })
       .then(async () => {
@@ -196,7 +196,7 @@ const delPreset = (preset) => {
           loading.close();
           ElMessage({
             showClose: true,
-            message: error.message || '删除失败',
+            message: error.message || translatePhrase("删除失败"),
             type: 'error'
           });
         }

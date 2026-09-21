@@ -1,28 +1,28 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="设备编码" prop="deviceId">
+      <el-form-item :label="$tp('设备编码')" prop="deviceId">
         <el-input
             v-model="queryParams.deviceId"
-            placeholder="请输入设备编码"
+            :placeholder="$tp('请输入设备编码')"
             clearable
             style="width: 240px"
             @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="数据时间" style="width: 500px;">
+      <el-form-item :label="$tp('数据时间')" style="width: 500px;">
         <el-date-picker
             v-model="dateRange"
             value-format="YYYY-MM-DD HH:mm:ss"
             type="datetimerange"
             range-separator="-"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
+            :start-placeholder="$tp('开始日期')"
+            :end-placeholder="$tp('结束日期')"
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="Search" @click="handleQuery">{{ $tp("搜索") }}</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
       </el-form-item>
     </el-form>
 
@@ -32,20 +32,20 @@
 
     <el-table v-loading="loading" :data="nonmotorvehiclesList">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="非机动车标识" align="center" prop="nonMotorVehicleId" />
-      <el-table-column label="设备编码" align="center" prop="deviceId" />
-      <el-table-column label="左上角X坐标" align="center" prop="leftTopX" />
-      <el-table-column label="左上角Y坐标" align="center" prop="leftTopY" />
-      <el-table-column label="右下角X坐标" align="center" prop="rightBtmX" />
-      <el-table-column label="右下角Y坐标" align="center" prop="rightBtmY" />
-      <el-table-column label="车辆出现时间" align="center" prop="appearTime" />
-      <el-table-column label="车牌号" align="center" prop="plateNo" />
-      <el-table-column label="车身颜色" align="center" prop="vehicleColor" />
-      <el-table-column label="车辆款型" align="center" prop="vehicleType" />
-      <el-table-column label="车辆品牌" align="center" prop="vehicleBrand" />
-      <el-table-column label="车辆长度" align="center" prop="vehicleLength" />
-      <el-table-column label="车辆款型" align="center" prop="vehicleType" />
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column :label="$tp('非机动车标识')" align="center" prop="nonMotorVehicleId" />
+      <el-table-column :label="$tp('设备编码')" align="center" prop="deviceId" />
+      <el-table-column :label="$tp('左上角X坐标')" align="center" prop="leftTopX" />
+      <el-table-column :label="$tp('左上角Y坐标')" align="center" prop="leftTopY" />
+      <el-table-column :label="$tp('右下角X坐标')" align="center" prop="rightBtmX" />
+      <el-table-column :label="$tp('右下角Y坐标')" align="center" prop="rightBtmY" />
+      <el-table-column :label="$tp('车辆出现时间')" align="center" prop="appearTime" />
+      <el-table-column :label="$tp('车牌号')" align="center" prop="plateNo" />
+      <el-table-column :label="$tp('车身颜色')" align="center" prop="vehicleColor" />
+      <el-table-column :label="$tp('车辆款型')" align="center" prop="vehicleType" />
+      <el-table-column :label="$tp('车辆品牌')" align="center" prop="vehicleBrand" />
+      <el-table-column :label="$tp('车辆长度')" align="center" prop="vehicleLength" />
+      <el-table-column :label="$tp('车辆款型')" align="center" prop="vehicleType" />
+      <el-table-column :label="$tp('操作')" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="scope">
 <!--          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:config:edit']" >修改</el-button>-->
 <!--          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['system:config:remove']">删除</el-button>-->

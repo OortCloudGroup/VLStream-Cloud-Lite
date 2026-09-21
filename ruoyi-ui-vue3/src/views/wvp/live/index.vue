@@ -2,23 +2,23 @@
   <div class="app-container live-page">
     <div class="workbench-layout">
       <aside v-yResize class="workbench-aside">
-        <div class="aside-title">设备列表</div>
+        <div class="aside-title">{{ $tp("设备列表") }}</div>
         <div class="head-container">
           <el-input
               v-model="deviceName"
-              placeholder="搜索设备名称"
+              :placeholder="$tp('搜索设备名称')"
               clearable
               prefix-icon="Search"
               style="margin-bottom: 12px"
           />
         </div>
         <div class="top">
-          <div>通道列表</div>
+          <div>{{ $tp("通道列表") }}</div>
           <div>
             <el-switch
                 v-model="activeValue"
-                active-text="行政区划"
-                inactive-text="业务分组"
+                :active-text="$tp('行政区划')"
+                :inactive-text="$tp('业务分组')"
                 @change="onSwitch"
             />
           </div>
@@ -50,27 +50,27 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="8">
-                  <svg-icon icon-class="screen8" class="dropdown-screen-icon" /> 八画面
+                  <svg-icon icon-class="screen8" class="dropdown-screen-icon" /> {{ $tp("八画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="16">
-                  <svg-icon icon-class="screen16" class="dropdown-screen-icon" /> 十六画面
+                  <svg-icon icon-class="screen16" class="dropdown-screen-icon" /> {{ $tp("十六画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="17">
-                  <svg-icon icon-class="screen17" class="dropdown-screen-icon" /> 十七画面
+                  <svg-icon icon-class="screen17" class="dropdown-screen-icon" /> {{ $tp("十七画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="21">
-                  <svg-icon icon-class="screen21" class="dropdown-screen-icon" /> 二十一画面
+                  <svg-icon icon-class="screen21" class="dropdown-screen-icon" /> {{ $tp("二十一画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="23">
-                  <svg-icon icon-class="screen23" class="dropdown-screen-icon" /> 二十三画面
+                  <svg-icon icon-class="screen23" class="dropdown-screen-icon" /> {{ $tp("二十三画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="24">
-                  <svg-icon icon-class="screen24" class="dropdown-screen-icon" /> 二十四画面
+                  <svg-icon icon-class="screen24" class="dropdown-screen-icon" /> {{ $tp("二十四画面") }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <el-button size="small" @click="handleCustomScreen">自定义</el-button>
+          <el-button size="small" @click="handleCustomScreen">{{ $tp("自定义") }}</el-button>
           <svg-icon class="flex-icon" icon-class="screen-full" @click="toggleLiveFullscreen" />
         </div>
 
@@ -90,10 +90,10 @@
       </main>
     </div>
 
-    <el-dialog v-model="customDialogVisible" title="自定义视图" width="26%" append-to-body destroy-on-close>
+    <el-dialog v-model="customDialogVisible" :title="$tp('自定义视图')" width="26%" append-to-body destroy-on-close>
       <div class="custom-view-form">
         <div class="custom-view-field">
-          <div class="custom-view-label">行(输入值1-9)</div>
+          <div class="custom-view-label">{{ $tp("行(输入值1-9)") }}</div>
           <el-input
               v-model="customRows"
               maxlength="1"
@@ -103,7 +103,7 @@
         </div>
         <span class="custom-view-x">x</span>
         <div class="custom-view-field">
-          <div class="custom-view-label">列(输入值1-9)</div>
+          <div class="custom-view-label">{{ $tp("列(输入值1-9)") }}</div>
           <el-input
               v-model="customCols"
               maxlength="1"
@@ -114,7 +114,7 @@
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="confirmCustomScreen">确定</el-button>
+          <el-button type="primary" @click="confirmCustomScreen">{{ $tp("确定") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -226,7 +226,7 @@ const loadNode = async (node, resolve) => {
 
 const handleNodeClick = async (data) => {
   if(activePlayerIndex.value == null){
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
 
@@ -246,10 +246,10 @@ const handleNodeClick = async (data) => {
           videoRef[0].createPlayer(res.data.flv, 0);
         }
       } else {
-        proxy.$modal.msgError("请选择播放器");
+        proxy.$modal.msgError(translatePhrase("请选择播放器"));
       }
     } else {
-      proxy.$modal.msgError('通道或设备不存在')
+      proxy.$modal.msgError(translatePhrase("通道或设备不存在"))
     }
   }
 
@@ -263,7 +263,7 @@ const handleNodeClick = async (data) => {
         videoRef[0].createPlayer(ans.data.flv, 0);
       }
     } else {
-      proxy.$modal.msgError("请选择播放器");
+      proxy.$modal.msgError(translatePhrase("请选择播放器"));
     }
   }
 
@@ -277,7 +277,7 @@ const handleNodeClick = async (data) => {
         videoRef[0].createPlayer(ans.flv, 0);
       }
     } else {
-      proxy.$modal.msgError("请选择播放器");
+      proxy.$modal.msgError(translatePhrase("请选择播放器"));
     }
   }
 
@@ -308,7 +308,7 @@ async function getTreeData() {
   const res = await queryForTree();
   let data = [
     {
-      name: "根资源组",
+      get name() { return translatePhrase("根资源组") },
       children: []
     }
   ]
@@ -320,7 +320,7 @@ async function getGroupQueryForTree() {
   const res = await groupQueryForTree();
   let data = [
     {
-      name: "根资源组",
+      get name() { return translatePhrase("根资源组") },
       children: []
     }
   ]
@@ -359,7 +359,7 @@ function confirmCustomScreen() {
   const rows = Number(customRows.value)
   const cols = Number(customCols.value)
   if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows < 1 || rows > 9 || cols < 1 || cols > 9) {
-    ElMessage.warning('行和列请输入 1-9 的整数')
+    ElMessage.warning(translatePhrase("行和列请输入 1-9 的整数"))
     return
   }
   customLayout.value = getCustomEqualLayout(rows, cols)

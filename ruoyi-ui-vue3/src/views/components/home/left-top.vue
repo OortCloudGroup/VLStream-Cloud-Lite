@@ -40,11 +40,11 @@ onMounted(()=>{
             center: ['50%', '43%'],
             label: { show: false },
             data: [
-              { value: res.data.totalGbNum, name: '国标设备数' },
-              { value: res.data.totalIsupNum, name: '海康设备数' },
-              { value: res.data.totalOnvifNum, name: 'onvif设备数' },
-              { value: res.data.totalRtspNum, name: 'rtsp设备数' },
-              { value: res.data.totalDahuaNum, name: '大华设备数' },
+              { value: res.data.totalGbNum, get name() { return translatePhrase("国标设备数") } },
+              { value: res.data.totalIsupNum, get name() { return translatePhrase("海康设备数") } },
+              { value: res.data.totalOnvifNum, get name() { return translatePhrase("onvif设备数") } },
+              { value: res.data.totalRtspNum, get name() { return translatePhrase("rtsp设备数") } },
+              { value: res.data.totalDahuaNum, get name() { return translatePhrase("大华设备数") } },
             ],
             emphasis: {
               itemStyle: {

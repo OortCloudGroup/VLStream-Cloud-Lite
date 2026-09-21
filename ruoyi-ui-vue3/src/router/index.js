@@ -56,7 +56,7 @@ export const constantRoutes = [
         path: '',
         component: () => import('@/views/wvp/cloudRecord/index'),
         name: 'CloudRecord',
-        meta: { title: '云端录像' }
+        meta: { title: "云端录像" }
       }
     ]
   },
@@ -79,7 +79,7 @@ export const constantRoutes = [
         path: '/index',
         component: () => import('@/views/index'),
         name: 'Index',
-        meta: { title: '首页', icon: 'home', affix: true }
+        meta: { title: "首页", icon: 'home', affix: true }
       },
     ]
   },
@@ -93,7 +93,7 @@ export const constantRoutes = [
         path: 'profile',
         component: () => import('@/views/system/user/profile/index'),
         name: 'Profile',
-        meta: { title: '个人中心', icon: 'user' }
+        meta: { title: "个人中心", icon: 'user' }
       }
     ]
   }
@@ -111,7 +111,7 @@ export const dynamicRoutes = [
         path: 'role/:userId(\\d+)',
         component: () => import('@/views/system/user/authRole'),
         name: 'AuthRole',
-        meta: { title: '分配角色', activeMenu: '/system/user' }
+        meta: { title: "分配角色", activeMenu: '/system/user' }
       }
     ]
   },
@@ -125,7 +125,7 @@ export const dynamicRoutes = [
         path: 'user/:roleId(\\d+)',
         component: () => import('@/views/system/role/authUser'),
         name: 'AuthUser',
-        meta: { title: '分配用户', activeMenu: '/system/role' }
+        meta: { title: "分配用户", activeMenu: '/system/role' }
       }
     ]
   },
@@ -139,7 +139,7 @@ export const dynamicRoutes = [
         path: 'index/:dictId(\\d+)',
         component: () => import('@/views/system/dict/data'),
         name: 'Data',
-        meta: { title: '字典数据', activeMenu: '/system/dict' }
+        meta: { title: "字典数据", activeMenu: '/system/dict' }
       }
     ]
   },
@@ -153,7 +153,7 @@ export const dynamicRoutes = [
         path: 'index/:jobId(\\d+)',
         component: () => import('@/views/monitor/job/log'),
         name: 'JobLog',
-        meta: { title: '调度日志', activeMenu: '/monitor/job' }
+        meta: { title: "调度日志", activeMenu: '/monitor/job' }
       }
     ]
   },
@@ -167,7 +167,7 @@ export const dynamicRoutes = [
         path: 'index/:tableId(\\d+)',
         component: () => import('@/views/tool/gen/editTable'),
         name: 'GenEdit',
-        meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
+        meta: { title: "修改生成配置", activeMenu: '/tool/gen' }
       }
     ]
   },
@@ -182,7 +182,7 @@ export const dynamicRoutes = [
         path: 'index/:deviceId(\\d+)/:parentChannelId(\\d+)',
         component: () => import('@/views/wvp/channel/index'),
         name: 'ChannelList',
-        meta: { title: '通道列表', activeMenu: '/gbmanger/device' }
+        meta: { title: "通道列表", activeMenu: '/gbmanger/device' }
       }
     ]
   },
@@ -197,7 +197,7 @@ export const dynamicRoutes = [
         path: 'index/:deviceId(\\d+)/:channelId(\\d+)',
         component: () => import('@/views/wvp/gbRecordDetail/index'),
         name: 'GbRecordDetail',
-        meta: { title: '设备录像', activeMenu: '/gbmanger/device' }
+        meta: { title: "设备录像", activeMenu: '/gbmanger/device' }
       }
     ]
   },
@@ -212,7 +212,7 @@ export const dynamicRoutes = [
         path: 'index',
         component: () => import('@/views/wvp/cloudRecordDetail/index'),
         name: 'CloudRecordDetail',
-        meta: { title: '云端录像', activeMenu: '/gbmanger/device' }
+        meta: { title: "云端录像", activeMenu: '/gbmanger/device' }
       }
     ]
   },
@@ -228,7 +228,7 @@ export const dynamicRoutes = [
         path: 'index/:planId(\\d+)',
         component: () => import('@/views/wvp/recordPlan/associatedChannel'),
         name: 'AssociatedChannel',
-        meta: { title: '关联通道', activeMenu: '/gbmanger/recordPlan' }
+        meta: { title: "关联通道", activeMenu: '/gbmanger/recordPlan' }
       }
     ]
   },
@@ -244,7 +244,7 @@ export const dynamicRoutes = [
         path: 'index/:platformId(\\d+)',
         component: () => import('@/views/wvp/platform/chooseChannel'),
         name: 'ChooseChannel',
-        meta: { title: '通道共享', activeMenu: '/gbmanger/platform' }
+        meta: { title: "通道共享", activeMenu: '/gbmanger/platform' }
       }
     ]
   },
@@ -260,7 +260,7 @@ export const dynamicRoutes = [
         path: 'index',
         component: () => import('@/views/wvp/mediaServer/addMediaServer'),
         name: 'AddMediaServer',
-        meta: { title: '添加媒体服务器', activeMenu: '/gbmanger/node' }
+        meta: { title: "添加媒体服务器", activeMenu: '/gbmanger/node' }
       }
     ]
   },
@@ -275,7 +275,7 @@ export const dynamicRoutes = [
         path: 'index',
         component: () => import('@/views/wvp/mediaServer/updateMediaServer'),
         name: 'UpdateMediaServer',
-        meta: { title: '修改媒体服务器', activeMenu: '/gbmanger/node' }
+        meta: { title: "修改媒体服务器", activeMenu: '/gbmanger/node' }
       }
     ]
   },
@@ -291,7 +291,7 @@ export const dynamicRoutes = [
         path: 'index',
         component: () => import('@/views/yingshi/ysChannel/index'),
         name: 'YsChannel',
-        meta: { title: '萤石通道管理', activeMenu: '/yingshi/ysDevice' }
+        meta: { title: "萤石通道管理", activeMenu: '/yingshi/ysDevice' }
       }
     ]
   },
@@ -307,7 +307,7 @@ export const dynamicRoutes = [
         path: 'index',
         component: () => import('@/views/lecheng/leChannel/index'),
         name: 'LeChannel',
-        meta: { title: '乐橙通道管理', activeMenu: '/lecheng/lcDevice' }
+        meta: { title: "乐橙通道管理", activeMenu: '/lecheng/lcDevice' }
       }
     ]
   },

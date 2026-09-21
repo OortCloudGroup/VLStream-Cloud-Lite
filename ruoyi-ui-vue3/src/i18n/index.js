@@ -14,6 +14,7 @@ import ko from 'element-plus/es/locale/lang/ko'
 import id from 'element-plus/es/locale/lang/id'
 import tr from 'element-plus/es/locale/lang/tr'
 import messages from './catalog'
+import phraseMessages from './phrases.generated'
 
 export const DEFAULT_LOCALE = 'zh-CN'
 export const LOCALE_COOKIE = 'language'
@@ -22,7 +23,7 @@ export const supportedLocales = [
   { code: 'zh-CN', shortCode: 'zh', name: '简体中文', dir: 'ltr', element: zhCn },
   { code: 'en-US', shortCode: 'en', name: 'English', dir: 'ltr', element: en },
   { code: 'es-MX', shortCode: 'es', name: 'Español', dir: 'ltr', element: es },
-  { code: 'ar-SA', shortCode: 'ar', name: 'العربية', dir: 'rtl', element: ar },
+  { code: 'ar', shortCode: 'ar', name: 'العربية', dir: 'rtl', element: ar },
   { code: 'de-DE', shortCode: 'de', name: 'Deutsch', dir: 'ltr', element: de },
   { code: 'fr-FR', shortCode: 'fr', name: 'Français', dir: 'ltr', element: fr },
   { code: 'ja-JP', shortCode: 'ja', name: '日本語', dir: 'ltr', element: ja },
@@ -59,7 +60,10 @@ export const i18n = createI18n({
   legacy: false,
   globalInjection: true,
   locale: currentLocale.value,
-  fallbackLocale: DEFAULT_LOCALE,
+  fallbackLocale: {
+    'zh-CN': ['zh-CN'],
+    default: ['en-US']
+  },
   missingWarn: false,
   fallbackWarn: false,
   messages
@@ -89,7 +93,28 @@ export function setLocale(locale) {
 export function translateRouteTitle(title) {
   if (!title) return ''
   const key = `menu.${title}`
-  return i18n.global.te(key, currentLocale.value) ? i18n.global.t(key) : title
+  return i18n.global.te(key, currentLocale.value) ? i18n.global.t(key) : translatePhrase(title)
+}
+
+export function phraseKey(source) {
+  let hash = 2166136261
+  for (let index = 0; index < source.length; index++) {
+    hash ^= source.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return `p${(hash >>> 0).toString(36)}`
+}
+
+/** Translate a Chinese source phrase at render time while leaving API/business data untouched. */
+export function translatePhrase(source, params) {
+  if (source === undefined || source === null || source === '') return source || ''
+  const key = phraseKey(String(source))
+  const catalog = phraseMessages[currentLocale.value] || phraseMessages['en-US'] || {}
+  let translated = catalog[key] || phraseMessages['en-US']?.[key] || String(source)
+  for (const [name, value] of Object.entries(params || {})) {
+    translated = translated.replace(new RegExp(`\\{${name}\\}`, 'g'), String(value ?? ''))
+  }
+  return translated
 }
 
 applyDocumentLocale(currentLocale.value)

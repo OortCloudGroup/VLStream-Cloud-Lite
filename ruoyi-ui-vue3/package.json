@@ -9,7 +9,10 @@
     "dev": "vite",
     "build:prod": "vite build",
     "build:stage": "vite build --mode staging",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint:i18n": "node ../codex/i18n-audit.mjs --strict",
+    "audit:i18n": "node ../codex/i18n-audit.mjs",
+    "audit:i18n:strict": "node ../codex/i18n-audit.mjs --strict"
   },
   "repository": {
     "type": "git",

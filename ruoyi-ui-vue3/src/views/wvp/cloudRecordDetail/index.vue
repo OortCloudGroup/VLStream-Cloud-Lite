@@ -1,8 +1,8 @@
 <template>
   <div class="detail-page">
     <detail-page-header
-      parent-title="国标设备"
-      title="云端录像"
+      :parent-title="$tp('国标设备')"
+      :title="$tp('云端录像')"
       back-path="/gbmanger/device"
     />
     <div class="detail-body">
@@ -16,7 +16,7 @@
               value-format="YYYY-MM-DD"
               @change="dateChange()"
               :clearable="false"
-              placeholder="日期">
+              :placeholder="$tp('日期')">
           </el-date-picker>
         </div>
 
@@ -44,7 +44,7 @@
             </div>
           </InfiniteList>
 
-          <el-empty v-if="detailFiles.length === 0" :image-size="50" description="暂无数据"/>
+          <el-empty v-if="detailFiles.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
         </div>
       </el-col>
 

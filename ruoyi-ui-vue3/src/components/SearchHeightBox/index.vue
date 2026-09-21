@@ -44,7 +44,7 @@
         <el-form-item v-for="(item, i) in dataTemp" :key="i" class="flexRowAC" :prop="item.value">
           <div v-if="item.type !== 'checkbox' && item.type !== 'serchItem'" class="serchItem flexRowAC">
             <div class="serchItem-label flexRowAC">
-              <span>{{ item.label }}</span>
+              <span>{{ $tp(item.label) }}</span>
               <el-tooltip v-if="item.tips" :content="item.tips" placement="top">
                 <el-icon class="label-tip-icon">
                   <QuestionFilled />
@@ -55,14 +55,14 @@
               v-if="item.type === 'text'"
               v-model="form[item.value]"
               class="wh-input"
-              placeholder="请输入"
+              :placeholder="$tp('请输入')"
             />
             <el-select
               v-else-if="item.type === 'select'"
               v-model="form[item.value]"
               :teleported="false"
               clearable
-              placeholder="请选择"
+              :placeholder="$tp('请选择')"
             >
               <el-option
                 v-for="(dd, tt) in item.option"
@@ -81,7 +81,7 @@
               :teleported="false"
               check-strictly
               clearable
-              :placeholder="item.placeholder || '请选择'"
+              :placeholder="item.placeholder || $tp('请选择')"
             />
             <el-radio-group
               v-else-if="item.type === 'radio'"
@@ -98,8 +98,8 @@
                 :teleported="false"
                 :type="item.type === 'datetimerange' ? 'datetimerange' : 'daterange'"
                 range-separator="-"
-                :start-placeholder="item?.startP || '开始时间'"
-                :end-placeholder="item?.endP || '结束时间'"
+                :start-placeholder="item?.startP || $tp('开始时间')"
+                :end-placeholder="item?.endP || $tp('结束时间')"
                 :value-format="item?.format"
                 :default-time="item?.defaultTime"
                 :shortcuts="item.type === 'datetimerange' ? undefined : shortcuts"
@@ -120,12 +120,12 @@
         </el-form-item>
         <div class="serchItem serBtn">
           <el-button type="primary" class="newBtn" @click="searchFn">
-            <img class="searchImg" src="@/assets/images/search/search.png" alt="" />搜索
+            <img class="searchImg" src="@/assets/images/search/search.png" alt="" />{{ $tp("搜索") }}
           </el-button>
           <el-button class="newBtn" @click="resetFn">
             <el-icon class="searchImg">
               <RefreshRight />
-            </el-icon>重置
+            </el-icon>{{ $tp("重置") }}
           </el-button>
         </div>
       </el-form>

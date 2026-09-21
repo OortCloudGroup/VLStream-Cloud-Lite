@@ -1,7 +1,7 @@
 <template>
   <div id="ptzWiper">
-    <el-button size="mini" @click="() => open('on')">开启</el-button>
-    <el-button size="mini" @click="() => open('off')">关闭</el-button>
+    <el-button size="mini" @click="() => open('on')">{{ $tp("开启") }}</el-button>
+    <el-button size="mini" @click="() => open('off')">{{ $tp("关闭") }}</el-button>
   </div>
 </template>
 
@@ -33,13 +33,13 @@ const open = async (command) => {
   await GetPtzWiper(url.value, {command}).then(() => {
     ElMessage({
       showClose: true,
-      message: '保存成功',
+      message: translatePhrase("保存成功"),
       type: 'success',
     });
   }).catch((error) => {
     ElMessage({
       showClose: true,
-      message: error?.message || '请求失败',
+      message: error?.message || translatePhrase("请求失败"),
       type: 'error',
     });
   }).finally(() => {

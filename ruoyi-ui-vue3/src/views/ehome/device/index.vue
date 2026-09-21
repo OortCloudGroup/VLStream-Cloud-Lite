@@ -2,67 +2,67 @@
   <DeviceClassificationLayout :key="classificationKey" protocol-type="EHOME" :selected-device-keys="selectedKeys" @filter-change="filterClassification" @assigned="loadDevices">
     <section class="ehome-page">
       <header class="ehome-heading">
-        <div class="heading-title"><div class="protocol-icon"><svg-icon icon-class="ehome" /></div><div><h1>EHome 设备</h1><p>旧版海康设备主动接入 · 设备注册后自动加入列表</p></div></div>
-        <el-button type="primary" :icon="Plus" @click="guide = true">接入设备</el-button>
+        <div class="heading-title"><div class="protocol-icon"><svg-icon icon-class="ehome" /></div><div><h1>{{ $tp("EHome 设备") }}</h1><p>{{ $tp("旧版海康设备主动接入 · 设备注册后自动加入列表") }}</p></div></div>
+        <el-button type="primary" :icon="Plus" @click="guide = true">{{ $tp("接入设备") }}</el-button>
       </header>
 
       <div class="connection-strip">
-        <div><span class="status-dot" :class="{ online: service.registrationReady }" /><strong>{{ service.registrationReady ? '注册服务就绪' : '注册服务未就绪' }}</strong><span class="service-address">{{ service.host || (service.serverAddresses || []).join(' / ') || '暂无可用地址' }}<span v-if="service.registrationPort">:{{ service.registrationPort }}</span></span></div>
-        <el-button link type="primary" @click="guide = true">接入指南 <el-icon><ArrowRight /></el-icon></el-button>
+        <div><span class="status-dot" :class="{ online: service.registrationReady }" /><strong>{{ service.registrationReady ? $tp('注册服务就绪') : $tp('注册服务未就绪') }}</strong><span class="service-address">{{ service.host || (service.serverAddresses || []).join(' / ') || $tp('暂无可用地址') }}<span v-if="service.registrationPort">:{{ service.registrationPort }}</span></span></div>
+        <el-button link type="primary" @click="guide = true">{{ $tp("接入指南") }} <el-icon><ArrowRight /></el-icon></el-button>
       </div>
-      <el-alert v-if="serviceLoaded && !service.registrationReady" :title="service.message || '接入服务未启动'" type="warning" :closable="false" show-icon class="service-warning" />
+      <el-alert v-if="serviceLoaded && !service.registrationReady" :title="$tp(service.message || $tp('接入服务未启动'))" type="warning" :closable="false" show-icon class="service-warning" />
 
-      <div class="list-heading"><h2>设备列表 <span>{{ total }}</span></h2><span class="family-note">EHome 2.x / 3.x / 4.x</span></div>
+      <div class="list-heading"><h2>{{ $tp("设备列表") }} <span>{{ total }}</span></h2><span class="family-note">EHome 2.x / 3.x / 4.x</span></div>
       <el-form class="device-filters" @submit.prevent="search">
-        <el-input v-model="query.keyword" placeholder="搜索名称、设备 ID、序列号或 IP" clearable :prefix-icon="Search" @clear="search" />
-        <el-select v-model="query.status" popper-class="ehome-select" placeholder="全部状态" aria-label="设备状态" clearable @change="search"><el-option label="在线" value="ON" /><el-option label="离线" value="OFFLINE" /></el-select>
-        <el-select v-model="query.devProtocolVersion" popper-class="ehome-select" placeholder="全部版本" aria-label="协议版本" clearable @change="search"><el-option v-for="version in ['2', '3', '4']" :key="version" :label="`EHome ${version}.x`" :value="version" /></el-select>
-        <el-button native-type="submit" type="primary" plain>搜索</el-button>
-        <el-button :icon="Refresh" :loading="loading" aria-label="刷新设备列表" @click="refresh" />
+        <el-input v-model="query.keyword" :placeholder="$tp('搜索名称、设备 ID、序列号或 IP')" clearable :prefix-icon="Search" @clear="search" />
+        <el-select v-model="query.status" popper-class="ehome-select" :placeholder="$tp('全部状态')" :aria-label="$tp('设备状态')" clearable @change="search"><el-option :label="$tp('在线')" value="ON" /><el-option :label="$tp('离线')" value="OFFLINE" /></el-select>
+        <el-select v-model="query.devProtocolVersion" popper-class="ehome-select" :placeholder="$tp('全部版本')" :aria-label="$tp('协议版本')" clearable @change="search"><el-option v-for="version in ['2', '3', '4']" :key="version" :label="`EHome ${version}.x`" :value="version" /></el-select>
+        <el-button native-type="submit" type="primary" plain>{{ $tp("搜索") }}</el-button>
+        <el-button :icon="Refresh" :loading="loading" :aria-label="$tp('刷新设备列表')" @click="refresh" />
       </el-form>
-      <el-alert v-if="loadError" :title="loadError" type="error" :closable="false" show-icon />
+      <el-alert v-if="loadError" :title="$tp(loadError)" type="error" :closable="false" show-icon />
       <el-table v-loading="loading" :data="rows" class="ehome-table" row-key="id" @selection-change="selection => selectedKeys = selection.map(row => String(row.id))">
         <el-table-column type="selection" width="42" />
-        <el-table-column label="设备" min-width="175"><template #default="{ row }"><div class="device-name">{{ row.name || row.deviceId }}</div><div class="device-id">{{ row.deviceId }}</div></template></el-table-column>
-        <el-table-column label="状态" width="88"><template #default="{ row }"><span class="device-status" :class="{ online: row.status === 'ON' }"><i />{{ row.status === 'ON' ? '在线' : '离线' }}</span></template></el-table-column>
-        <el-table-column label="协议版本" width="115"><template #default="{ row }"><span class="version-label">{{ row.devProtocolVersion ? `EHome ${row.devProtocolVersion}` : '未识别' }}</span></template></el-table-column>
-        <el-table-column label="设备 IP" prop="ipAddress" min-width="130" show-overflow-tooltip />
-        <el-table-column label="最近更新" prop="updateTime" min-width="160" />
-        <el-table-column label="操作" fixed="right" width="155"><template #default="{ row }"><el-button v-hasPermi="['ehome:device:query']" link type="primary" @click="openPreview(row)">通道 / 预览</el-button><el-button v-hasPermi="['ehome:device:edit']" link type="primary" @click="openEdit(row)">编辑</el-button></template></el-table-column>
+        <el-table-column :label="$tp('设备')" min-width="175"><template #default="{ row }"><div class="device-name">{{ row.name || row.deviceId }}</div><div class="device-id">{{ row.deviceId }}</div></template></el-table-column>
+        <el-table-column :label="$tp('状态')" width="88"><template #default="{ row }"><span class="device-status" :class="{ online: row.status === 'ON' }"><i />{{ row.status === 'ON' ? $tp('在线') : $tp('离线') }}</span></template></el-table-column>
+        <el-table-column :label="$tp('协议版本')" width="115"><template #default="{ row }"><span class="version-label">{{ row.devProtocolVersion ? `EHome ${row.devProtocolVersion}` : $tp('未识别') }}</span></template></el-table-column>
+        <el-table-column :label="$tp('设备 IP')" prop="ipAddress" min-width="130" show-overflow-tooltip />
+        <el-table-column :label="$tp('最近更新')" prop="updateTime" min-width="160" />
+        <el-table-column :label="$tp('操作')" fixed="right" width="155"><template #default="{ row }"><el-button v-hasPermi="['ehome:device:query']" link type="primary" @click="openPreview(row)">{{ $tp("通道 / 预览") }}</el-button><el-button v-hasPermi="['ehome:device:edit']" link type="primary" @click="openEdit(row)">{{ $tp("编辑") }}</el-button></template></el-table-column>
         <template #empty><span /></template>
       </el-table>
           <div v-if="!loading && !rows.length" class="empty-state">
             <div class="empty-icon"><el-icon><VideoCamera /></el-icon><span>+</span></div>
-            <h3>{{ loadError ? '设备列表加载失败' : filtered ? '没有找到匹配的设备' : '等待第一台 EHome 设备接入' }}</h3>
-            <p>{{ loadError ? '请确认服务可用后重试。' : filtered ? '试试其他关键词，或调整版本与状态筛选。' : '在设备端启用平台接入，填写服务器地址和设备 ID。' }}</p>
-            <el-button v-if="!filtered && !loadError" type="primary" plain @click="guide = true">查看接入步骤 <el-icon><ArrowRight /></el-icon></el-button>
-            <el-button v-else @click="loadError ? refresh() : resetFilters()">{{ loadError ? '重试' : '清空筛选' }}</el-button>
-            <div v-if="!filtered && !loadError" class="empty-steps"><span><b>1</b> 启用 EHome</span><i /><span><b>2</b> 配置服务器</span><i /><span><b>3</b> 自动注册</span></div>
+            <h3>{{ loadError ? $tp('设备列表加载失败') : filtered ? $tp('没有找到匹配的设备') : $tp('等待第一台 EHome 设备接入') }}</h3>
+            <p>{{ loadError ? $tp('请确认服务可用后重试。') : filtered ? $tp('试试其他关键词，或调整版本与状态筛选。') : $tp('在设备端启用平台接入，填写服务器地址和设备 ID。') }}</p>
+            <el-button v-if="!filtered && !loadError" type="primary" plain @click="guide = true">{{ $tp("查看接入步骤") }} <el-icon><ArrowRight /></el-icon></el-button>
+            <el-button v-else @click="loadError ? refresh() : resetFilters()">{{ loadError ? $tp('重试') : $tp('清空筛选') }}</el-button>
+            <div v-if="!filtered && !loadError" class="empty-steps"><span><b>1</b> {{ $tp("启用 EHome") }}</span><i /><span><b>2</b> {{ $tp("配置服务器") }}</span><i /><span><b>3</b> {{ $tp("自动注册") }}</span></div>
           </div>
       <pagination v-show="total > 0" :total="total" v-model:page="query.pageNum" v-model:limit="query.pageSize" @pagination="loadDevices" />
-      <footer class="ehome-footnote"><el-icon><InfoFilled /></el-icon>ISUP 5.0 设备请使用左侧 ISUP 协议入口；协议版本以设备上报为准。</footer>
+      <footer class="ehome-footnote"><el-icon><InfoFilled /></el-icon>{{ $tp("ISUP 5.0 设备请使用左侧 ISUP 协议入口；协议版本以设备上报为准。") }}</footer>
     </section>
   </DeviceClassificationLayout>
 
-  <el-drawer v-model="guide" title="接入 EHome 设备" size="min(480px, 94vw)" append-to-body class="ehome-guide">
-    <div class="guide-intro"><span>EHome</span><h2>让设备主动连接平台</h2><p>适用于旧版海康平台接入。无需填写设备 RTSP 地址。</p></div>
+  <el-drawer v-model="guide" :title="$tp('接入 EHome 设备')" size="min(480px, 94vw)" append-to-body class="ehome-guide">
+    <div class="guide-intro"><span>EHome</span><h2>{{ $tp("让设备主动连接平台") }}</h2><p>{{ $tp("适用于旧版海康平台接入。无需填写设备 RTSP 地址。") }}</p></div>
     <ol class="guide-steps">
-      <li><h3>开启设备的平台接入</h3><p>登录摄像机或 NVR 的配置页面，进入「网络 → 高级配置 → 平台接入」，启用 EHome。</p></li>
-      <li><h3>填写服务器参数</h3><div class="guide-values"><div><span>服务器地址</span><strong>{{ service.host || (service.serverAddresses || []).join(' / ') || '暂无可用地址' }}</strong><el-button link type="primary" @click="copy(service.host)">复制</el-button></div><div><span>注册端口</span><strong>{{ service.registrationPort || '—' }}</strong><el-button link type="primary" @click="copy(service.registrationPort)">复制</el-button></div><div><span>取流端口</span><strong>{{ service.streamPort || '—' }}</strong></div></div><p v-if="service.addressMode === 'auto'">本机地址：{{ (service.localAddresses || []).join('、') || '未检测到' }}。设备端填写同一网络可达的本机地址，平台取流时会自动选择对应网卡。</p><p>设备 ID 请保持唯一。公网或 NAT 环境请配置对外地址并映射端口。</p></li>
-      <li><h3>选择设备支持的协议版本</h3><p>2.x 与 4.x 按各自流程取流；3.x 需要按设备型号联调确认。不要选择 ISUP 5.0。</p></li>
-      <li><h3>保存并等待上线</h3><p>设备注册成功后自动出现在此列表。点击「通道 / 预览」，选择通道和主 / 子码流即可查看视频。</p></li>
+      <li><h3>{{ $tp("开启设备的平台接入") }}</h3><p>{{ $tp("登录摄像机或 NVR 的配置页面，进入「网络 → 高级配置 → 平台接入」，启用 EHome。") }}</p></li>
+      <li><h3>{{ $tp("填写服务器参数") }}</h3><div class="guide-values"><div><span>{{ $tp("服务器地址") }}</span><strong>{{ service.host || (service.serverAddresses || []).join(' / ') || $tp('暂无可用地址') }}</strong><el-button link type="primary" @click="copy(service.host)">{{ $tp("复制") }}</el-button></div><div><span>{{ $tp("注册端口") }}</span><strong>{{ service.registrationPort || '—' }}</strong><el-button link type="primary" @click="copy(service.registrationPort)">{{ $tp("复制") }}</el-button></div><div><span>{{ $tp("取流端口") }}</span><strong>{{ service.streamPort || '—' }}</strong></div></div><p v-if="service.addressMode === 'auto'">{{ $tp("本机地址：") }}{{ (service.localAddresses || []).join('、') || $tp('未检测到') }}{{ $tp("。设备端填写同一网络可达的本机地址，平台取流时会自动选择对应网卡。") }}</p><p>{{ $tp("设备 ID 请保持唯一。公网或 NAT 环境请配置对外地址并映射端口。") }}</p></li>
+      <li><h3>{{ $tp("选择设备支持的协议版本") }}</h3><p>{{ $tp("2.x 与 4.x 按各自流程取流；3.x 需要按设备型号联调确认。不要选择 ISUP 5.0。") }}</p></li>
+      <li><h3>{{ $tp("保存并等待上线") }}</h3><p>{{ $tp("设备注册成功后自动出现在此列表。点击「通道 / 预览」，选择通道和主 / 子码流即可查看视频。") }}</p></li>
     </ol>
-    <el-alert v-if="service.host === '127.0.0.1' || service.host === 'localhost'" title="当前为本机监听地址" description="外部设备接入前，需要将 EHome 的监听地址和对外地址配置为设备可达的地址。" type="warning" :closable="false" show-icon />
-    <template #footer><el-button type="primary" @click="guide = false">我知道了</el-button></template>
+    <el-alert v-if="service.host === '127.0.0.1' || service.host === 'localhost'" :title="$tp('当前为本机监听地址')" :description="$tp('外部设备接入前，需要将 EHome 的监听地址和对外地址配置为设备可达的地址。')" type="warning" :closable="false" show-icon />
+    <template #footer><el-button type="primary" @click="guide = false">{{ $tp("我知道了") }}</el-button></template>
   </el-drawer>
 
-  <el-dialog v-model="preview.visible" class="ehome-dialog" :title="`${preview.device?.name || preview.device?.deviceId || '设备'} · 通道预览`" width="min(1080px, 94vw)" append-to-body destroy-on-close @close="closePreview">
+  <el-dialog v-model="preview.visible" class="ehome-dialog" :title="$tp(`${preview.device?.name || preview.device?.deviceId || $tp('设备')} · 通道预览`)" width="min(1080px, 94vw)" append-to-body destroy-on-close @close="closePreview">
     <div class="preview-layout">
-      <aside class="channel-panel" v-loading="preview.loading"><div class="channel-title">设备通道 <span>{{ preview.channels.length }}</span></div><el-alert v-if="preview.channelError" :title="preview.channelError" type="warning" :closable="false" /><button v-for="channel in preview.channels" :key="channel.id" class="channel-item" :class="{ active: preview.channel === channel.id }" @click="selectChannel(channel.id)"><el-icon><VideoCamera /></el-icon>{{ channel.name }}</button><el-button v-if="preview.channelError" text type="primary" @click="loadChannels">重新查询</el-button></aside>
-      <main class="preview-main"><div class="preview-controls"><el-radio-group v-model="preview.streamType" @change="stopCurrent"><el-radio-button :value="0">主码流</el-radio-button><el-radio-button :value="1">子码流</el-radio-button></el-radio-group><el-button v-hasPermi="['ehome:device:preview']" type="primary" :icon="VideoPlay" :loading="preview.busy" :disabled="!preview.channel || preview.device?.status !== 'ON' || !service.streamReady" @click="play">{{ preview.url ? '重新播放' : '开始预览' }}</el-button></div><div class="preview-video"><EhomePlayer v-if="preview.url" :key="preview.sessionId" :url="preview.url" /><div v-else class="preview-placeholder"><el-icon><VideoCamera /></el-icon><p>{{ preview.message || '选择通道，开始预览' }}</p></div></div><p class="preview-caption">{{ preview.channel ? `通道 ${preview.channel}` : '尚未选择通道' }} · {{ preview.streamType === 0 ? '主码流' : '子码流' }}<span>{{ preview.device?.devProtocolVersion ? `EHome ${preview.device.devProtocolVersion}` : '' }}</span></p></main>
+      <aside class="channel-panel" v-loading="preview.loading"><div class="channel-title">{{ $tp("设备通道") }} <span>{{ preview.channels.length }}</span></div><el-alert v-if="preview.channelError" :title="$tp(preview.channelError)" type="warning" :closable="false" /><button v-for="channel in preview.channels" :key="channel.id" class="channel-item" :class="{ active: preview.channel === channel.id }" @click="selectChannel(channel.id)"><el-icon><VideoCamera /></el-icon>{{ channel.name }}</button><el-button v-if="preview.channelError" text type="primary" @click="loadChannels">{{ $tp("重新查询") }}</el-button></aside>
+      <main class="preview-main"><div class="preview-controls"><el-radio-group v-model="preview.streamType" @change="stopCurrent"><el-radio-button :value="0">{{ $tp("主码流") }}</el-radio-button><el-radio-button :value="1">{{ $tp("子码流") }}</el-radio-button></el-radio-group><el-button v-hasPermi="['ehome:device:preview']" type="primary" :icon="VideoPlay" :loading="preview.busy" :disabled="!preview.channel || preview.device?.status !== 'ON' || !service.streamReady" @click="play">{{ preview.url ? $tp('重新播放') : $tp('开始预览') }}</el-button></div><div class="preview-video"><EhomePlayer v-if="preview.url" :key="preview.sessionId" :url="preview.url" /><div v-else class="preview-placeholder"><el-icon><VideoCamera /></el-icon><p>{{ preview.message || $tp('选择通道，开始预览') }}</p></div></div><p class="preview-caption">{{ preview.channel ? `通道 ${preview.channel}` : $tp('尚未选择通道') }} · {{ preview.streamType === 0 ? $tp('主码流') : $tp('子码流') }}<span>{{ preview.device?.devProtocolVersion ? `EHome ${preview.device.devProtocolVersion}` : '' }}</span></p></main>
     </div>
   </el-dialog>
-  <el-dialog v-model="edit.visible" class="ehome-dialog" title="编辑设备" width="min(460px, 94vw)" append-to-body><el-form label-position="top" @submit.prevent="saveEdit"><el-form-item label="设备 ID"><el-input :model-value="edit.deviceId" disabled /></el-form-item><el-form-item label="设备名称" required><el-input v-model="edit.name" maxlength="64" show-word-limit /></el-form-item><el-form-item label="备注"><el-input v-model="edit.remark" type="textarea" :rows="3" maxlength="500" show-word-limit /></el-form-item></el-form><template #footer><el-button @click="edit.visible = false">取消</el-button><el-button type="primary" :loading="edit.saving" @click="saveEdit">保存</el-button></template></el-dialog>
+  <el-dialog v-model="edit.visible" class="ehome-dialog" :title="$tp('编辑设备')" width="min(460px, 94vw)" append-to-body><el-form label-position="top" @submit.prevent="saveEdit"><el-form-item :label="$tp('设备 ID')"><el-input :model-value="edit.deviceId" disabled /></el-form-item><el-form-item :label="$tp('设备名称')" required><el-input v-model="edit.name" maxlength="64" show-word-limit /></el-form-item><el-form-item :label="$tp('备注')"><el-input v-model="edit.remark" type="textarea" :rows="3" maxlength="500" show-word-limit /></el-form-item></el-form><template #footer><el-button @click="edit.visible = false">{{ $tp("取消") }}</el-button><el-button type="primary" :loading="edit.saving" @click="saveEdit">{{ $tp("保存") }}</el-button></template></el-dialog>
 </template>
 
 <script setup name="EhomeDevice">
@@ -91,18 +91,18 @@ async function loadDevices(silent = false) {
 }
 async function loadStatus() {
   try { const result = await getStatus(); Object.assign(service, result.data); serviceLoaded.value = true }
-  catch { Object.assign(service, { registrationReady: false, streamReady: false, message: '无法获取接入服务状态' }); serviceLoaded.value = true }
+  catch { Object.assign(service, { registrationReady: false, streamReady: false, get message() { return translatePhrase("无法获取接入服务状态") } }); serviceLoaded.value = true }
 }
 function refresh(silent = false) { return Promise.all([loadDevices(silent === true), loadStatus()]) }
 function search() { query.pageNum = 1; selectedKeys.value = []; loadDevices() }
 function resetFilters() { Object.assign(query, { keyword: '', status: '', devProtocolVersion: '', categoryType: undefined, categoryId: undefined, unclassified: undefined }); classificationKey.value++; search() }
 function filterClassification(filter) { Object.assign(query, filter); search() }
-async function copy(value) { if (!value) return; try { await navigator.clipboard.writeText(String(value)); ElMessage.success('已复制') } catch { ElMessage.info('请手动复制参数') } }
+async function copy(value) { if (!value) return; try { await navigator.clipboard.writeText(String(value)); ElMessage.success(translatePhrase("已复制")) } catch { ElMessage.info(translatePhrase("请手动复制参数")) } }
 function openEdit(row) { Object.assign(edit, { ...row, visible: true, saving: false, name: row.name || '', remark: row.remark || '' }) }
 async function saveEdit() {
-  if (!edit.name.trim()) return ElMessage.warning('请输入设备名称')
+  if (!edit.name.trim()) return ElMessage.warning(translatePhrase("请输入设备名称"))
   edit.saving = true
-  try { await updateDevice(edit.id, { name: edit.name.trim(), remark: edit.remark }); edit.visible = false; ElMessage.success('已保存'); loadDevices() }
+  try { await updateDevice(edit.id, { name: edit.name.trim(), remark: edit.remark }); edit.visible = false; ElMessage.success(translatePhrase("已保存")); loadDevices() }
   finally { edit.saving = false }
 }
 async function openPreview(row) {
@@ -114,12 +114,12 @@ async function loadChannels() {
   const sequence = ++channelSequence
   preview.loading = true; preview.channelError = ''
   try {
-    if (preview.device.status !== 'ON') { preview.channelError = '设备离线，上线后可查询通道'; preview.message = '设备当前离线'; return }
+    if (preview.device.status !== 'ON') { preview.channelError = '设备离线，上线后可查询通道'; preview.message = translatePhrase("设备当前离线"); return }
     const result = await getChannels(preview.device.id)
     if (sequence !== channelSequence || !preview.visible) return
     preview.channels = result.data || []; preview.channel = preview.channels[0]?.id || null
     if (!preview.channels.length) preview.channelError = '设备未返回可用通道'
-    if (!service.streamReady) preview.message = '取流服务未就绪，请检查服务状态'
+    if (!service.streamReady) preview.message = translatePhrase("取流服务未就绪，请检查服务状态")
   } catch (error) { if (sequence === channelSequence) preview.channelError = error.message || '通道查询失败' }
   finally { if (sequence === channelSequence) preview.loading = false }
 }
@@ -133,7 +133,7 @@ async function selectChannel(id) { await stopCurrent(); preview.channel = id; pr
 async function play() {
   await stopCurrent()
   const sequence = ++playSequence
-  preview.busy = true; preview.message = '正在请求设备视频流…'
+  preview.busy = true; preview.message = translatePhrase("正在请求设备视频流…")
   try {
     const result = await startPreview(preview.device.id, { channel: preview.channel, streamType: preview.streamType })
     if (sequence !== playSequence || !preview.visible || destroyed) { await stopPreview(result.data.sessionId); return }
@@ -141,7 +141,7 @@ async function play() {
     heartbeatTimer = setInterval(async () => {
       const id = preview.sessionId
       if (!id) return
-      try { await keepPreview(id) } catch { if (preview.sessionId === id) { await stopCurrent(); preview.message = '视频会话已断开，请重新播放' } }
+      try { await keepPreview(id) } catch { if (preview.sessionId === id) { await stopCurrent(); preview.message = translatePhrase("视频会话已断开，请重新播放") } }
     }, 20000)
   } catch (error) { if (sequence === playSequence) preview.message = error.message || '取流失败，请重试' }
   finally { if (sequence === playSequence) preview.busy = false }

@@ -5,7 +5,10 @@ export default function createAutoImport() {
         imports: [
             'vue',
             'vue-router',
-            'pinia'
+            'pinia',
+            {
+                '@/i18n': ['translatePhrase']
+            }
         ],
         dts: false
     })

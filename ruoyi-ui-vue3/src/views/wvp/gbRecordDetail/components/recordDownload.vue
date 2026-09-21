@@ -1,7 +1,7 @@
 <template>
   <div id="recordDownload">
     <el-dialog
-        :title="title"
+        :title="$tp(title)"
         v-if="showDialog"
         width="55%"
         :append-to-body="true"
@@ -20,10 +20,10 @@
               icon="el-icon-download"
               v-if="downloadFile"
               size="mini"
-              title="点击下载"
+              :title="$tp('点击下载')"
               @click="downloadFileClientEvent()"
           >
-            下载
+            {{ $tp("下载") }}
           </el-button>
         </el-col>
       </el-row>

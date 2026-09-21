@@ -1,8 +1,8 @@
 <template>
   <div class="detail-page">
     <detail-page-header
-      parent-title="设备管理"
-      title="通道列表"
+      :parent-title="$tp('设备管理')"
+      :title="$tp('通道列表')"
       back-path="/yingshi/ysDevice"
     />
     <div class="detail-body">
@@ -14,13 +14,13 @@
       </div>
 
       <table-self class="new_table" header-cell-class-name="header_tenant_cell" stripe :data="channelList">
-        <el-table-column label="设备序列号" align="center" prop="deviceSerial" :width="clacPXToVW(120)"/>
-        <el-table-column label="IPC序列号" align="center" prop="ipcSerial" :width="clacPXToVW(120)"/>
-        <el-table-column label="通道号" align="center" prop="channelNo" :width="clacPXToVW(100)"/>
-        <el-table-column label="设备名" align="center" prop="deviceName" show-overflow-tooltip/>
-        <el-table-column label="设备上报名称" align="center" prop="localName" show-overflow-tooltip/>
-        <el-table-column label="通道名" align="center" prop="channelName" show-overflow-tooltip/>
-        <el-table-column label="图片地址（大图）" align="center" prop="picUrl" :width="clacPXToVW(120)">
+        <el-table-column :label="$tp('设备序列号')" align="center" prop="deviceSerial" :width="clacPXToVW(120)"/>
+        <el-table-column :label="$tp('IPC序列号')" align="center" prop="ipcSerial" :width="clacPXToVW(120)"/>
+        <el-table-column :label="$tp('通道号')" align="center" prop="channelNo" :width="clacPXToVW(100)"/>
+        <el-table-column :label="$tp('设备名')" align="center" prop="deviceName" show-overflow-tooltip/>
+        <el-table-column :label="$tp('设备上报名称')" align="center" prop="localName" show-overflow-tooltip/>
+        <el-table-column :label="$tp('通道名')" align="center" prop="channelName" show-overflow-tooltip/>
+        <el-table-column :label="$tp('图片地址（大图）')" align="center" prop="picUrl" :width="clacPXToVW(120)">
           <template #default="scope">
             <el-image :src="scope.row.picUrl" fit="cover" style="width: 50px; height: 50px"
                       :preview-src-list="[scope.row.picUrl]" preview-teleported>
@@ -34,40 +34,40 @@
             </el-image>
           </template>
         </el-table-column>
-        <el-table-column label="在线状态" align="center" prop="status" :width="clacPXToVW(100)">
+        <el-table-column :label="$tp('在线状态')" align="center" prop="status" :width="clacPXToVW(100)">
           <template #default="scope">
             <dict-tag :options="yingshi_monitoring_status" :value="scope.row.status"/>
           </template>
         </el-table-column>
-        <el-table-column label="是否加密" align="center" prop="isEncrypt" :width="clacPXToVW(100)">
+        <el-table-column :label="$tp('是否加密')" align="center" prop="isEncrypt" :width="clacPXToVW(100)">
           <template #default="scope">
             <dict-tag :options="yingshi_camera_is_encrypt" :value="scope.row.isEncrypt"/>
           </template>
         </el-table-column>
-        <el-table-column label="视频质量" align="center" prop="videoLevel" :width="clacPXToVW(110)">
+        <el-table-column :label="$tp('视频质量')" align="center" prop="videoLevel" :width="clacPXToVW(110)">
           <template #default="scope">
             <dict-tag :options="yingshi_camera_video_quality" :value="scope.row.videoLevel"/>
           </template>
         </el-table-column>
-        <el-table-column label="当前通道是否关联IPC" align="center" prop="relatedIpc" :width="clacPXToVW(140)">
+        <el-table-column :label="$tp('当前通道是否关联IPC')" align="center" prop="relatedIpc" :width="clacPXToVW(140)">
           <template #default="scope">
-            <el-tag v-if="scope.row.relatedIpc" effect="dark">是</el-tag>
-            <el-tag v-else effect="dark">否</el-tag>
+            <el-tag v-if="scope.row.relatedIpc" effect="dark">{{ $tp("是") }}</el-tag>
+            <el-tag v-else effect="dark">{{ $tp("否") }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="是否显示" align="center" prop="isAdd" :width="clacPXToVW(100)">
+        <el-table-column :label="$tp('是否显示')" align="center" prop="isAdd" :width="clacPXToVW(100)">
           <template #default="scope">
             <dict-tag :options="yingshi_camera_is_add" :value="scope.row.isAdd"/>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(180)">
+        <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(180)">
           <template #default="scope">
             <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
               <div class="new_table_svg_group" @click.stop="play(scope.row)" v-hasPermi="['yingshi:ys:play']">
-                <span>播放</span>
+                <span>{{ $tp("播放") }}</span>
               </div>
               <div class="new_table_svg_group" @click.stop="cameraNameUpdateFun(scope.row)" v-hasPermi="['yingshi:ys:cameraNameUpdate']">
-                <span>通道名称</span>
+                <span>{{ $tp("通道名称") }}</span>
               </div>
             </div>
           </template>
@@ -75,12 +75,12 @@
       </table-self>
     </div>
 
-    <el-dialog title="播放" v-model="visible" width="50%" append-to-body @close="playClose">
+    <el-dialog :title="$tp('播放')" v-model="visible" width="50%" append-to-body @close="playClose">
       <div style="width: 770px;height: 500px;">
         <div id="containerId"></div>
       </div>
       <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-        <el-tab-pane label="云台" name="PTZ" v-hasPermi="['yingshi:ys:control','yingshi:ys:mirror']">
+        <el-tab-pane :label="$tp('云台')" name="PTZ" v-hasPermi="['yingshi:ys:control','yingshi:ys:mirror']">
           <div style="display: grid; grid-template-columns: 240px auto; height: 180px; overflow: auto">
             <!-- 左侧控制区域 -->
             <div style="display: grid; grid-template-columns: 100px auto;">
@@ -120,9 +120,9 @@
                 <!-- 速度控制 -->
                 <div class="contro-speed" style="position: absolute; left: 4px; top: 112px;width: 190px;">
                   <el-radio-group v-model="speed">
-                    <el-radio :label="0">慢</el-radio>
-                    <el-radio :label="1">适中</el-radio>
-                    <el-radio :label="2">快</el-radio>
+                    <el-radio :label="0">{{ $tp("慢") }}</el-radio>
+                    <el-radio :label="1">{{ $tp("适中") }}</el-radio>
+                    <el-radio :label="2">{{ $tp("快") }}</el-radio>
                   </el-radio-group>
                 </div>
               </div>
@@ -131,23 +131,23 @@
               <div>
                 <div class="ptz-btn-box">
                   <div @mousedown="startControlFun(8)" @mouseup="endControlFun(8)"
-                       title="变倍+">
+                       :title="$tp('变倍+')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomIn/>
                     </el-icon>
                   </div>
                   <div @mousedown="startControlFun(9)" @mouseup="endControlFun(9)"
-                       title="变倍-">
+                       :title="$tp('变倍-')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomOut/>
                     </el-icon>
                   </div>
                 </div>
                 <div class="ptz-btn-box">
-                  <div @mousedown="startControlFun(11)" @mouseup="endControlFun(11)" title="聚焦+">
+                  <div @mousedown="startControlFun(11)" @mouseup="endControlFun(11)" :title="$tp('聚焦+')">
                     <i class="iconfont icon-bianjiao-fangda control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
-                  <div @mousedown="startControlFun(10)" @mouseup="endControlFun(10)" title="聚焦-">
+                  <div @mousedown="startControlFun(10)" @mouseup="endControlFun(10)" :title="$tp('聚焦-')">
                     <i class="iconfont icon-bianjiao-suoxiao control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                 </div>
@@ -155,21 +155,21 @@
             </div>
             <div>
               <div style="display: flex;align-items: center">
-                <div>镜像翻转：</div>
+                <div>{{ $tp("镜像翻转：") }}</div>
                 <el-radio-group v-model="command">
-                  <el-radio :label="0">上下</el-radio>
-                  <el-radio :label="1">左右</el-radio>
-                  <el-radio :label="2">中心</el-radio>
+                  <el-radio :label="0">{{ $tp("上下") }}</el-radio>
+                  <el-radio :label="1">{{ $tp("左右") }}</el-radio>
+                  <el-radio :label="2">{{ $tp("中心") }}</el-radio>
                 </el-radio-group>
-                <el-button style="margin-left: 20px" type="primary" @click="mirrorFlipFun">确定</el-button>
+                <el-button style="margin-left: 20px" type="primary" @click="mirrorFlipFun">{{ $tp("确定") }}</el-button>
               </div>
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="预置点" name="PRESET" v-hasPermi="['yingshi:ys:preset']">
+        <el-tab-pane :label="$tp('预置点')" name="PRESET" v-hasPermi="['yingshi:ys:preset']">
          <div style="display:flex;align-items: center">
-           <el-input v-model="presetForm.name" show-word-limit :maxlength="50" placeholder="请输入预置点名称"/>
-           <el-button style="margin-left: 20px" type="primary" @click="presetAddFun">确定</el-button>
+           <el-input v-model="presetForm.name" show-word-limit :maxlength="50" :placeholder="$tp('请输入预置点名称')"/>
+           <el-button style="margin-left: 20px" type="primary" @click="presetAddFun">{{ $tp("确定") }}</el-button>
          </div>
           <div style="display: flex;flex-wrap: wrap;">
             <div v-for="(item,index) in ysPresetList" :key="index" style="margin: 0 2px 0 2px">
@@ -177,16 +177,16 @@
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="抓拍" name="CAPTURE" v-hasPermi="['yingshi:ys:capture']">
+        <el-tab-pane :label="$tp('抓拍')" name="CAPTURE" v-hasPermi="['yingshi:ys:capture']">
           <div style="display: flex;align-items: center">
             <el-radio-group v-model="quality">
-              <el-radio :label="0">流畅</el-radio>
-              <el-radio :label="1">高清(720P)</el-radio>
+              <el-radio :label="0">{{ $tp("流畅") }}</el-radio>
+              <el-radio :label="1">{{ $tp("高清(720P)") }}</el-radio>
               <el-radio :label="2">4CIF</el-radio>
               <el-radio :label="3">1080P</el-radio>
-              <el-radio :label="4">400w 注：此参数不生效</el-radio>
+              <el-radio :label="4">{{ $tp("400w 注：此参数不生效") }}</el-radio>
             </el-radio-group>
-            <el-button style="margin-left: 20px" type="primary" @click="captureFun">设备抓图</el-button>
+            <el-button style="margin-left: 20px" type="primary" @click="captureFun">{{ $tp("设备抓图") }}</el-button>
           </div>
           <div style="display: flex;flex-wrap: wrap;">
             <div v-for="(item,index) in ysCaptureList" :key="index" style="margin: 0 2px 0 2px;position: relative">
@@ -211,12 +211,12 @@
       </el-tabs>
 
     </el-dialog>
-    <el-dialog title="播放参数选择" v-model="visibleParameter" width="32%" append-to-body>
+    <el-dialog :title="$tp('播放参数选择')" v-model="visibleParameter" width="32%" append-to-body>
       <el-form ref="playParameterFormRef" :model="form" label-width="120px">
-        <el-form-item label="设备序列号" prop="model">
-          <el-input v-model="form.deviceSerial" disabled show-word-limit :maxlength="50" placeholder="请输入设备序列号"/>
+        <el-form-item :label="$tp('设备序列号')" prop="model">
+          <el-input v-model="form.deviceSerial" disabled show-word-limit :maxlength="50" :placeholder="$tp('请输入设备序列号')"/>
         </el-form-item>
-        <el-form-item label="地址的类型" prop="type">
+        <el-form-item :label="$tp('地址的类型')" prop="type">
           <el-radio-group v-model="form.type">
             <el-radio
                 v-for="dict in yingshi_address_type"
@@ -226,7 +226,7 @@
             </el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="视频清晰度" prop="quality">
+        <el-form-item :label="$tp('视频清晰度')" prop="quality">
           <el-radio-group v-model="form.quality">
             <el-radio
                 v-for="dict in yingshi_quality"
@@ -236,7 +236,7 @@
             </el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="播放协议" prop="protocol">
+        <el-form-item :label="$tp('播放协议')" prop="protocol">
           <el-radio-group v-model="form.protocol">
             <el-radio
                 v-for="dict in yingshi_protocol"
@@ -246,33 +246,33 @@
             </el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="视频加密密码" prop="code" >
+        <el-form-item :label="$tp('视频加密密码')" prop="code" >
           <template #label>
               <span>
-                 <el-tooltip content="设备的视频加密密码，针对ezopen协议设置有效，hls/rtmp不支持加密视频" placement="top">
+                 <el-tooltip :content="$tp('设备的视频加密密码，针对ezopen协议设置有效，hls/rtmp不支持加密视频')" placement="top">
                     <el-icon><question-filled /></el-icon>
                  </el-tooltip>
-                 视频加密密码
+                 {{ $tp("视频加密密码") }}
               </span>
           </template>
-          <el-input v-model="form.code" show-word-limit :maxlength="50" placeholder="请输入视频加密密码"/>
+          <el-input v-model="form.code" show-word-limit :maxlength="50" :placeholder="$tp('请输入视频加密密码')"/>
         </el-form-item>
 
-        <el-form-item label="开始时间" prop="startTime" v-if="form.type !== '1'">
+        <el-form-item :label="$tp('开始时间')" prop="startTime" v-if="form.type !== '1'">
           <el-date-picker v-model="form.startTime" value-format="YYYY-MM-DD HH:mm:ss"
-                          type="datetime" placeholder="选择开始时间"
+                          type="datetime" :placeholder="$tp('选择开始时间')"
           ></el-date-picker>
         </el-form-item>
-        <el-form-item label="结束时间" prop="stopTime" v-if="form.type !== '1'">
+        <el-form-item :label="$tp('结束时间')" prop="stopTime" v-if="form.type !== '1'">
           <el-date-picker v-model="form.stopTime" value-format="YYYY-MM-DD HH:mm:ss"
-                          type="datetime" placeholder="选择结束时间"
+                          type="datetime" :placeholder="$tp('选择结束时间')"
           ></el-date-picker>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -483,7 +483,7 @@ const presetAddFun = () => {
   presetForm.value.deviceSerial = deviceSerial.value
   presetForm.value.channelNo = form.value.channelNo
   presetAdd(presetForm.value).then(res => {
-    proxy?.$modal.msgSuccess("添加成功");
+    proxy?.$modal.msgSuccess(translatePhrase("添加成功"));
     getListYsPresetFun()
   })
 }
@@ -497,7 +497,7 @@ const presetClick = (data) => {
   }
 
   presetMove(dataForm).then(res => {
-    proxy?.$modal.msgSuccess("调用成功");
+    proxy?.$modal.msgSuccess(translatePhrase("调用成功"));
   })
 }
 
@@ -510,7 +510,7 @@ const presetClose = (data) => {
   }
 
   presetClear(dataForm).then(res => {
-    proxy?.$modal.msgSuccess("删除成功");
+    proxy?.$modal.msgSuccess(translatePhrase("删除成功"));
     getListYsPresetFun()
   })
 }
@@ -532,18 +532,18 @@ const captureFun = () => {
   }
 
   capture(dataForm).then(res => {
-    proxy?.$modal.msgSuccess("设备抓图成功");
+    proxy?.$modal.msgSuccess(translatePhrase("设备抓图成功"));
     getListYsCaptureFun()
   })
 }
 
 const captureDel = (data) => {
   const _ids = data.id;
-  proxy.$modal.confirm('是否确认删除设备抓拍？').then(function() {
+  proxy.$modal.confirm(translatePhrase("是否确认删除设备抓拍？")).then(function() {
     return delYsCapture(_ids);
   }).then(() => {
     getListYsCaptureFun();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {});
 }
 
@@ -562,9 +562,9 @@ const getCameraDeviceFun = async () => {
  * @returns {Promise<void>}
  */
 const cameraNameUpdateFun = async (row) => {
-  ElMessageBox.prompt('请输入云端通道名称', '修改云端通道名称', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt(translatePhrase("请输入云端通道名称"), translatePhrase("修改云端通道名称"), {
+    confirmButtonText: translatePhrase("确定"),
+    cancelButtonText: translatePhrase("取消"),
   })
       .then(({ value }) => {
         cameraNameUpdate({
@@ -573,7 +573,7 @@ const cameraNameUpdateFun = async (row) => {
           name: value,
           channelNo: row.channelNo,
         }).then((res)=>{
-          proxy?.$modal.msgSuccess("修改成功");
+          proxy?.$modal.msgSuccess(translatePhrase("修改成功"));
           getCameraDeviceFun()
         })
       })

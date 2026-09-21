@@ -5,7 +5,7 @@
             <button-group :button-list="toolbarButtons" />
          </div>
          <div class="searchHeight_out flexRowAC">
-            <search-height-box keyword="title" placeholder="请输入系统模块、操作人员等关键词" :data="searchData" @handle="searchResetFn" />
+            <search-height-box keyword="title" :placeholder="$tp('请输入系统模块、操作人员等关键词')" :data="searchData" @handle="searchResetFn" />
             <export-excel-pdf :item="{ isDisabledExcel: false }" @handle="handleExportType" />
          </div>
       </div>
@@ -23,36 +23,36 @@
          @sort-change="handleSortChange"
       >
          <el-table-column type="selection" :width="clacPXToVW(55)" align="center" />
-         <el-table-column label="日志编号" align="center" prop="operId" />
-         <el-table-column label="系统模块" align="center" prop="title" :show-overflow-tooltip="true" />
-         <el-table-column label="操作类型" align="center" prop="businessType">
+         <el-table-column :label="$tp('日志编号')" align="center" prop="operId" />
+         <el-table-column :label="$tp('系统模块')" align="center" prop="title" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('操作类型')" align="center" prop="businessType">
             <template #default="scope">
                <dict-tag :options="sys_oper_type" :value="scope.row.businessType" />
             </template>
          </el-table-column>
-         <el-table-column label="操作人员" align="center" :width="clacPXToVW(110)" prop="operName" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']" />
-         <el-table-column label="操作地址" align="center" prop="operIp" :width="clacPXToVW(130)" :show-overflow-tooltip="true" />
-         <el-table-column label="操作状态" align="center" prop="status">
+         <el-table-column :label="$tp('操作人员')" align="center" :width="clacPXToVW(110)" prop="operName" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']" />
+         <el-table-column :label="$tp('操作地址')" align="center" prop="operIp" :width="clacPXToVW(130)" :show-overflow-tooltip="true" />
+         <el-table-column :label="$tp('操作状态')" align="center" prop="status">
             <template #default="scope">
                <dict-tag :options="sys_common_status" :value="scope.row.status" />
             </template>
          </el-table-column>
-         <el-table-column label="操作日期" align="center" prop="operTime" :width="clacPXToVW(180)" sortable="custom" :sort-orders="['descending', 'ascending']">
+         <el-table-column :label="$tp('操作日期')" align="center" prop="operTime" :width="clacPXToVW(180)" sortable="custom" :sort-orders="['descending', 'ascending']">
             <template #default="scope">
                <span>{{ parseTime(scope.row.operTime) }}</span>
             </template>
          </el-table-column>
-         <el-table-column label="消耗时间" align="center" prop="costTime" :width="clacPXToVW(110)" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']">
+         <el-table-column :label="$tp('消耗时间')" align="center" prop="costTime" :width="clacPXToVW(110)" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']">
             <template #default="scope">
-               <span>{{ scope.row.costTime }}毫秒</span>
+               <span>{{ scope.row.costTime }}{{ $tp("毫秒") }}</span>
             </template>
          </el-table-column>
-         <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(100)">
+         <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(100)">
             <template #default="scope">
                <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
                   <div class="new_table_svg_group" @click.stop="handleView(scope.row, scope.index)" v-hasPermi="['monitor:operlog:query']">
                      <el-icon><View /></el-icon>
-                     <span>详细</span>
+                     <span>{{ $tp("详细") }}</span>
                   </div>
                </div>
             </template>
@@ -68,48 +68,48 @@
       />
 
       <!-- 操作日志详细 -->
-      <el-dialog title="操作日志详细" v-model="open" width="50%" append-to-body>
+      <el-dialog :title="$tp('操作日志详细')" v-model="open" width="50%" append-to-body>
          <el-form :model="form" label-width="100px">
             <el-row>
                <el-col :span="12">
-                  <el-form-item label="操作模块：">{{ form.title }} / {{ typeFormat(form) }}</el-form-item>
+                  <el-form-item :label="$tp('操作模块：')">{{ form.title }} / {{ typeFormat(form) }}</el-form-item>
                   <el-form-item
-                    label="登录信息："
+                    :label="$tp('登录信息：')"
                   >{{ form.operName }} / {{ form.operIp }} / {{ form.operLocation }}</el-form-item>
                </el-col>
                <el-col :span="12">
-                  <el-form-item label="请求地址：">{{ form.operUrl }}</el-form-item>
-                  <el-form-item label="请求方式：">{{ form.requestMethod }}</el-form-item>
+                  <el-form-item :label="$tp('请求地址：')">{{ form.operUrl }}</el-form-item>
+                  <el-form-item :label="$tp('请求方式：')">{{ form.requestMethod }}</el-form-item>
                </el-col>
                <el-col :span="24">
-                  <el-form-item label="操作方法：">{{ form.method }}</el-form-item>
+                  <el-form-item :label="$tp('操作方法：')">{{ form.method }}</el-form-item>
                </el-col>
                <el-col :span="24">
-                  <el-form-item label="请求参数：">{{ form.operParam }}</el-form-item>
+                  <el-form-item :label="$tp('请求参数：')">{{ form.operParam }}</el-form-item>
                </el-col>
                <el-col :span="24">
-                  <el-form-item label="返回参数：">{{ form.jsonResult }}</el-form-item>
+                  <el-form-item :label="$tp('返回参数：')">{{ form.jsonResult }}</el-form-item>
                </el-col>
                <el-col :span="8">
-                  <el-form-item label="操作状态：">
-                     <div v-if="form.status === 0">正常</div>
-                     <div v-else-if="form.status === 1">失败</div>
+                  <el-form-item :label="$tp('操作状态：')">
+                     <div v-if="form.status === 0">{{ $tp("正常") }}</div>
+                     <div v-else-if="form.status === 1">{{ $tp("失败") }}</div>
                   </el-form-item>
                </el-col>
                <el-col :span="8">
-                  <el-form-item label="消耗时间：">{{ form.costTime }}毫秒</el-form-item>
+                  <el-form-item :label="$tp('消耗时间：')">{{ form.costTime }}{{ $tp("毫秒") }}</el-form-item>
                </el-col>
                <el-col :span="8">
-                  <el-form-item label="操作时间：">{{ parseTime(form.operTime) }}</el-form-item>
+                  <el-form-item :label="$tp('操作时间：')">{{ parseTime(form.operTime) }}</el-form-item>
                </el-col>
                <el-col :span="24">
-                  <el-form-item label="异常信息：" v-if="form.status === 1">{{ form.errorMsg }}</el-form-item>
+                  <el-form-item :label="$tp('异常信息：')" v-if="form.status === 1">{{ form.errorMsg }}</el-form-item>
                </el-col>
             </el-row>
          </el-form>
          <template #footer>
             <div class="dialog-footer">
-               <el-button @click="open = false">关 闭</el-button>
+               <el-button @click="open = false">{{ $tp("关 闭") }}</el-button>
             </div>
          </template>
       </el-dialog>
@@ -128,24 +128,24 @@ const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
 const searchData = computed(() => [
-  { label: '操作地址', value: 'operIp', type: 'text', default: '' },
-  { label: '操作人员', value: 'operName', type: 'text', default: '' },
+  { get label() { return translatePhrase("操作地址") }, value: 'operIp', type: 'text', default: '' },
+  { get label() { return translatePhrase("操作人员") }, value: 'operName', type: 'text', default: '' },
   {
-    label: '类型',
+    get label() { return translatePhrase("类型") },
     value: 'businessType',
     type: 'select',
     option: (sys_oper_type.value || []).map(d => ({ label: d.label, value: d.value })),
     default: undefined
   },
   {
-    label: '状态',
+    get label() { return translatePhrase("状态") },
     value: 'status',
     type: 'select',
     option: (sys_common_status.value || []).map(d => ({ label: d.label, value: d.value })),
     default: undefined
   },
   {
-    label: '操作时间',
+    get label() { return translatePhrase("操作时间") },
     value: 'dateRange',
     type: 'daterange',
     startP: '开始日期',
@@ -159,8 +159,8 @@ const single = ref(true);
 const multiple = ref(true);
 
 const toolbarButtons = computed(() => [
-  { name: '删除', svg: 'delete', disabled: multiple.value, permi: ['monitor:operlog:remove'], clickFn: () => handleDelete() },
-  { name: '清空', svg: 'delete', permi: ['monitor:operlog:remove'], clickFn: () => handleClean() }
+  { get name() { return translatePhrase("删除") }, svg: 'delete', disabled: multiple.value, permi: ['monitor:operlog:remove'], clickFn: () => handleDelete() },
+  { get name() { return translatePhrase("清空") }, svg: 'delete', permi: ['monitor:operlog:remove'], clickFn: () => handleClean() }
 ]);
 const total = ref(0);
 const title = ref("");
@@ -246,21 +246,21 @@ function handleView(row) {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const operIds = row?.operId || ids.value;
-  proxy.$modal.confirm('是否确认删除日志编号为"' + operIds + '"的数据项?').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除日志编号为\"") + operIds + translatePhrase("\"的数据项?")).then(function () {
     return delOperlog(operIds);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {});
 }
 
 /** 清空按钮操作 */
 function handleClean() {
-  proxy.$modal.confirm("是否确认清空所有操作日志数据项?").then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认清空所有操作日志数据项?")).then(function () {
     return cleanOperlog();
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("清空成功");
+    proxy.$modal.msgSuccess(translatePhrase("清空成功"));
   }).catch(() => {});
 }
 

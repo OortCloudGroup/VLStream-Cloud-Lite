@@ -30,7 +30,7 @@ onMounted(() => {
   }).then((res) => {
     let data = [
       {
-        name: "根资源组",
+        get name() { return translatePhrase("根资源组") },
         children: []
       }
     ]

@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="乐橙配置">
+      <el-form-item :label="$tp('乐橙配置')">
         <el-select
             v-model="queryParams.configId"
-            placeholder="乐橙配置"
+            :placeholder="$tp('乐橙配置')"
             style="width: 240px"
             @change="handleQuery"
         >
@@ -16,44 +16,44 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="关系类型">
+      <el-form-item :label="$tp('关系类型')">
         <el-select
             v-model="queryParams.source"
-            placeholder="关系类型"
+            :placeholder="$tp('关系类型')"
             style="width: 240px"
             @change="handleQuery"
         >
-          <el-option label="绑定设备" value="bind"/>
-          <el-option label="分享设备" value="share"/>
-          <el-option label="绑定及分享设备" value="bindAndShare"/>
+          <el-option :label="$tp('绑定设备')" value="bind"/>
+          <el-option :label="$tp('分享设备')" value="share"/>
+          <el-option :label="$tp('绑定及分享设备')" value="bindAndShare"/>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['lecheng:lc:bindDevice']">
-          绑定设备
+          {{ $tp("绑定设备") }}
         </el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="danger" plain icon="Delete" :disabled="single" @click="handleDelete"
                    v-hasPermi="['lecheng:lc:unBindDevice']"
-        >解绑设备
+        >{{ $tp("解绑设备") }}
         </el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button plain icon="Collection" @click="unBindDeviceInfoFun()" v-hasPermi="['lecheng:lc:unBindDeviceInfo']"
-        >未绑定设备信息获取
+        >{{ $tp("未绑定设备信息获取") }}
         </el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button plain icon="Money" @click="checkDeviceBindOrNotFun()"
                    v-hasPermi="['lecheng:lc:checkDeviceBindOrNot']"
-        >设备绑定情况
+        >{{ $tp("设备绑定情况") }}
         </el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -61,81 +61,81 @@
 
     <el-table v-loading="loading" :data="deviceList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" fixed="left"/>
-      <el-table-column label="设备名称" align="center" prop="deviceName"/>
-      <el-table-column label="设备序列号" align="center" prop="deviceId" width="100"/>
-      <el-table-column label="设备型号" align="center" prop="deviceModel"/>
-      <el-table-column label="有新版本升级" align="center" prop="canBeUpgrade">
+      <el-table-column :label="$tp('设备名称')" align="center" prop="deviceName"/>
+      <el-table-column :label="$tp('设备序列号')" align="center" prop="deviceId" width="100"/>
+      <el-table-column :label="$tp('设备型号')" align="center" prop="deviceModel"/>
+      <el-table-column :label="$tp('有新版本升级')" align="center" prop="canBeUpgrade">
         <template #default="scope">
-          <el-tag type="primary" v-if="scope.row.canBeUpgrade">是</el-tag>
-          <el-tag type="primary" v-else>否</el-tag>
+          <el-tag type="primary" v-if="scope.row.canBeUpgrade">{{ $tp("是") }}</el-tag>
+          <el-tag type="primary" v-else>{{ $tp("否") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="接入类型" align="center" prop="accessType" width="150">
+      <el-table-column :label="$tp('接入类型')" align="center" prop="accessType" width="150">
         <template #default="scope">
-          <el-tag type="primary" v-if="scope.row.accessType === 'PaaS'">Paas程序接入</el-tag>
-          <el-tag type="primary" v-if="scope.row.accessType === 'Lechange'">乐橙非PaaS设备</el-tag>
-          <el-tag type="primary" v-if="scope.row.accessType === 'Easy4IP'">Easy4IP程序设备</el-tag>
-          <el-tag type="primary" v-if="scope.row.accessType === 'P2P'">P2P程序设备</el-tag>
+          <el-tag type="primary" v-if="scope.row.accessType === 'PaaS'">{{ $tp("Paas程序接入") }}</el-tag>
+          <el-tag type="primary" v-if="scope.row.accessType === 'Lechange'">{{ $tp("乐橙非PaaS设备") }}</el-tag>
+          <el-tag type="primary" v-if="scope.row.accessType === 'Easy4IP'">{{ $tp("Easy4IP程序设备") }}</el-tag>
+          <el-tag type="primary" v-if="scope.row.accessType === 'P2P'">{{ $tp("P2P程序设备") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="设备版本号" align="center" prop="deviceVersion"/>
+      <el-table-column :label="$tp('设备版本号')" align="center" prop="deviceVersion"/>
       <!--      <el-table-column label="设备播放码" align="center" prop="playToken"/>-->
-      <el-table-column label="设备品牌信息" align="center" prop="brand">
+      <el-table-column :label="$tp('设备品牌信息')" align="center" prop="brand">
         <template #default="scope">
-          <el-tag type="primary" v-if="scope.row.brand === 'lechange'">乐橙设备</el-tag>
-          <el-tag type="primary" v-if="scope.row.brand === 'general'">通用设备</el-tag>
+          <el-tag type="primary" v-if="scope.row.brand === 'lechange'">{{ $tp("乐橙设备") }}</el-tag>
+          <el-tag type="primary" v-if="scope.row.brand === 'general'">{{ $tp("通用设备") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="设备加密模式" align="center" prop="encryptMode">
+      <el-table-column :label="$tp('设备加密模式')" align="center" prop="encryptMode">
         <template #default="scope">
-          <el-tag type="primary" v-if="scope.row.encryptMode === '0'">加密</el-tag>
-          <el-tag type="primary" v-if="scope.row.encryptMode === '1'">自定义加密</el-tag>
+          <el-tag type="primary" v-if="scope.row.encryptMode === '0'">{{ $tp("加密") }}</el-tag>
+          <el-tag type="primary" v-if="scope.row.encryptMode === '1'">{{ $tp("自定义加密") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="设备状态" align="center" prop="deviceStatus">
+      <el-table-column :label="$tp('设备状态')" align="center" prop="deviceStatus">
         <template #default="scope">
-          <el-tag type="success" v-if="scope.row.deviceStatus === 'online'">在线</el-tag>
-          <el-tag type="danger" v-if="scope.row.deviceStatus === 'offline'">离线</el-tag>
-          <el-tag type="warning" v-if="scope.row.deviceStatus === 'sleep'">休眠</el-tag>
-          <el-tag type="primary" v-if="scope.row.deviceStatus === 'upgrading'">升级中</el-tag>
+          <el-tag type="success" v-if="scope.row.deviceStatus === 'online'">{{ $tp("在线") }}</el-tag>
+          <el-tag type="danger" v-if="scope.row.deviceStatus === 'offline'">{{ $tp("离线") }}</el-tag>
+          <el-tag type="warning" v-if="scope.row.deviceStatus === 'sleep'">{{ $tp("休眠") }}</el-tag>
+          <el-tag type="primary" v-if="scope.row.deviceStatus === 'upgrading'">{{ $tp("升级中") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="设备大类" align="center" prop="catalog"/>
-      <el-table-column label="最大支持通道数" align="center" prop="channelNum"/>
-      <el-table-column label="权限类型" align="center" prop="source"/>
-      <el-table-column label="最后离线时间" align="center" prop="lastOffLineTime">
+      <el-table-column :label="$tp('设备大类')" align="center" prop="catalog"/>
+      <el-table-column :label="$tp('最大支持通道数')" align="center" prop="channelNum"/>
+      <el-table-column :label="$tp('权限类型')" align="center" prop="source"/>
+      <el-table-column :label="$tp('最后离线时间')" align="center" prop="lastOffLineTime">
         <template #default="scope">
           {{ formatTime(scope.row.lastOffLineTime) }}
         </template>
       </el-table-column>
       <!--      <el-table-column label="是否为子设备" align="center" prop="isSubDevice"/>-->
       <!--      <el-table-column label="设备能力集" align="center" prop="deviceAbility"/>-->
-      <el-table-column label="操作" align="center" fixed="right" width="200" class-name="small-padding fixed-width">
+      <el-table-column :label="$tp('操作')" align="center" fixed="right" width="200" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button link type="primary" @click="getListDeviceDetailsByIds(scope.row)"
-                     v-hasPermi="['lecheng:lc:listDeviceDetailsByIds']">通道
+                     v-hasPermi="['lecheng:lc:listDeviceDetailsByIds']">{{ $tp("通道") }}
           </el-button>
           <el-button link type="primary" @click="getDeviceOnline(scope.row)"
-                     v-hasPermi="['lecheng:lc:deviceOnline']">在线状态
+                     v-hasPermi="['lecheng:lc:deviceOnline']">{{ $tp("在线状态") }}
           </el-button>
           <el-button link type="primary" @click="deviceControlFun(scope.row)"
-                     v-hasPermi="['lecheng:lc:deviceTime','lecheng:lc:restartDevice']">设备控制
+                     v-hasPermi="['lecheng:lc:deviceTime','lecheng:lc:restartDevice']">{{ $tp("设备控制") }}
           </el-button>
           <el-button link type="primary" @click="deviceSdFun(scope.row)"
                      v-hasPermi="['lecheng:lc:deviceStorage','lecheng:lc:recoverSDCard','lecheng:lc:deviceSdcardStatus']">
-            设备SD卡
+            {{ $tp("设备SD卡") }}
           </el-button>
           <el-button link type="primary" @click="modifyDeviceNameFun(scope.row)"
-                     v-hasPermi="['lecheng:lc:modifyDeviceName']">修改名称
+                     v-hasPermi="['lecheng:lc:modifyDeviceName']">{{ $tp("修改名称") }}
           </el-button>
           <el-button link type="primary" @click="modifyPasswordFun(scope.row)"
-                     v-hasPermi="['lecheng:lc:modifyPassword']">修改密码
+                     v-hasPermi="['lecheng:lc:modifyPassword']">{{ $tp("修改密码") }}
           </el-button>
           <el-button link type="primary" @click="openUpgradeDeviceFun(scope.row)"
-                     v-hasPermi="['lecheng:lc:upgradeDevice']">设备升级
+                     v-hasPermi="['lecheng:lc:upgradeDevice']">{{ $tp("设备升级") }}
           </el-button>
           <el-button link type="primary" @click="handleDelete(scope.row)"
-                     v-hasPermi="['lecheng:lc:unBindDevice']">删除
+                     v-hasPermi="['lecheng:lc:unBindDevice']">{{ $tp("删除") }}
           </el-button>
         </template>
       </el-table-column>
@@ -149,85 +149,85 @@
         @pagination="getList"
     />
 
-    <el-dialog title="绑定设备" v-model="open" width="32%" append-to-body>
+    <el-dialog :title="$tp('绑定设备')" v-model="open" width="32%" append-to-body>
       <el-form ref="lcDeviceBindRef" :model="form" :rules="rules" label-width="150px">
-        <el-form-item label="设备序列号" prop="deviceId">
-          <el-input v-model="form.deviceId" placeholder="请输入设备序列号" maxlength="32" show-word-limit/>
+        <el-form-item :label="$tp('设备序列号')" prop="deviceId">
+          <el-input v-model="form.deviceId" :placeholder="$tp('请输入设备序列号')" maxlength="32" show-word-limit/>
         </el-form-item>
-        <el-form-item label="设备安全码或密码" prop="code">
+        <el-form-item :label="$tp('设备安全码或密码')" prop="code">
           <template #label>
               <span>
                  <el-tooltip placement="top">
                    <template #content>
-                     如果设备已设置了设备密码，则输入密码；<br/>
-                                      如果设备未设置密码，请输入设备机身底部标签上的安全码；<br/>
-                                      如果设备未设置密码且设备标签上也无安全码，则可不填。
+                     {{ $tp("如果设备已设置了设备密码，则输入密码；") }}<br/>
+                                      {{ $tp("如果设备未设置密码，请输入设备机身底部标签上的安全码；") }}<br/>
+                                      {{ $tp("如果设备未设置密码且设备标签上也无安全码，则可不填。") }}
                    </template>
                     <el-icon><question-filled/></el-icon>
                  </el-tooltip>
-                设备安全码或密码
+                {{ $tp("设备安全码或密码") }}
               </span>
           </template>
-          <el-input v-model="form.code" placeholder="请输入设备安全码或密码" maxlength="32" show-word-limit/>
+          <el-input v-model="form.code" :placeholder="$tp('请输入设备安全码或密码')" maxlength="32" show-word-limit/>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
 
-    <el-dialog title="设备在线状态" v-model="openDeviceOnline" width="32%" append-to-body>
-      设备在线状态
+    <el-dialog :title="$tp('设备在线状态')" v-model="openDeviceOnline" width="32%" append-to-body>
+      {{ $tp("设备在线状态") }}
       <el-descriptions
           style="margin-top: 10px"
           :column="2"
           border
       >
-        <el-descriptions-item label="设备序列号">
+        <el-descriptions-item :label="$tp('设备序列号')">
           {{ deviceStatus.deviceId }}
         </el-descriptions-item>
-        <el-descriptions-item label="在线状态">
-          <el-tag type="danger" v-if="deviceStatus.onLine === '0'">不在线</el-tag>
-          <el-tag type="success" v-if="deviceStatus.onLine === '1'">在线</el-tag>
-          <el-tag type="primary" v-if="deviceStatus.onLine === '3'">升级中</el-tag>
-          <el-tag type="warning" v-if="deviceStatus.onLine === '4'">休眠</el-tag>
+        <el-descriptions-item :label="$tp('在线状态')">
+          <el-tag type="danger" v-if="deviceStatus.onLine === '0'">{{ $tp("不在线") }}</el-tag>
+          <el-tag type="success" v-if="deviceStatus.onLine === '1'">{{ $tp("在线") }}</el-tag>
+          <el-tag type="primary" v-if="deviceStatus.onLine === '3'">{{ $tp("升级中") }}</el-tag>
+          <el-tag type="warning" v-if="deviceStatus.onLine === '4'">{{ $tp("休眠") }}</el-tag>
         </el-descriptions-item>
       </el-descriptions>
       <el-divider/>
-      通道在线状态
+      {{ $tp("通道在线状态") }}
       <el-table :data="deviceStatus.channels" style="margin-top: 10px">
-        <el-table-column label="设备通道号" align="center" prop="channelId"/>
-        <el-table-column label="在线状态" align="center" prop="onLine" border>
+        <el-table-column :label="$tp('设备通道号')" align="center" prop="channelId"/>
+        <el-table-column :label="$tp('在线状态')" align="center" prop="onLine" border>
           <template #default="scope">
-            <el-tag type="danger" v-if="deviceStatus.onLine === '0'">不在线</el-tag>
-            <el-tag type="success" v-if="deviceStatus.onLine === '1'">在线</el-tag>
-            <el-tag type="primary" v-if="deviceStatus.onLine === '3'">升级中</el-tag>
-            <el-tag type="warning" v-if="deviceStatus.onLine === '4'">休眠</el-tag>
+            <el-tag type="danger" v-if="deviceStatus.onLine === '0'">{{ $tp("不在线") }}</el-tag>
+            <el-tag type="success" v-if="deviceStatus.onLine === '1'">{{ $tp("在线") }}</el-tag>
+            <el-tag type="primary" v-if="deviceStatus.onLine === '3'">{{ $tp("升级中") }}</el-tag>
+            <el-tag type="warning" v-if="deviceStatus.onLine === '4'">{{ $tp("休眠") }}</el-tag>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
 
-    <el-dialog title="未绑定设备信息获取" v-model="openUnBindDeviceInfo" width="60%" append-to-body>
+    <el-dialog :title="$tp('未绑定设备信息获取')" v-model="openUnBindDeviceInfo" width="60%" append-to-body>
       <el-form :model="unBindDeviceInfoForm" ref="unBindDeviceInfoRef" :inline="true" label-width="120px"
                :rules="unBindDeviceInfoRules">
-        <el-form-item label="设备序列号" prop="deviceId">
-          <el-input v-model="unBindDeviceInfoForm.deviceId" placeholder="请输入设备序列号"/>
+        <el-form-item :label="$tp('设备序列号')" prop="deviceId">
+          <el-input v-model="unBindDeviceInfoForm.deviceId" :placeholder="$tp('请输入设备序列号')"/>
         </el-form-item>
-        <el-form-item label="设备二维码型号" prop="deviceCodeModel">
-          <el-input v-model="unBindDeviceInfoForm.deviceCodeModel" placeholder="请输入设备二维码型号"/>
+        <el-form-item :label="$tp('设备二维码型号')" prop="deviceCodeModel">
+          <el-input v-model="unBindDeviceInfoForm.deviceCodeModel" :placeholder="$tp('请输入设备二维码型号')"/>
         </el-form-item>
-        <el-form-item label="设备市场型号" prop="deviceModelName">
-          <el-input v-model="unBindDeviceInfoForm.deviceModelName" placeholder="请输入设备市场型号"/>
+        <el-form-item :label="$tp('设备市场型号')" prop="deviceModelName">
+          <el-input v-model="unBindDeviceInfoForm.deviceModelName" :placeholder="$tp('请输入设备市场型号')"/>
         </el-form-item>
-        <el-form-item label="设备配网能力" prop="ncCode">
-          <el-input v-model="unBindDeviceInfoForm.ncCode" placeholder="请输入设备配网能力"/>
+        <el-form-item :label="$tp('设备配网能力')" prop="ncCode">
+          <el-input v-model="unBindDeviceInfoForm.ncCode" :placeholder="$tp('请输入设备配网能力')"/>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="getUnBindDeviceInfo">获 取</el-button>
+          <el-button type="primary" @click="getUnBindDeviceInfo">{{ $tp("获 取") }}</el-button>
         </el-form-item>
       </el-form>
       <el-divider/>
@@ -236,80 +236,80 @@
           :column="2"
           border
       >
-        <el-descriptions-item label="平台是否支持该设备">
+        <el-descriptions-item :label="$tp('平台是否支持该设备')">
           <div v-if="unBindDeviceInfoData">
-            <el-tag type="success" v-if="unBindDeviceInfoData.support">支持</el-tag>
-            <el-tag type="danger" v-else>不支持</el-tag>
+            <el-tag type="success" v-if="unBindDeviceInfoData.support">{{ $tp("支持") }}</el-tag>
+            <el-tag type="danger" v-else>{{ $tp("不支持") }}</el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item label="设备在平台是否存在">
+        <el-descriptions-item :label="$tp('设备在平台是否存在')">
           <div v-if="unBindDeviceInfoData">
-            <el-tag type="success" v-if="unBindDeviceInfoData.deviceExist === 'exist'">存在</el-tag>
-            <el-tag type="danger" v-if="unBindDeviceInfoData.deviceExist === 'notExist'">不存在</el-tag>
+            <el-tag type="success" v-if="unBindDeviceInfoData.deviceExist === 'exist'">{{ $tp("存在") }}</el-tag>
+            <el-tag type="danger" v-if="unBindDeviceInfoData.deviceExist === 'notExist'">{{ $tp("不存在") }}</el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item label="设备状态">
+        <el-descriptions-item :label="$tp('设备状态')">
           <div v-if="unBindDeviceInfoData">
-            <el-tag type="success" v-if="unBindDeviceInfoData.status === 'online'">在线</el-tag>
-            <el-tag type="danger" v-if="unBindDeviceInfoData.status === 'offline'">离线</el-tag>
-            <el-tag type="warning" v-if="unBindDeviceInfoData.status === 'sleep'">休眠</el-tag>
-            <el-tag type="primary" v-if="unBindDeviceInfoData.status === 'upgrading'">升级中</el-tag>
+            <el-tag type="success" v-if="unBindDeviceInfoData.status === 'online'">{{ $tp("在线") }}</el-tag>
+            <el-tag type="danger" v-if="unBindDeviceInfoData.status === 'offline'">{{ $tp("离线") }}</el-tag>
+            <el-tag type="warning" v-if="unBindDeviceInfoData.status === 'sleep'">{{ $tp("休眠") }}</el-tag>
+            <el-tag type="primary" v-if="unBindDeviceInfoData.status === 'upgrading'">{{ $tp("升级中") }}</el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item label="设备绑定情况">
+        <el-descriptions-item :label="$tp('设备绑定情况')">
           <div v-if="unBindDeviceInfoData">
-            <el-tag type="success" v-if="unBindDeviceInfoData.bindStatus === 'unbind'">设备未绑定</el-tag>
-            <el-tag type="primary" v-else>设备已绑定</el-tag>
+            <el-tag type="success" v-if="unBindDeviceInfoData.bindStatus === 'unbind'">{{ $tp("设备未绑定") }}</el-tag>
+            <el-tag type="primary" v-else>{{ $tp("设备已绑定") }}</el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item label="设备是否支持用户自选可用的配网方式">
+        <el-descriptions-item :label="$tp('设备是否支持用户自选可用的配网方式')">
           <div v-if="unBindDeviceInfoData">
-            <el-tag type="success" v-if="unBindDeviceInfoData.wifiConfigModeOptional">支持自选</el-tag>
-            <el-tag type="primary" v-else>不支持自选</el-tag>
+            <el-tag type="success" v-if="unBindDeviceInfoData.wifiConfigModeOptional">{{ $tp("支持自选") }}</el-tag>
+            <el-tag type="primary" v-else>{{ $tp("不支持自选") }}</el-tag>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item label="设备无线支持频段的序列">
+        <el-descriptions-item :label="$tp('设备无线支持频段的序列')">
           <span v-if="unBindDeviceInfoData">{{ unBindDeviceInfoData.wifiTransferMode }}</span>
         </el-descriptions-item>
-        <el-descriptions-item label="设备上报型号">
+        <el-descriptions-item :label="$tp('设备上报型号')">
           <span v-if="unBindDeviceInfoData">{{ unBindDeviceInfoData.deviceCodeModel }}</span>
         </el-descriptions-item>
-        <el-descriptions-item label="设备市场型号">
+        <el-descriptions-item :label="$tp('设备市场型号')">
           <span v-if="unBindDeviceInfoData">{{ unBindDeviceInfoData.deviceModelName }}</span>
         </el-descriptions-item>
-        <el-descriptions-item label="设备大类">
+        <el-descriptions-item :label="$tp('设备大类')">
           <span v-if="unBindDeviceInfoData">{{ unBindDeviceInfoData.catalog }}</span>
         </el-descriptions-item>
-        <el-descriptions-item label="硬件类型">
+        <el-descriptions-item :label="$tp('硬件类型')">
           <div v-if="unBindDeviceInfoData">
-            <el-tag type="success" v-if="unBindDeviceInfoData.type === 'device'">设备</el-tag>
-            <el-tag type="primary" v-if="unBindDeviceInfoData.type === '配件'">不支持自选</el-tag>
+            <el-tag type="success" v-if="unBindDeviceInfoData.type === 'device'">{{ $tp("设备") }}</el-tag>
+            <el-tag type="primary" v-if="unBindDeviceInfoData.type === $tp('配件')">{{ $tp("不支持自选") }}</el-tag>
           </div>
         </el-descriptions-item>
 
       </el-descriptions>
     </el-dialog>
 
-    <el-dialog title="查询设备绑定情况" v-model="openCheckDeviceBindOrNot" width="32%" append-to-body>
+    <el-dialog :title="$tp('查询设备绑定情况')" v-model="openCheckDeviceBindOrNot" width="32%" append-to-body>
       <el-descriptions
           :column="2"
           border
       >
-        <el-descriptions-item label="是否被绑定到某个账号">
-          <el-tag type="success" v-if="checkDeviceBindOrNotData.isBind">已被绑定</el-tag>
-          <el-tag type="primary" v-else>未被绑定</el-tag>
+        <el-descriptions-item :label="$tp('是否被绑定到某个账号')">
+          <el-tag type="success" v-if="checkDeviceBindOrNotData.isBind">{{ $tp("已被绑定") }}</el-tag>
+          <el-tag type="primary" v-else>{{ $tp("未被绑定") }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="是否属于当前账号">
-          <el-tag type="success" v-if="checkDeviceBindOrNotData.isMine">属于当前账号</el-tag>
-          <el-tag type="primary" v-else>不属于当前账号</el-tag>
+        <el-descriptions-item :label="$tp('是否属于当前账号')">
+          <el-tag type="success" v-if="checkDeviceBindOrNotData.isMine">{{ $tp("属于当前账号") }}</el-tag>
+          <el-tag type="primary" v-else>{{ $tp("不属于当前账号") }}</el-tag>
         </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
-    <el-dialog title="设备升级" v-model="openUpgradeDevice" width="50%" append-to-body>
-      <el-button type="primary" @click="upgradeDeviceFun" v-hasPermi="['lecheng:lc:upgradeDevice']">升 级</el-button>
+    <el-dialog :title="$tp('设备升级')" v-model="openUpgradeDevice" width="50%" append-to-body>
+      <el-button type="primary" @click="upgradeDeviceFun" v-hasPermi="['lecheng:lc:upgradeDevice']">{{ $tp("升 级") }}</el-button>
       <el-button type="primary" @click="upgradeProcessDeviceFun" v-hasPermi="['lecheng:lc:upgradeProcessDevice']">
-        升级状态和进度
+        {{ $tp("升级状态和进度") }}
       </el-button>
 
       <el-divider/>
@@ -318,63 +318,63 @@
           :column="2"
           border
       >
-        <el-descriptions-item label="设备程序版本号">
+        <el-descriptions-item :label="$tp('设备程序版本号')">
           {{ upgradeProcessDeviceData.version }}
         </el-descriptions-item>
-        <el-descriptions-item label="设备升级状态">
-          <el-tag type="primary" v-if="upgradeProcessDeviceData.status === 'idle'">没在升级</el-tag>
-          <el-tag type="primary" v-if="upgradeProcessDeviceData.status === 'downloading'">正在下载升级包</el-tag>
-          <el-tag type="primary" v-if="upgradeProcessDeviceData.status === 'upgrading'">升级中</el-tag>
+        <el-descriptions-item :label="$tp('设备升级状态')">
+          <el-tag type="primary" v-if="upgradeProcessDeviceData.status === 'idle'">{{ $tp("没在升级") }}</el-tag>
+          <el-tag type="primary" v-if="upgradeProcessDeviceData.status === 'downloading'">{{ $tp("正在下载升级包") }}</el-tag>
+          <el-tag type="primary" v-if="upgradeProcessDeviceData.status === 'upgrading'">{{ $tp("升级中") }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="设备升级进度百分比">
+        <el-descriptions-item :label="$tp('设备升级进度百分比')">
           <el-progress type="dashboard" :percentage="parseInt(upgradeProcessDeviceData.percent)" :color="colors"/>
         </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
-    <el-dialog title="修改密码" v-model="openModifyPassword" width="32%" append-to-body>
+    <el-dialog :title="$tp('修改密码')" v-model="openModifyPassword" width="32%" append-to-body>
       <el-form ref="modifyPasswordRef" :model="modifyPasswordForm" :rules="modifyPasswordRules" label-width="80px">
-        <el-form-item label="原密码" prop="oldPassword">
-          <el-input v-model="modifyPasswordForm.oldPassword" placeholder="请输入原密码" maxlength="32" show-password/>
+        <el-form-item :label="$tp('原密码')" prop="oldPassword">
+          <el-input v-model="modifyPasswordForm.oldPassword" :placeholder="$tp('请输入原密码')" maxlength="32" show-password/>
         </el-form-item>
-        <el-form-item label="新密码" prop="newPassword">
-          <el-input v-model="modifyPasswordForm.newPassword" placeholder="请输入新密码" maxlength="32" show-password/>
+        <el-form-item :label="$tp('新密码')" prop="newPassword">
+          <el-input v-model="modifyPasswordForm.newPassword" :placeholder="$tp('请输入新密码')" maxlength="32" show-password/>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="modifyPasswordSubmitForm">确 定</el-button>
-          <el-button @click="modifyPasswordCancel">取 消</el-button>
+          <el-button type="primary" @click="modifyPasswordSubmitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="modifyPasswordCancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
 
-    <el-dialog title="设备控制" v-model="deviceControlOpen" width="32%" append-to-body>
+    <el-dialog :title="$tp('设备控制')" v-model="deviceControlOpen" width="32%" append-to-body>
       <div>
-        <el-button type="primary" @click="calibrationDeviceTimeFun">设置设备时间</el-button>
-        <el-button type="primary" @click="getDeviceTimeFun">查询设备时间</el-button>
-        设备时间：{{ deviceTime }}
+        <el-button type="primary" @click="calibrationDeviceTimeFun">{{ $tp("设置设备时间") }}</el-button>
+        <el-button type="primary" @click="getDeviceTimeFun">{{ $tp("查询设备时间") }}</el-button>
+        {{ $tp("设备时间：") }}{{ deviceTime }}
       </div>
       <el-divider/>
-      <el-button type="primary" @click="restartDeviceFun">重启设备</el-button>
+      <el-button type="primary" @click="restartDeviceFun">{{ $tp("重启设备") }}</el-button>
     </el-dialog>
 
-    <el-dialog title="设备SD卡" v-model="deviceSdOpen" width="32%" append-to-body>
+    <el-dialog :title="$tp('设备SD卡')" v-model="deviceSdOpen" width="32%" append-to-body>
       <div v-if="deviceStorageFrom.totalBytes && deviceStorageFrom.usedBytes">
-        总容量：{{ formatBytes(deviceStorageFrom.totalBytes) }} <br/>
-        已使用容量：{{ formatBytes(deviceStorageFrom.usedBytes) }}
+        {{ $tp("总容量：") }}{{ formatBytes(deviceStorageFrom.totalBytes) }} <br/>
+        {{ $tp("已使用容量：") }}{{ formatBytes(deviceStorageFrom.usedBytes) }}
       </div>
       <div>
         {{ deviceStorageMsg }}
       </div>
       <div style="margin-top: 10px">
-        存储卡状态：
-        <el-tag type="info" v-if="deviceStorageStatus === 'empty'">无SD卡</el-tag>
-        <el-tag type="success" v-if="deviceStorageStatus === 'normal'">正常</el-tag>
-        <el-tag type="danger" v-if="deviceStorageStatus === 'abnormal'">异常</el-tag>
-        <el-tag type="primary" v-if="deviceStorageStatus === 'recovering'">格式化中</el-tag>
+        {{ $tp("存储卡状态：") }}
+        <el-tag type="info" v-if="deviceStorageStatus === 'empty'">{{ $tp("无SD卡") }}</el-tag>
+        <el-tag type="success" v-if="deviceStorageStatus === 'normal'">{{ $tp("正常") }}</el-tag>
+        <el-tag type="danger" v-if="deviceStorageStatus === 'abnormal'">{{ $tp("异常") }}</el-tag>
+        <el-tag type="primary" v-if="deviceStorageStatus === 'recovering'">{{ $tp("格式化中") }}</el-tag>
       </div>
-      <el-button style="margin-top: 10px" type="primary" @click="recoverSDCardFun">设备SD卡格式化</el-button>
+      <el-button style="margin-top: 10px" type="primary" @click="recoverSDCardFun">{{ $tp("设备SD卡格式化") }}</el-button>
     </el-dialog>
   </div>
 </template>
@@ -422,7 +422,7 @@ const unBindDeviceInfoData = ref(null);
 const openUnBindDeviceInfo = ref(false);
 const unBindDeviceInfoForm = ref({});
 const unBindDeviceInfoRules = ref({
-  deviceId: [{required: true, message: "请输入设备序列号", trigger: "blur"}],
+  deviceId: [{required: true, get message() { return translatePhrase("请输入设备序列号") }, trigger: "blur"}],
 });
 
 const checkDeviceBindOrNotData = ref();
@@ -454,8 +454,8 @@ const modifyPasswordForm = ref({
   newPassword: null,
 });
 const modifyPasswordRules = ref({
-  oldPassword: [{required: true, message: "请输入原密码", trigger: "blur"}],
-  newPassword: [{required: true, message: "请输入新密码", trigger: "blur"}],
+  oldPassword: [{required: true, get message() { return translatePhrase("请输入原密码") }, trigger: "blur"}],
+  newPassword: [{required: true, get message() { return translatePhrase("请输入新密码") }, trigger: "blur"}],
 })
 
 const deviceControlOpen = ref(false)
@@ -483,7 +483,7 @@ const data = reactive({
     source: 'bindAndShare',
   },
   rules: {
-    deviceId: [{required: true, message: "请输入设备序列号", trigger: "blur"}],
+    deviceId: [{required: true, get message() { return translatePhrase("请输入设备序列号") }, trigger: "blur"}],
   }
 });
 
@@ -525,7 +525,7 @@ const getListLcConfigVo = () => {
       lcConfigList.value = res.data
       getList()
     } else {
-      proxy.$modal.msgError("请先配置乐橙配置");
+      proxy.$modal.msgError(translatePhrase("请先配置乐橙配置"));
     }
   })
 }
@@ -597,7 +597,7 @@ function submitForm() {
     if (valid) {
       bindDevice(form.value).then(response => {
         if (response.result.code === '0') {
-          proxy.$modal.msgSuccess("绑定成功");
+          proxy.$modal.msgSuccess(translatePhrase("绑定成功"));
           open.value = false;
           getListLcConfigVo()
         } else {
@@ -611,7 +611,7 @@ function submitForm() {
 /** 解绑设备按钮操作 */
 function handleDelete(row) {
   const _ids = row.deviceId || ids.value[0];
-  proxy.$modal.confirm('是否确认解绑设备设备序列号为"' + _ids + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认解绑设备设备序列号为\"") + _ids + translatePhrase("\"的数据项？")).then(function () {
     let data = {
       configId: queryParams.value.configId,
       deviceId: _ids,
@@ -621,7 +621,7 @@ function handleDelete(row) {
     return unBindDevice(data);
   }).then(() => {
     getListLcConfigVo();
-    proxy.$modal.msgSuccess("解绑设备成功");
+    proxy.$modal.msgSuccess(translatePhrase("解绑设备成功"));
   }).catch(() => {
   });
 }
@@ -684,9 +684,9 @@ const getUnBindDeviceInfo = () => {
 }
 
 const checkDeviceBindOrNotFun = () => {
-  ElMessageBox.prompt('请输入设备序列号', '温馨提示', {
-    confirmButtonText: '查询',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt(translatePhrase("请输入设备序列号"), translatePhrase("温馨提示"), {
+    confirmButtonText: translatePhrase("查询"),
+    cancelButtonText: translatePhrase("取消"),
   })
       .then(({value}) => {
         checkDeviceBindOrNot({
@@ -723,7 +723,7 @@ const openUpgradeDeviceFun = (row) => {
 const upgradeDeviceFun = () => {
   upgradeDevice(upgradeDeviceForm.value).then(response => {
     if (response.result.code === '0') {
-      proxy.$modal.msgSuccess("操作成功");
+      proxy.$modal.msgSuccess(translatePhrase("操作成功"));
     } else {
       proxy.$modal.msgError(response.result.msg);
     }
@@ -741,9 +741,9 @@ const upgradeProcessDeviceFun = () => {
 }
 
 const modifyDeviceNameFun = (row) => {
-  ElMessageBox.prompt('请输入设备名称', '温馨提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt(translatePhrase("请输入设备名称"), translatePhrase("温馨提示"), {
+    confirmButtonText: translatePhrase("确定"),
+    cancelButtonText: translatePhrase("取消"),
   })
       .then(({value}) => {
         modifyDeviceName({
@@ -753,7 +753,7 @@ const modifyDeviceNameFun = (row) => {
           channelId: null,
         }).then(response => {
           if (response.result.code === '0') {
-            proxy.$modal.msgSuccess("修改成功");
+            proxy.$modal.msgSuccess(translatePhrase("修改成功"));
             getListLcConfigVo()
           } else {
             proxy.$modal.msgError(response.result.msg);
@@ -791,7 +791,7 @@ const modifyPasswordSubmitForm = () => {
         if (response.result.code === '0') {
           modifyPassword(modifyPasswordForm.value).then(res => {
             if (res.result.code === '0') {
-              proxy.$modal.msgSuccess("修改成功");
+              proxy.$modal.msgSuccess(translatePhrase("修改成功"));
               openModifyPassword.value = false
             } else {
               proxy.$modal.msgError(response.result.msg);
@@ -835,7 +835,7 @@ const getDeviceTimeFun = () => {
 const calibrationDeviceTimeFun = () => {
   calibrationDeviceTime(deviceControlForm.value).then((res) => {
     if (res.result.code === '0') {
-      proxy.$modal.msgSuccess("校准成功");
+      proxy.$modal.msgSuccess(translatePhrase("校准成功"));
     } else {
       proxy.$modal.msgError(res.result.msg);
     }
@@ -847,18 +847,18 @@ const calibrationDeviceTimeFun = () => {
  */
 const restartDeviceFun = () => {
   ElMessageBox.confirm(
-      '确定重启设备?',
-      '温馨提示',
+      translatePhrase("确定重启设备?"),
+      translatePhrase("温馨提示"),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: translatePhrase("确定"),
+        cancelButtonText: translatePhrase("取消"),
         type: 'warning',
       }
   )
       .then(() => {
         restartDevice(deviceControlForm.value).then((res) => {
           if (res.result.code === '0') {
-            proxy.$modal.msgSuccess("重启设备成功");
+            proxy.$modal.msgSuccess(translatePhrase("重启设备成功"));
           } else {
             proxy.$modal.msgError(res.result.msg);
           }
@@ -930,13 +930,13 @@ const recoverSDCardFun = () => {
   }).then((res) => {
     if (res.result.code === '0') {
       if (res.result.data.result === 'start-recover') {
-        proxy.$modal.msgSuccess("开始初始化");
+        proxy.$modal.msgSuccess(translatePhrase("开始初始化"));
       } else if (res.result.data.result === 'no-sdcard') {
-        proxy.$modal.msgError("插槽内无SD卡");
+        proxy.$modal.msgError(translatePhrase("插槽内无SD卡"));
       } else if (res.result.data.result === 'in-recover') {
-        proxy.$modal.msgSuccess("正在初始化");
+        proxy.$modal.msgSuccess(translatePhrase("正在初始化"));
       } else if (res.result.data.result === 'sdcard-error') {
-        proxy.$modal.msgError("其他SD卡错误");
+        proxy.$modal.msgError(translatePhrase("其他SD卡错误"));
       }
       deviceSdcardStatusFun()
     } else {

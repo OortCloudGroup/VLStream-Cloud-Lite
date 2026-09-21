@@ -8,7 +8,7 @@
             icon="Plus"
             @click="handleAdd"
             v-hasPermi="['wvp:server:add']"
-        >新增
+        >{{ $tp("新增") }}
         </el-button>
       </el-col>
       <right-toolbar :search="false" @queryTable="getList"></right-toolbar>
@@ -28,74 +28,74 @@
             <div>
               <!-- v-if="item.defaultServer"-->
               <el-button type="text"
-                         @click="handleView(item)" v-hasPermi="['wvp:server:view']">查看
+                         @click="handleView(item)" v-hasPermi="['wvp:server:view']">{{ $tp("查看") }}
               </el-button>
               <el-button type="text" v-if="!item.defaultServer"
                          v-hasPermi="['wvp:server:edit']"
-                         @click="handleUpdate(item)">编辑
+                         @click="handleUpdate(item)">{{ $tp("编辑") }}
               </el-button>
-              <el-button type="text" @click="handleDelete(item)" v-if="!item.defaultServer"  v-hasPermi="['wvp:server:delete']">移除
+              <el-button type="text" @click="handleDelete(item)" v-if="!item.defaultServer"  v-hasPermi="['wvp:server:delete']">{{ $tp("移除") }}
               </el-button>
             </div>
           </div>
           <el-icon v-if="item.defaultServer" class="server-card-status-offline" color="#67C23A">
             <SuccessFilled/>
           </el-icon>
-          <i v-if="item.defaultServer" class="server-card-default">默认</i>
+          <i v-if="item.defaultServer" class="server-card-default">{{ $tp("默认") }}</i>
         </el-card>
       </el-col>
     </el-row>
-    <el-dialog title="媒体节点" v-model="openView" width="65%" append-to-body>
+    <el-dialog :title="$tp('媒体节点')" v-model="openView" width="65%" append-to-body>
       <el-descriptions border>
-        <el-descriptions-item label="媒体服务IP">
+        <el-descriptions-item :label="$tp('媒体服务IP')">
           {{ rowData.ip }}
         </el-descriptions-item>
-        <el-descriptions-item label="HTTP端口">
+        <el-descriptions-item :label="$tp('HTTP端口')">
           {{ rowData.httpPort }}
         </el-descriptions-item>
         <el-descriptions-item label="SECRET">
           {{ rowData.secret }}
         </el-descriptions-item>
-        <el-descriptions-item label="类型">
+        <el-descriptions-item :label="$tp('类型')">
           <el-tag type="primary" v-if="rowData.type === 'zlm'">ZLMediaKit</el-tag>
           <el-tag type="primary" v-if="rowData.type === 'abl'">ABLMediaServer</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="媒体服务RTMP_PORT">
+        <el-descriptions-item :label="$tp('媒体服务RTMP_PORT')">
           {{ rowData.rtmpPort }}
         </el-descriptions-item>
-        <el-descriptions-item label="媒体服务RTMPS_PORT">
+        <el-descriptions-item :label="$tp('媒体服务RTMPS_PORT')">
           {{ rowData.rtmpSSlPort }}
         </el-descriptions-item>
-        <el-descriptions-item label="媒体服务HOOK_IP">
+        <el-descriptions-item :label="$tp('媒体服务HOOK_IP')">
           {{ rowData.hookIp }}
         </el-descriptions-item>
-        <el-descriptions-item label="媒体服务SDP_IP">
+        <el-descriptions-item :label="$tp('媒体服务SDP_IP')">
           {{ rowData.sdpIp }}
         </el-descriptions-item>
-        <el-descriptions-item label="自动配置媒体服务">
-          <el-tag type="primary" v-if="rowData.autoConfig === 1">是</el-tag>
-          <el-tag type="primary" v-if="rowData.autoConfig === 0">否</el-tag>
+        <el-descriptions-item :label="$tp('自动配置媒体服务')">
+          <el-tag type="primary" v-if="rowData.autoConfig === 1">{{ $tp("是") }}</el-tag>
+          <el-tag type="primary" v-if="rowData.autoConfig === 0">{{ $tp("否") }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="媒体服务流IP">
+        <el-descriptions-item :label="$tp('媒体服务流IP')">
           {{ rowData.streamIp }}
         </el-descriptions-item>
-        <el-descriptions-item label="收流端口模式">
-          <el-tag type="primary" v-if="rowData.rtpEnable === 1">多端口</el-tag>
-          <el-tag type="primary" v-if="rowData.rtpEnable === 0">单端口</el-tag>
+        <el-descriptions-item :label="$tp('收流端口模式')">
+          <el-tag type="primary" v-if="rowData.rtpEnable === 1">{{ $tp("多端口") }}</el-tag>
+          <el-tag type="primary" v-if="rowData.rtpEnable === 0">{{ $tp("单端口") }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="媒体服务HTTPS_PORT">
+        <el-descriptions-item :label="$tp('媒体服务HTTPS_PORT')">
           {{ rowData.httpSSlPort }}
         </el-descriptions-item>
-        <el-descriptions-item label="收流端口">
+        <el-descriptions-item :label="$tp('收流端口')">
           {{ rowData.rtpPortRange }}
         </el-descriptions-item>
-        <el-descriptions-item label="媒体服务RTSP_PORT">
+        <el-descriptions-item :label="$tp('媒体服务RTSP_PORT')">
           {{ rowData.rtspPort }}
         </el-descriptions-item>
-        <el-descriptions-item label="录像管理服务端口">
+        <el-descriptions-item :label="$tp('录像管理服务端口')">
           {{ rowData.recordAssistPort }}
         </el-descriptions-item>
-        <el-descriptions-item label="媒体服务RTSPS_PORT">
+        <el-descriptions-item :label="$tp('媒体服务RTSPS_PORT')">
           {{ rowData.rtspSSLPort }}
         </el-descriptions-item>
       </el-descriptions>
@@ -152,11 +152,11 @@ function handleUpdate(row) {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id
-  proxy.$modal.confirm('确认删除此节点？').then(function () {
+  proxy.$modal.confirm(translatePhrase("确认删除此节点？")).then(function () {
     return delWvpMediaServer(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }

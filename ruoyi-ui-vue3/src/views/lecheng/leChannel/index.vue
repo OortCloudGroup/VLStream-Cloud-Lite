@@ -1,8 +1,8 @@
 <template>
   <div class="detail-page">
     <detail-page-header
-      parent-title="设备管理"
-      title="通道列表"
+      :parent-title="$tp('设备管理')"
+      :title="$tp('通道列表')"
       back-path="/lecheng/lcDevice"
     />
     <div class="detail-body">
@@ -14,9 +14,9 @@
       </div>
 
       <table-self class="new_table" header-cell-class-name="header_tenant_cell" stripe :data="channelList">
-        <el-table-column label="通道名称" align="center" prop="channelName" show-overflow-tooltip/>
-        <el-table-column label="通道号" align="center" prop="channelId" :width="clacPXToVW(100)"/>
-        <el-table-column label="封面图" align="center" prop="channelPicUrl" :width="clacPXToVW(100)">
+        <el-table-column :label="$tp('通道名称')" align="center" prop="channelName" show-overflow-tooltip/>
+        <el-table-column :label="$tp('通道号')" align="center" prop="channelId" :width="clacPXToVW(100)"/>
+        <el-table-column :label="$tp('封面图')" align="center" prop="channelPicUrl" :width="clacPXToVW(100)">
           <template #default="scope">
             <el-image v-if="scope.row.channelPicUrl" :src="scope.row.channelPicUrl" fit="cover"
                       style="width: 50px; height: 50px"
@@ -31,43 +31,43 @@
             </el-image>
           </template>
         </el-table-column>
-        <el-table-column label="云存储状态" align="center" prop="csStatus" :min-width="clacPXToVW(140)">
+        <el-table-column :label="$tp('云存储状态')" align="center" prop="csStatus" :min-width="clacPXToVW(140)">
           <template #default="scope">
-            <el-tag type="primary" v-if="scope.row.csStatus === 'notExist'">未开通套餐</el-tag>
-            <el-tag type="primary" v-if="scope.row.csStatus === 'using'">开通云存储且没有过期</el-tag>
-            <el-tag type="primary" v-if="scope.row.csStatus === 'expired'">套餐过期</el-tag>
+            <el-tag type="primary" v-if="scope.row.csStatus === 'notExist'">{{ $tp("未开通套餐") }}</el-tag>
+            <el-tag type="primary" v-if="scope.row.csStatus === 'using'">{{ $tp("开通云存储且没有过期") }}</el-tag>
+            <el-tag type="primary" v-if="scope.row.csStatus === 'expired'">{{ $tp("套餐过期") }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="遮罩状态" align="center" prop="cameraStatus" :width="clacPXToVW(100)">
+        <el-table-column :label="$tp('遮罩状态')" align="center" prop="cameraStatus" :width="clacPXToVW(100)">
           <template #default="scope">
-            <el-tag type="primary" v-if="scope.row.cameraStatus === 'on'">打开</el-tag>
-            <el-tag type="danger" v-if="scope.row.cameraStatus === 'off'">关闭</el-tag>
+            <el-tag type="primary" v-if="scope.row.cameraStatus === 'on'">{{ $tp("打开") }}</el-tag>
+            <el-tag type="danger" v-if="scope.row.cameraStatus === 'off'">{{ $tp("关闭") }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="通道状态" align="center" prop="channelStatus" :width="clacPXToVW(100)">
+        <el-table-column :label="$tp('通道状态')" align="center" prop="channelStatus" :width="clacPXToVW(100)">
           <template #default="scope">
-            <el-tag type="success" v-if="scope.row.channelStatus === 'online'">在线</el-tag>
-            <el-tag type="danger" v-if="scope.row.channelStatus === 'offline'">离线</el-tag>
-            <el-tag type="warning" v-if="scope.row.channelStatus === 'sleep'">休眠</el-tag>
-            <el-tag type="primary" v-if="scope.row.channelStatus === 'upgrading'">升级中</el-tag>
+            <el-tag type="success" v-if="scope.row.channelStatus === 'online'">{{ $tp("在线") }}</el-tag>
+            <el-tag type="danger" v-if="scope.row.channelStatus === 'offline'">{{ $tp("离线") }}</el-tag>
+            <el-tag type="warning" v-if="scope.row.channelStatus === 'sleep'">{{ $tp("休眠") }}</el-tag>
+            <el-tag type="primary" v-if="scope.row.channelStatus === 'upgrading'">{{ $tp("升级中") }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="通道最后离线时间" align="center" prop="lastOffLineTime" :min-width="clacPXToVW(160)">
+        <el-table-column :label="$tp('通道最后离线时间')" align="center" prop="lastOffLineTime" :min-width="clacPXToVW(160)">
           <template #default="scope">
             {{ formatTime(scope.row.lastOffLineTime) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+        <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(220)">
           <template #default="scope">
             <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
               <div class="new_table_svg_group" @click.stop="getKitTokenFun(scope.row)" v-hasPermi="['lecheng:lc:getKitToken']">
-                <span>播放</span>
+                <span>{{ $tp("播放") }}</span>
               </div>
               <div class="new_table_svg_group" @click.stop="modifyDeviceNameFun(scope.row)" v-hasPermi="['lecheng:lc:modifyDeviceName']">
-                <span>修改名称</span>
+                <span>{{ $tp("修改名称") }}</span>
               </div>
               <div class="new_table_svg_group" @click.stop="refreshDeviceCoverFun(scope.row)" v-hasPermi="['lecheng:lc:refreshDeviceCover']">
-                <span>刷新封面</span>
+                <span>{{ $tp("刷新封面") }}</span>
               </div>
             </div>
           </template>
@@ -75,72 +75,72 @@
       </table-self>
     </div>
 
-    <el-dialog title="播放视频参数" v-model="openGetKitToken" width="32%" append-to-body>
+    <el-dialog :title="$tp('播放视频参数')" v-model="openGetKitToken" width="32%" append-to-body>
       <el-form ref="getKitTokenRef" :model="getKitTokenForm" :rules="getKitTokenRules" label-width="120px">
-        <el-form-item label="播放类型" prop="type">
+        <el-form-item :label="$tp('播放类型')" prop="type">
           <el-radio-group v-model="getKitTokenForm.type">
-            <el-radio :value="1">直播（实时预览）</el-radio>
-            <el-radio :value="2">录像回放</el-radio>
+            <el-radio :value="1">{{ $tp("直播（实时预览）") }}</el-radio>
+            <el-radio :value="2">{{ $tp("录像回放") }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="本地录像" prop="recordType" v-if="getKitTokenForm.type === 2">
-          <el-checkbox v-model="getKitTokenForm.recordType" true-value="localRecord" false-value="no">本地录像回放
+        <el-form-item :label="$tp('本地录像')" prop="recordType" v-if="getKitTokenForm.type === 2">
+          <el-checkbox v-model="getKitTokenForm.recordType" true-value="localRecord" false-value="no">{{ $tp("本地录像回放") }}
           </el-checkbox>
         </el-form-item>
-        <el-form-item label="回放开始时间" prop="beginTime" v-if="getKitTokenForm.type === 2">
+        <el-form-item :label="$tp('回放开始时间')" prop="beginTime" v-if="getKitTokenForm.type === 2">
           <el-date-picker v-model="getKitTokenForm.beginTime"
                           value-format="YYYY-MM-DD HH:mm:ss"
                           type="datetime"
-                          placeholder="请选择回放开始时间"
+                          :placeholder="$tp('请选择回放开始时间')"
           ></el-date-picker>
         </el-form-item>
-        <el-form-item label="回放结束时间" prop="endTime" v-if="getKitTokenForm.type === 2">
+        <el-form-item :label="$tp('回放结束时间')" prop="endTime" v-if="getKitTokenForm.type === 2">
           <el-date-picker v-model="getKitTokenForm.endTime"
                           value-format="YYYY-MM-DD HH:mm:ss"
                           type="datetime"
-                          placeholder="请选择回放结束时间"
+                          :placeholder="$tp('请选择回放结束时间')"
           ></el-date-picker>
         </el-form-item>
-        <el-form-item label="清晰度" prop="streamId">
+        <el-form-item :label="$tp('清晰度')" prop="streamId">
           <el-radio-group v-model="getKitTokenForm.streamId">
-            <el-radio :value="0">高清</el-radio>
-            <el-radio :value="1">标清</el-radio>
+            <el-radio :value="0">{{ $tp("高清") }}</el-radio>
+            <el-radio :value="1">{{ $tp("标清") }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="视频解密秘钥" prop="code">
+        <el-form-item :label="$tp('视频解密秘钥')" prop="code">
           <template #label>
               <span>
                  <el-tooltip placement="top">
                    <template #content>
-                                      设备视频解密秘钥，如果设备开启了视频加密，则必填。<br/>
-                                      如果设备设置了自定义音视频加密秘钥，则填此秘钥；<br/>
-                                      如果设备只设置了设备密码，则填设备密码；<br/>
-                                      其他情况默认设备序列号。
+                                      {{ $tp("设备视频解密秘钥，如果设备开启了视频加密，则必填。") }}<br/>
+                                      {{ $tp("如果设备设置了自定义音视频加密秘钥，则填此秘钥；") }}<br/>
+                                      {{ $tp("如果设备只设置了设备密码，则填设备密码；") }}<br/>
+                                      {{ $tp("其他情况默认设备序列号。") }}
                    </template>
                     <el-icon><question-filled/></el-icon>
                  </el-tooltip>
-                视频解密秘钥
+                {{ $tp("视频解密秘钥") }}
               </span>
           </template>
-          <el-input v-model="getKitTokenForm.code" placeholder="请输入视频解密秘钥"/>
+          <el-input v-model="getKitTokenForm.code" :placeholder="$tp('请输入视频解密秘钥')"/>
         </el-form-item>
 
       </el-form>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="getKitTokenSubmitForm">确 定</el-button>
-          <el-button @click="getKitTokenCancel">取 消</el-button>
+          <el-button type="primary" @click="getKitTokenSubmitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="getKitTokenCancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlayer" width="55%" append-to-body @close="playClose">
+    <el-dialog :title="$tp('播放视频')" v-model="openPlayer" width="55%" append-to-body @close="playClose">
       <iframe ref="iframeRef" :src="lechengPlayAddress" style="width: 800px; height: 400px" scrolling="auto"
               frameborder="no" @load="handleIframeLoad"></iframe>
       <el-tabs v-model="tabActiveName" type="card" :stretch="true" style="margin-top: 10px;"
                allow="fullscreen; accelerometer; gyroscope" @tab-click="handleClick">
-        <el-tab-pane v-if="checkPermi(['lecheng:lc:controlMovePTZ'])" label="云台控制" name="control">
+        <el-tab-pane v-if="checkPermi(['lecheng:lc:controlMovePTZ'])" :label="$tp('云台控制')" name="control">
           <div style="display: grid; grid-template-columns: 240px auto; height: 180px; overflow: auto">
             <!-- 左侧控制区域 -->
             <div style="display: grid; grid-template-columns: 100px auto;">
@@ -181,7 +181,7 @@
                 <div class="contro-speed" style="position: absolute; left: 4px; top: 112px; width: 100px;">
                   <el-input-number v-model="duration" :min="100" :max="2000">
                     <template #suffix>
-                      <span>毫秒</span>
+                      <span>{{ $tp("毫秒") }}</span>
                     </template>
                   </el-input-number>
                 </div>
@@ -191,13 +191,13 @@
               <div>
                 <div class="ptz-btn-box">
                   <div @mousedown="ptzControlUpStartFun('8')" @mouseup="ptzControlUpEndFun('10')"
-                       title="变倍+">
+                       :title="$tp('变倍+')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomIn/>
                     </el-icon>
                   </div>
                   <div @mousedown="ptzControlUpStartFun('9')" @mouseup="ptzControlUpEndFun('10')"
-                       title="变倍-">
+                       :title="$tp('变倍-')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomOut/>
                     </el-icon>
@@ -209,25 +209,25 @@
             <!-- 右侧功能选择区域 -->
             <div style="text-align: left">
               <el-form :model="devicePTZInfoData" label-width="100px">
-                <el-form-item label="水平操作" prop="h">
+                <el-form-item :label="$tp('水平操作')" prop="h">
                   <el-input-number v-model="devicePTZInfoData.h" :step="0.1" :precision="1" :min="-1" :max="1"/>
                 </el-form-item>
-                <el-form-item label="垂直操作" prop="h">
+                <el-form-item :label="$tp('垂直操作')" prop="h">
                   <el-input-number v-model="devicePTZInfoData.v" :step="0.1" :precision="1" :min="-1" :max="1"/>
                 </el-form-item>
-                <el-form-item label="变倍" prop="h">
+                <el-form-item :label="$tp('变倍')" prop="h">
                   <el-input-number v-model="devicePTZInfoData.z" :step="0.1" :precision="1" :min="0" :max="1"/>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" @click="controlLocationPTZFun">云台定位</el-button>
+                  <el-button type="primary" @click="controlLocationPTZFun">{{ $tp("云台定位") }}</el-button>
                 </el-form-item>
               </el-form>
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane v-if="checkPermi(['lecheng:lc:screenshot'])" label="设备抓图" name="screenshot">
-          <el-button type="primary" @click="setDeviceSnapFun">setDeviceSnap设备抓图</el-button>
-          <el-button type="primary" @click="setDeviceSnapEnhancedFun">setDeviceSnapEnhanced设备抓图</el-button>
+        <el-tab-pane v-if="checkPermi(['lecheng:lc:screenshot'])" :label="$tp('设备抓图')" name="screenshot">
+          <el-button type="primary" @click="setDeviceSnapFun">{{ $tp("setDeviceSnap设备抓图") }}</el-button>
+          <el-button type="primary" @click="setDeviceSnapEnhancedFun">{{ $tp("setDeviceSnapEnhanced设备抓图") }}</el-button>
 
           <el-divider/>
 
@@ -259,8 +259,8 @@
               @pagination="listLcCaptureFun"
           />
         </el-tab-pane>
-        <el-tab-pane v-if="checkPermi(['lecheng:lc:getCollection'])" label="收藏点" name="collection">
-          <el-button type="primary" @click="setCollectionFun">新增收藏点</el-button>
+        <el-tab-pane v-if="checkPermi(['lecheng:lc:getCollection'])" :label="$tp('收藏点')" name="collection">
+          <el-button type="primary" @click="setCollectionFun">{{ $tp("新增收藏点") }}</el-button>
           <div style="margin-top: 10px;display: flex;flex-wrap: wrap;">
             <div v-for="(item,index) in collections" style="margin: 0 5px"
                  :key="index">
@@ -271,7 +271,7 @@
                 {{ item.name }}
               </el-tag>
               <el-button type="primary" link @click="modifyCollectionFun(item)">
-                修改
+                {{ $tp("修改") }}
               </el-button>
             </div>
           </div>
@@ -312,8 +312,8 @@ const channelList = ref([]);
 const openGetKitToken = ref(false);
 const getKitTokenForm = ref({});
 const getKitTokenRules = ref({
-  beginTime: [{required: true, message: "请选择回放开始时间", trigger: "blur"}],
-  endTime: [{required: true, message: "请选择回放结束时间", trigger: "blur"}],
+  beginTime: [{required: true, get message() { return translatePhrase("请选择回放开始时间") }, trigger: "blur"}],
+  endTime: [{required: true, get message() { return translatePhrase("请选择回放结束时间") }, trigger: "blur"}],
 });
 
 const openPlayer = ref(false)
@@ -367,9 +367,9 @@ const getListDeviceDetailsByIds = () => {
 
 const modifyDeviceNameFun = (row) => {
   console.log(row)
-  ElMessageBox.prompt('请输入设备名称', '温馨提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt(translatePhrase("请输入设备名称"), translatePhrase("温馨提示"), {
+    confirmButtonText: translatePhrase("确定"),
+    cancelButtonText: translatePhrase("取消"),
   })
       .then(({value}) => {
         modifyDeviceName({
@@ -379,7 +379,7 @@ const modifyDeviceNameFun = (row) => {
           channelId: row.channelId,
         }).then(response => {
           if (response.result.code === '0') {
-            proxy.$modal.msgSuccess("修改成功");
+            proxy.$modal.msgSuccess(translatePhrase("修改成功"));
             getListDeviceDetailsByIds()
           } else {
             proxy.$modal.msgError(response.result.msg);
@@ -398,7 +398,7 @@ const refreshDeviceCoverFun = (row) => {
     channelId: row.channelId,
   }).then(response => {
     if (response.result.code === '0') {
-      proxy.$modal.msgSuccess("刷新封面成功");
+      proxy.$modal.msgSuccess(translatePhrase("刷新封面成功"));
       getListDeviceDetailsByIds()
     } else {
       proxy.$modal.msgError(response.result.msg);
@@ -566,7 +566,7 @@ const controlLocationPTZFun = () => {
     z: devicePTZInfoData.value.z,
   }).then((res) => {
     if (res.result.code === '0') {
-      proxy.$modal.msgSuccess("定位成功");
+      proxy.$modal.msgSuccess(translatePhrase("定位成功"));
     } else {
       proxy.$modal.msgError(res.result.msg);
     }
@@ -583,7 +583,7 @@ const setDeviceSnapFun = () => {
     channelId: getKitTokenForm.value.channelId,
   }).then((res) => {
     if (res.result.code === '0') {
-      proxy.$modal.msgSuccess("设备抓图成功");
+      proxy.$modal.msgSuccess(translatePhrase("设备抓图成功"));
       listLcCaptureFun()
     } else {
       proxy.$modal.msgError(res.result.msg);
@@ -601,7 +601,7 @@ const setDeviceSnapEnhancedFun = () => {
     channelId: getKitTokenForm.value.channelId,
   }).then((res) => {
     if (res.result.code === '0') {
-      proxy.$modal.msgSuccess("设备抓图成功");
+      proxy.$modal.msgSuccess(translatePhrase("设备抓图成功"));
       listLcCaptureFun()
     } else {
       proxy.$modal.msgError(res.result.msg);
@@ -628,7 +628,7 @@ const listLcCaptureFun = () => {
  */
 const captureDel = (row) => {
   delLcCapture(row.id).then((res) => {
-    proxy.$modal.msgSuccess("删除设备抓图成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除设备抓图成功"));
     listLcCaptureFun()
   })
 }
@@ -662,9 +662,9 @@ const handleClick = (tab, event) => {
  * 新增收藏点
  */
 const setCollectionFun = () => {
-  ElMessageBox.prompt('请输入收藏点名称', '温馨提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt(translatePhrase("请输入收藏点名称"), translatePhrase("温馨提示"), {
+    confirmButtonText: translatePhrase("确定"),
+    cancelButtonText: translatePhrase("取消"),
   })
       .then(({value}) => {
         setCollection({
@@ -675,7 +675,7 @@ const setCollectionFun = () => {
           needCruise: false,
         }).then((res) => {
           if (res.result.code === '0') {
-            proxy.$modal.msgSuccess("新增收藏点成功");
+            proxy.$modal.msgSuccess(translatePhrase("新增收藏点成功"));
             getCollectionFun()
           } else {
             proxy.$modal.msgError(res.result.msg);
@@ -701,7 +701,7 @@ const deleteCollectionFun = (item) => {
     names: [item.name],
   }).then((res) => {
     if (res.result.code === '0') {
-      proxy.$modal.msgSuccess("删除收藏点成功");
+      proxy.$modal.msgSuccess(translatePhrase("删除收藏点成功"));
       getCollectionFun()
     } else {
       proxy.$modal.msgError(res.result.msg);
@@ -716,11 +716,11 @@ const deleteCollectionFun = (item) => {
  */
 const turnCollectionFun = (item) => {
   ElMessageBox.confirm(
-      '是否转动到收藏点？',
-      '温馨提示',
+      translatePhrase("是否转动到收藏点？"),
+      translatePhrase("温馨提示"),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: translatePhrase("确定"),
+        cancelButtonText: translatePhrase("取消"),
         type: 'warning',
       }
   )
@@ -732,7 +732,7 @@ const turnCollectionFun = (item) => {
           name: item.name,
         }).then((res)=>{
           if (res.result.code === '0') {
-            proxy.$modal.msgSuccess("转动到收藏点成功");
+            proxy.$modal.msgSuccess(translatePhrase("转动到收藏点成功"));
           } else {
             proxy.$modal.msgError(res.result.msg);
           }
@@ -747,9 +747,9 @@ const turnCollectionFun = (item) => {
  * 修改收藏点
  */
 const modifyCollectionFun = (item) => {
-  ElMessageBox.prompt('请输入收藏点名称', '温馨提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt(translatePhrase("请输入收藏点名称"), translatePhrase("温馨提示"), {
+    confirmButtonText: translatePhrase("确定"),
+    cancelButtonText: translatePhrase("取消"),
   })
       .then(({value}) => {
         modifyCollection({
@@ -760,7 +760,7 @@ const modifyCollectionFun = (item) => {
           newName: value,
         }).then((res) => {
           if (res.result.code === '0') {
-            proxy.$modal.msgSuccess("修改收藏点成功");
+            proxy.$modal.msgSuccess(translatePhrase("修改收藏点成功"));
             getCollectionFun()
           } else {
             proxy.$modal.msgError(res.result.msg);

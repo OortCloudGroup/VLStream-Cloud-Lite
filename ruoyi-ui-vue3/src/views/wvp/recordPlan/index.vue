@@ -3,13 +3,13 @@
     <div class="toolbar-with-search">
       <div class="toolbar-left">
         <button type="button" class="exportBtn newBtn flexRowAC" @click="handleAdd" v-hasPermi="['wvp:record:add']">
-          <el-icon class="BtnImg"><Plus /></el-icon>新增
+          <el-icon class="BtnImg"><Plus /></el-icon>{{ $tp("新增") }}
         </button>
       </div>
       <div class="searchHeight_out flexRowAC">
         <search-height-box
           keyword="query"
-          placeholder="请输入关键字"
+          :placeholder="$tp('请输入关键字')"
           :data="searchData"
           @handle="searchResetFn"
         />
@@ -25,23 +25,23 @@
       :data="recordList"
       current-row-key="id"
     >
-      <el-table-column prop="name" label="名称" align="center" show-overflow-tooltip/>
-      <el-table-column prop="channelCount" label="关联通道" align="center"/>
-      <el-table-column prop="updateTime" label="更新时间" align="center"/>
-      <el-table-column prop="createTime" label="创建时间" align="center"/>
-      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+      <el-table-column prop="name" :label="$tp('名称')" align="center" show-overflow-tooltip/>
+      <el-table-column prop="channelCount" :label="$tp('关联通道')" align="center"/>
+      <el-table-column prop="updateTime" :label="$tp('更新时间')" align="center"/>
+      <el-table-column prop="createTime" :label="$tp('创建时间')" align="center"/>
+      <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(220)">
         <template #default="scope">
           <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
             <div class="new_table_svg_group" @click.stop="handleLink(scope.row)" v-hasPermi="['wvp:record:channelList']">
-              <span>关联通道</span>
+              <span>{{ $tp("关联通道") }}</span>
             </div>
             <div class="new_table_svg_group" @click.stop="handleEdit(scope.row)" v-hasPermi="['wvp:record:edit']">
               <el-icon><Edit /></el-icon>
-              <span>编辑</span>
+              <span>{{ $tp("编辑") }}</span>
             </div>
             <div class="new_table_svg_group" @click.stop="handleDelete(scope.row)" v-hasPermi="['wvp:record:delete']">
               <el-icon><Delete /></el-icon>
-              <span>删除</span>
+              <span>{{ $tp("删除") }}</span>
             </div>
           </div>
         </template>
@@ -56,17 +56,17 @@
         @pagination="getList"
     />
 
-    <el-dialog :title="title" v-model="open" width="720px" append-to-body destroy-on-close>
+    <el-dialog :title="$tp(title)" v-model="open" width="720px" append-to-body destroy-on-close>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入名称" />
+        <el-form-item :label="$tp('名称')" prop="name">
+          <el-input v-model="form.name" :placeholder="$tp('请输入名称')" />
         </el-form-item>
-        <el-form-item label="录像时间">
+        <el-form-item :label="$tp('录像时间')">
           <el-radio-group v-model="repeat">
-            <el-radio value="day">每天</el-radio>
-            <el-radio value="next">隔天</el-radio>
-            <el-radio value="week">每周</el-radio>
-            <el-radio value="month">每月</el-radio>
+            <el-radio value="day">{{ $tp("每天") }}</el-radio>
+            <el-radio value="next">{{ $tp("隔天") }}</el-radio>
+            <el-radio value="week">{{ $tp("每周") }}</el-radio>
+            <el-radio value="month">{{ $tp("每月") }}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="open" label-width="0" class="timeline-form-item">
@@ -75,8 +75,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -110,7 +110,7 @@ const data = reactive({
     query: undefined,
   },
   rules: {
-    name: [{ required: true, message: "请输入名称", trigger: "blur" }],
+    name: [{ required: true, get message() { return translatePhrase("请输入名称") }, trigger: "blur" }],
   }
 });
 
@@ -173,11 +173,11 @@ function handleEdit(row) {
 }
 
 function handleDelete(row) {
-  proxy.$modal.confirm("是否确认删除该录制计划？").then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除该录制计划？")).then(function () {
     deleteRecord(row.id).then(() => {
       ElMessage({
         type: "success",
-        message: "删除成功",
+        message: translatePhrase("删除成功"),
       });
       getList();
     });
@@ -193,7 +193,7 @@ function submitForm() {
     if (!valid) return;
     const items = timelineRef.value?.toPlanItemList() || planItemList.value || [];
     if (!items.length) {
-      proxy.$modal.msgWarning("请选择录像时间段");
+      proxy.$modal.msgWarning(translatePhrase("请选择录像时间段"));
       return;
     }
     form.value.planItemList = items;
@@ -201,7 +201,7 @@ function submitForm() {
     req.then(() => {
       open.value = false;
       getList();
-      proxy.$modal.msgSuccess(form.value.id != undefined ? "修改成功" : "新增成功");
+      proxy.$modal.msgSuccess(form.value.id != undefined ? translatePhrase("修改成功") : translatePhrase("新增成功"));
     });
   });
 }

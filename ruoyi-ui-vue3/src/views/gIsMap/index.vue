@@ -4,13 +4,13 @@
     <el-card class="app-card" :body-style="{ padding:'0px !important'}" v-loading="loadingShow">
       <div class="menu-box" v-loading="loadingShow">
 
-        <el-switch v-model="closeDevice" active-text="开启" inactive-text="关闭" inline-prompt/>
+        <el-switch v-model="closeDevice" :active-text="$tp('开启')" :inactive-text="$tp('关闭')" inline-prompt/>
 
         <div v-show="closeDevice">
           <el-tabs v-model="activeNameMode" class="demo-tabs" @tab-click="handleClick" style="width: 350px">
-            <el-tab-pane label="国标设备" name="GB">
+            <el-tab-pane :label="$tp('国标设备')" name="GB">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('请输入设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px"/>
               </div>
               <div class="top">
@@ -38,7 +38,7 @@
 
             <el-tab-pane label="ONVIF" name="ONVIF">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('请输入设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
               <InfiniteList
@@ -58,12 +58,12 @@
                 </div>
               </InfiniteList>
 
-              <el-empty v-if="deviceList.length === 0" :image-size="50" description="暂无数据"/>
+              <el-empty v-if="deviceList.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
             </el-tab-pane>
 
             <el-tab-pane label="RTSP" name="RTSP">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('请输入设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
               <InfiniteList
@@ -83,12 +83,12 @@
                 </div>
               </InfiniteList>
 
-              <el-empty v-if="deviceList.length === 0" :image-size="50" description="暂无数据"/>
+              <el-empty v-if="deviceList.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
             </el-tab-pane>
 
-            <el-tab-pane label="海康" name="ISUP">
+            <el-tab-pane :label="$tp('海康')" name="ISUP">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('请输入设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
               <InfiniteList
@@ -108,12 +108,12 @@
                 </div>
               </InfiniteList>
 
-              <el-empty v-if="deviceList.length === 0" :image-size="50" description="暂无数据"/>
+              <el-empty v-if="deviceList.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
             </el-tab-pane>
 
-            <el-tab-pane label="大华" name="DAHUA">
+            <el-tab-pane :label="$tp('大华')" name="DAHUA">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="请输入设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('请输入设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
               <InfiniteList
@@ -133,15 +133,15 @@
                 </div>
               </InfiniteList>
 
-              <el-empty v-if="deviceList.length === 0" :image-size="50" description="暂无数据"/>
+              <el-empty v-if="deviceList.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
             </el-tab-pane>
 
-            <el-tab-pane label="国标通道" name="GBCHANNEL">
+            <el-tab-pane :label="$tp('国标通道')" name="GBCHANNEL">
               <div>
                 <el-switch
                     v-model="activeValue"
-                    active-text="行政区划"
-                    inactive-text="业务分组"
+                    :active-text="$tp('行政区划')"
+                    :inactive-text="$tp('业务分组')"
                     @change="onSwitch"
                 />
               </div>
@@ -226,16 +226,16 @@
       </div>
       <div class="theme">
         <el-dropdown @command="(command)=>{moreClick(command)}">
-          <span class="el-dropdown-link" style="display: flex; cursor: pointer;"> 主题
+          <span class="el-dropdown-link" style="display: flex; cursor: pointer;"> {{ $tp("主题") }}
             <el-icon class="el-icon--right">
               <arrow-down/>
             </el-icon>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="dark">幻影黑</el-dropdown-item>
-              <el-dropdown-item command="darkblue">极夜蓝</el-dropdown-item>
-              <el-dropdown-item command="grey">雅士灰</el-dropdown-item>
+              <el-dropdown-item command="dark">{{ $tp("幻影黑") }}</el-dropdown-item>
+              <el-dropdown-item command="darkblue">{{ $tp("极夜蓝") }}</el-dropdown-item>
+              <el-dropdown-item command="grey">{{ $tp("雅士灰") }}</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -244,7 +244,7 @@
 
     </el-card>
 
-    <el-dialog v-model="dialogVisible" title="播放视频" width="55%" append-to-body draggable>
+    <el-dialog v-model="dialogVisible" :title="$tp('播放视频')" width="55%" append-to-body draggable>
       <div v-if="playType === '2'" style="width: 100%;height: 100%">
         <Jessibuca :videoUrl="flvUrl" fluent autoplay live
                    :key="'jessibuca'"/>
@@ -260,7 +260,7 @@
       ></video>
 
       <el-row :gutter="10" style="margin-top: 20px" v-if="playType === '1' || playType === '3'">
-        <el-col :span="4"><span style="width: 100px; line-height: 40px; text-align: right;">播放地址：</span></el-col>
+        <el-col :span="4"><span style="width: 100px; line-height: 40px; text-align: right;">{{ $tp("播放地址：") }}</span></el-col>
         <el-col :span="20">
           <el-input v-model="rtspURL" :disabled="true">
             <template #append>
@@ -361,7 +361,7 @@
               <!-- 变倍、聚焦、光圈控制 -->
               <div>
                 <div style="margin-left: 20px;width: 100px;">
-                  聚焦
+                  {{ $tp("聚焦") }}
                   <el-slider v-model="haikangControSpeedFocus" :max="100" :min="-100" @change="haikangFocusCamera"/>
                 </div>
               </div>
@@ -418,33 +418,33 @@
               <div>
                 <div class="ptz-btn-box">
                   <div @mousedown="ptzControlUpStartFun('doubling+')" @mouseup="ptzControlUpEndFun('doubling+')"
-                       title="变倍+">
+                       :title="$tp('变倍+')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomIn/>
                     </el-icon>
                   </div>
                   <div @mousedown="ptzControlUpStartFun('doubling-')" @mouseup="ptzControlUpEndFun('doubling-')"
-                       title="变倍-">
+                       :title="$tp('变倍-')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomOut/>
                     </el-icon>
                   </div>
                 </div>
                 <div class="ptz-btn-box">
-                  <div @mousedown="ptzControlUpStartFun('zoom+')" @mouseup="ptzControlUpEndFun('zoom+')" title="聚焦+">
+                  <div @mousedown="ptzControlUpStartFun('zoom+')" @mouseup="ptzControlUpEndFun('zoom+')" :title="$tp('聚焦+')">
                     <i class="iconfont icon-bianjiao-fangda control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
-                  <div @mousedown="ptzControlUpStartFun('zoom-')" @mouseup="ptzControlUpEndFun('zoom-')" title="聚焦-">
+                  <div @mousedown="ptzControlUpStartFun('zoom-')" @mouseup="ptzControlUpEndFun('zoom-')" :title="$tp('聚焦-')">
                     <i class="iconfont icon-bianjiao-suoxiao control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                 </div>
                 <div class="ptz-btn-box">
                   <div @mousedown="ptzControlUpStartFun('aperture+')" @mouseup="ptzControlUpEndFun('aperture+')"
-                       title="光圈+">
+                       :title="$tp('光圈+')">
                     <i class="iconfont icon-guangquan control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                   <div @mousedown="ptzControlUpStartFun('aperture-')" @mouseup="ptzControlUpEndFun('aperture-')"
-                       title="光圈-">
+                       :title="$tp('光圈-')">
                     <i class="iconfont icon-guangquan- control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                 </div>
@@ -455,28 +455,28 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="dialogChannel" title="通道列表" width="55%" append-to-body draggable>
+    <el-dialog v-model="dialogChannel" :title="$tp('通道列表')" width="55%" append-to-body draggable>
       <el-table v-loading="loading" :data="channelList" ref="channelListTable" border>
-        <el-table-column prop="name" label="名称" min-width="180" align="center"/>
-        <el-table-column prop="deviceId" label="编号" min-width="180" align="center"/>
-        <el-table-column prop="manufacturer" label="厂家" min-width="100" align="center"/>
-        <el-table-column prop="ptzType" label="云台类型" min-width="100" align="center">
+        <el-table-column prop="name" :label="$tp('名称')" min-width="180" align="center"/>
+        <el-table-column prop="deviceId" :label="$tp('编号')" min-width="180" align="center"/>
+        <el-table-column prop="manufacturer" :label="$tp('厂家')" min-width="100" align="center"/>
+        <el-table-column prop="ptzType" :label="$tp('云台类型')" min-width="100" align="center">
           <template #default="scope">
             <div>{{ scope.row.ptzTypeText }}</div>
           </template>
         </el-table-column>
-        <el-table-column label="状态" min-width="100" align="center">
+        <el-table-column :label="$tp('状态')" min-width="100" align="center">
           <template #default="scope">
             <div slot="reference" class="name-wrapper">
-              <el-tag v-if="scope.row.status === 'ON'">在线</el-tag>
-              <el-tag type="info" v-if="scope.row.status !== 'ON'">离线</el-tag>
+              <el-tag v-if="scope.row.status === 'ON'">{{ $tp("在线") }}</el-tag>
+              <el-tag type="info" v-if="scope.row.status !== 'ON'">{{ $tp("离线") }}</el-tag>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width" fixed="right">
+        <el-table-column :label="$tp('操作')" align="center" width="150" class-name="small-padding fixed-width" fixed="right">
           <template #default="scope">
             <el-button v-if="checkPermi(['wvp:play:start'])"
-                       type="text" @click="start(scope.row)">播放
+                       type="text" @click="start(scope.row)">{{ $tp("播放") }}
             </el-button>
           </template>
         </el-table-column>
@@ -492,9 +492,9 @@
       />
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body draggable>
+    <el-dialog :title="$tp('播放视频')" v-model="openPlay" width="65%" append-to-body draggable>
       <el-tabs v-model="activeName" type="card" :stretch="true">
-        <el-tab-pane label="flv播放" name="flv">
+        <el-tab-pane :label="$tp('flv播放')" name="flv">
           <el-row>
             <el-col :span="24">
               <div class="player" v-if="activeName === 'flv'">
@@ -517,24 +517,24 @@
       </el-tabs>
 
       <el-tabs v-model="tabActiveName" type="card" :stretch="true" style="margin-top: 10px;">
-        <el-tab-pane label="实时视频" name="media">
+        <el-tab-pane :label="$tp('实时视频')" name="media">
           <el-row :gutter="10">
-            <el-col :span="2"><span style="width: 80px; line-height: 40px; text-align: right;">播放地址：</span></el-col>
+            <el-col :span="2"><span style="width: 80px; line-height: 40px; text-align: right;">{{ $tp("播放地址：") }}</span></el-col>
             <el-col :span="18">
               <el-input v-model="vUrl" :disabled="true" v-show="activeName === 'flv'">
-                <template #prepend>flv地址</template>
+                <template #prepend>{{ $tp("flv地址") }}</template>
                 <template #append>
                   <el-button type="primary" :icon="DocumentCopy" @click="copyToClipboard(vUrl)"/>
                 </template>
               </el-input>
               <el-input v-model="rtcUrl" :disabled="true" v-show="activeName === 'webRtc'">
-                <template #prepend>rtcUrl地址</template>
+                <template #prepend>{{ $tp("rtcUrl地址") }}</template>
                 <template #append>
                   <el-button type="primary" :icon="DocumentCopy" @click="copyToClipboard(rtcUrl)"/>
                 </template>
               </el-input>
               <el-input v-model="wsUrl" :disabled="true" v-show="activeName === 'H265'">
-                <template #prepend>wsUrl地址</template>
+                <template #prepend>{{ $tp("wsUrl地址") }}</template>
                 <template #append>
                   <el-button type="primary" :icon="DocumentCopy" @click="copyToClipboard(wsUrl)"/>
                 </template>
@@ -545,11 +545,11 @@
             </el-col>
           </el-row>
         </el-tab-pane>
-        <el-tab-pane label="编码信息" name="codec">
+        <el-tab-pane :label="$tp('编码信息')" name="codec">
           <MediaInfo v-if="tabActiveName === 'codec'" ref="mediaInfo" :app="streamInfo.app" :stream="streamInfo.stream"
                      :mediaServerId="streamInfo.mediaServerId"></MediaInfo>
         </el-tab-pane>
-        <el-tab-pane label="云台控制" name="control">
+        <el-tab-pane :label="$tp('云台控制')" name="control">
           <div style="display: grid; grid-template-columns: 240px auto; height: 180px; overflow: auto">
             <!-- 左侧控制区域 -->
             <div style="display: grid; grid-template-columns: 100px auto;">
@@ -590,30 +590,30 @@
               <!-- 变倍、聚焦、光圈控制 -->
               <div>
                 <div class="ptz-btn-box">
-                  <div @mousedown="ptzCamera('zoomin')" @mouseup="ptzCamera('stop')" title="变倍+">
+                  <div @mousedown="ptzCamera('zoomin')" @mouseup="ptzCamera('stop')" :title="$tp('变倍+')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomIn/>
                     </el-icon>
                   </div>
-                  <div @mousedown="ptzCamera('zoomout')" @mouseup="ptzCamera('stop')" title="变倍-">
+                  <div @mousedown="ptzCamera('zoomout')" @mouseup="ptzCamera('stop')" :title="$tp('变倍-')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomOut/>
                     </el-icon>
                   </div>
                 </div>
                 <div class="ptz-btn-box">
-                  <div @mousedown="focusCamera('near')" @mouseup="focusCamera('stop')" title="聚焦+">
+                  <div @mousedown="focusCamera('near')" @mouseup="focusCamera('stop')" :title="$tp('聚焦+')">
                     <i class="iconfont icon-bianjiao-fangda control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
-                  <div @mousedown="focusCamera('far')" @mouseup="focusCamera('stop')" title="聚焦-">
+                  <div @mousedown="focusCamera('far')" @mouseup="focusCamera('stop')" :title="$tp('聚焦-')">
                     <i class="iconfont icon-bianjiao-suoxiao control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                 </div>
                 <div class="ptz-btn-box">
-                  <div @mousedown="irisCamera('in')" @mouseup="irisCamera('stop')" title="光圈+">
+                  <div @mousedown="irisCamera('in')" @mouseup="irisCamera('stop')" :title="$tp('光圈+')">
                     <i class="iconfont icon-guangquan control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
-                  <div @mousedown="irisCamera('out')" @mouseup="irisCamera('stop')" title="光圈-">
+                  <div @mousedown="irisCamera('out')" @mouseup="irisCamera('stop')" :title="$tp('光圈-')">
                     <i class="iconfont icon-guangquan- control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                 </div>
@@ -625,13 +625,13 @@
               <el-select
                   v-model="ptzMethod"
                   style="width: 100%"
-                  placeholder="请选择云台功能"
+                  :placeholder="$tp('请选择云台功能')"
               >
-                <el-option label="预置点" value="preset"></el-option>
-                <el-option label="巡航组" value="cruise"></el-option>
-                <el-option label="自动扫描" value="scan"></el-option>
-                <el-option label="雨刷" value="wiper"></el-option>
-                <el-option label="辅助开关" value="switch"></el-option>
+                <el-option :label="$tp('预置点')" value="preset"></el-option>
+                <el-option :label="$tp('巡航组')" value="cruise"></el-option>
+                <el-option :label="$tp('自动扫描')" value="scan"></el-option>
+                <el-option :label="$tp('雨刷')" value="wiper"></el-option>
+                <el-option :label="$tp('辅助开关')" value="switch"></el-option>
               </el-select>
 
 
@@ -648,11 +648,11 @@
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="语音对讲" name="broadcast">
+        <el-tab-pane :label="$tp('语音对讲')" name="broadcast">
           <div style="padding: 0 10px">
             <el-radio-group v-model="broadcastMode" :disabled="broadcastStatus !== -1">
-              <el-radio :label="true">喊话(Broadcast)</el-radio>
-              <el-radio :label="false">对讲(Talk)</el-radio>
+              <el-radio :label="true">{{ $tp("喊话(Broadcast)") }}</el-radio>
+              <el-radio :label="false">{{ $tp("对讲(Talk)") }}</el-radio>
             </el-radio-group>
           </div>
 
@@ -660,10 +660,10 @@
             <el-button @click="broadcastStatusClick()" :type="getBroadcastStatus()" :disabled="broadcastStatus === -2"
                        circle :icon="Microphone" style="font-size: 32px; padding: 24px;margin-top: 24px;"/>
             <p>
-              <span v-if="broadcastStatus === -2">正在释放资源</span>
-              <span v-if="broadcastStatus === -1">点击开始对讲</span>
-              <span v-if="broadcastStatus === 0">等待接通中...</span>
-              <span v-if="broadcastStatus === 1">请说话</span>
+              <span v-if="broadcastStatus === -2">{{ $tp("正在释放资源") }}</span>
+              <span v-if="broadcastStatus === -1">{{ $tp("点击开始对讲") }}</span>
+              <span v-if="broadcastStatus === 0">{{ $tp("等待接通中...") }}</span>
+              <span v-if="broadcastStatus === 1">{{ $tp("请说话") }}</span>
             </p>
           </div>
         </el-tab-pane>
@@ -881,7 +881,7 @@ async function getDeviceListFun() {
         groupTrees.value = [
           {
             id: 0,
-            name: "根资源组",
+            get name() { return translatePhrase("根资源组") },
             type: 0,
             children: ans1
           }
@@ -891,7 +891,7 @@ async function getDeviceListFun() {
         regionTrees.value = [
           {
             id: 0,
-            name: "根资源组",
+            get name() { return translatePhrase("根资源组") },
             type: 0,
             children: ans2
           }
@@ -1067,7 +1067,7 @@ const loadNode = async (node, resolve) => {
     return resolve([{
       treeId: "",
       deviceId: "",
-      name: "根资源组",
+      get name() { return translatePhrase("根资源组") },
       isLeaf: false,
       type: 0
     }]);
@@ -1364,7 +1364,7 @@ const addDeviceMarkers = (AMap, data) => {
     const marker = new AMap.Marker({
       position: [parseFloat(device.lng), parseFloat(device.lat)],
       icon: icon,
-      title: device.name || "未命名设备",
+      title: device.name || translatePhrase("未命名设备"),
       extData: device,
     });
     marker.on("click", async (e) => {
@@ -1465,13 +1465,13 @@ const getKey = async (data) => {
 
 const copyToClipboard = async (text) => {
   if (!text) {
-    ElMessage.error('内容为空，无法复制');
+    ElMessage.error(translatePhrase("内容为空，无法复制"));
     return;
   }
 
   try {
     await toClipboard(text)
-    ElMessage.success('成功拷贝到粘贴板');
+    ElMessage.success(translatePhrase("成功拷贝到粘贴板"));
   } catch (e) {
     console.error(e)
   }
@@ -1501,7 +1501,7 @@ const focusCamera = async (command) => {
     speed: parseInt(controSpeed.value * 255 / 100),
   }
   await getFocusCamera(url, params);
-  ElMessage.success('操作成功！');
+  ElMessage.success(translatePhrase("操作成功！"));
 }
 
 const irisCamera = async (command) => {
@@ -1514,7 +1514,7 @@ const irisCamera = async (command) => {
     speed: parseInt(controSpeed.value * 255 / 100),
   }
   await getIrIsCamera(url, params);
-  ElMessage.success('操作成功！');
+  ElMessage.success(translatePhrase("操作成功！"));
 }
 
 const broadcastStatusClick = async () => {
@@ -1534,7 +1534,7 @@ const broadcastStatusClick = async () => {
     }).catch(() => {
       ElMessage({
         showClose: true,
-        message: '网络开小差了',
+        message: translatePhrase("网络开小差了"),
         type: 'error',
       });
     })
@@ -1578,7 +1578,7 @@ const startBroadcast = async (url) => {
     console.error('offer anwser 交换失败', e);
     ElMessage({
       showClose: true,
-      message: 'offer anwser 交换失败' + e,
+      message: translatePhrase("offer anwser 交换失败") + e,
       type: 'error',
     });
     broadcastStatus.value = -1;
@@ -1599,7 +1599,7 @@ const startBroadcast = async (url) => {
     console.error('ICE 协商出错')
     ElMessage({
       showClose: true,
-      message: 'ICE 协商出错',
+      message: translatePhrase("ICE 协商出错"),
       type: 'error'
     });
     broadcastStatus.value = -1;
@@ -1609,7 +1609,7 @@ const startBroadcast = async (url) => {
     console.error('offer anwser 交换失败', e)
     ElMessage({
       showClose: true,
-      message: 'offer anwser 交换失败' + e,
+      message: translatePhrase("offer anwser 交换失败") + e,
       type: 'error'
     });
     broadcastStatus.value = -1;
@@ -1630,7 +1630,7 @@ const startBroadcast = async (url) => {
     console.log('捕获流失败', e)
     ElMessage({
       showClose: true,
-      message: '捕获流失败' + e,
+      message: translatePhrase("捕获流失败") + e,
       type: 'error'
     });
     broadcastStatus.value = -1;

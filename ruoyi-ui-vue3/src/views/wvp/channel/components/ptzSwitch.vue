@@ -5,7 +5,7 @@
         <el-input
             min="1"
             max="4095"
-            placeholder="开关编号"
+            :placeholder="$tp('开关编号')"
             addonBefore="开关编号"
             addonAfter="(2-255)"
             v-model="switchId"
@@ -14,8 +14,8 @@
         </el-input>
       </el-form-item>
       <el-form-item>
-        <el-button size="mini" @click="() => open('on')">开启</el-button>
-        <el-button size="mini" @click="() => open('off')">关闭</el-button>
+        <el-button size="mini" @click="() => open('on')">{{ $tp("开启") }}</el-button>
+        <el-button size="mini" @click="() => open('off')">{{ $tp("关闭") }}</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -50,13 +50,13 @@ const open = async (command) => {
   await GetPtzSwitch(url.value, {command: command,switchId: switchId.value}).then(() => {
     ElMessage({
       showClose: true,
-      message: '保存成功',
+      message: translatePhrase("保存成功"),
       type: 'success',
     });
   }).catch((error) => {
     ElMessage({
       showClose: true,
-      message: error?.message || '请求失败',
+      message: error?.message || translatePhrase("请求失败"),
       type: 'error',
     });
   }).finally(() => {

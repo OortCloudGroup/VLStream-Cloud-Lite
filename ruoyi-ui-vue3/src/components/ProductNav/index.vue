@@ -90,8 +90,8 @@ defineExpose({ applyGroup, syncFromRoute })
   position: relative;
   height: 64px;
   line-height: 64px;
-  padding: 0 20px;
-  font-size: 18px;
+  padding: 0 clamp(8px, 1.4vw, 20px);
+  font-size: clamp(14px, 1.25vw, 18px);
   color: var(--top-nav-text);
   cursor: pointer;
   user-select: none;
@@ -119,6 +119,13 @@ defineExpose({ applyGroup, syncFromRoute })
       background: var(--el-color-primary);
       transform: translateX(-50%);
     }
+  }
+}
+
+@media (max-width: 680px) {
+  .product-nav__item {
+    padding-inline: 6px;
+    font-size: 13px;
   }
 }
 </style>

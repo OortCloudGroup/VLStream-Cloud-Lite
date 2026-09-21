@@ -7,16 +7,16 @@
           class="demo-tabs"
           @tab-click="handleClick"
       >
-        <el-tab-pane label="人脸" name="face">
+        <el-tab-pane :label="$tp('人脸')" name="face">
           <FaceManage v-if="ape.apeId" :device-id="ape.apeId" />
         </el-tab-pane>
-        <el-tab-pane label="人员" name="person">
+        <el-tab-pane :label="$tp('人员')" name="person">
           <PersonManage v-if="ape.apeId" :device-id="ape.apeId" />
         </el-tab-pane>
-        <el-tab-pane label="机动车" name="motorVehicle">
+        <el-tab-pane :label="$tp('机动车')" name="motorVehicle">
           <MotorVehicleManage v-if="ape.apeId" :device-id="ape.apeId" />
         </el-tab-pane>
-        <el-tab-pane label="非机动车" name="nonmotorVehicle">
+        <el-tab-pane :label="$tp('非机动车')" name="nonmotorVehicle">
           <NonmotorVehicleManage v-if="ape.apeId" :device-id="ape.apeId" />
         </el-tab-pane>
       </el-tabs>
@@ -52,7 +52,7 @@ function getList(){
 
 onMounted(() => {
   if(route.query.apeId === undefined || route.query.apeId === ""){
-    proxy.$modal.msgError("APE设备id为空");
+    proxy.$modal.msgError(translatePhrase("APE设备id为空"));
   } else {
     ape.value = route.query;
     getList();

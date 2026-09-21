@@ -6,7 +6,7 @@
         <pane size="16">
           <el-col>
             <div class="head-container">
-              <el-input v-model="deptName" placeholder="请输入部门名称" clearable prefix-icon="Search" style="margin-bottom: 20px" />
+              <el-input v-model="deptName" :placeholder="$tp('请输入部门名称')" clearable prefix-icon="Search" style="margin-bottom: 20px" />
             </div>
             <div class="head-container">
               <el-tree :data="deptOptions" :props="{ label: 'label', children: 'children' }" :expand-on-click-node="false" :filter-node-method="filterNode" ref="deptTreeRef" node-key="id" highlight-current default-expand-all @node-click="handleNodeClick" />
@@ -19,14 +19,14 @@
             <div class="toolbar-with-search">
               <div class="toolbar-left">
                 <button type="button" class="exportBtn newBtn flexRowAC" @click="handleAdd" v-hasPermi="['system:user:add']">
-                  <el-icon class="BtnImg"><Plus /></el-icon>新增
+                  <el-icon class="BtnImg"><Plus /></el-icon>{{ $tp("新增") }}
                 </button>
                 <button-group :button-list="toolbarButtons" />
               </div>
               <div class="searchHeight_out flexRowAC">
                 <search-height-box
                   keyword="userName"
-                  placeholder="请输入用户名称等关键词"
+                  :placeholder="$tp('请输入用户名称等关键词')"
                   :data="searchData"
                   @handle="searchResetFn"
                 />
@@ -44,12 +44,12 @@
               @selection-change="handleSelectionChange"
             >
               <el-table-column type="selection" :width="clacPXToVW(55)" align="center" />
-              <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" />
-              <el-table-column label="用户名称" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-              <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-              <el-table-column label="部门" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-              <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible" :width="clacPXToVW(120)" />
-              <el-table-column label="状态" align="center" key="status" v-if="columns[5].visible" :width="clacPXToVW(100)">
+              <el-table-column :label="$tp('用户编号')" align="center" key="userId" prop="userId" v-if="columns[0].visible" />
+              <el-table-column :label="$tp('用户名称')" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
+              <el-table-column :label="$tp('用户昵称')" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+              <el-table-column :label="$tp('部门')" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+              <el-table-column :label="$tp('手机号码')" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible" :width="clacPXToVW(120)" />
+              <el-table-column :label="$tp('状态')" align="center" key="status" v-if="columns[5].visible" :width="clacPXToVW(100)">
                 <template #default="scope">
                   <el-switch
                     v-model="scope.row.status"
@@ -59,31 +59,31 @@
                   ></el-switch>
                 </template>
               </el-table-column>
-              <el-table-column label="创建时间" align="center" prop="createTime" v-if="columns[6].visible" :width="clacPXToVW(160)">
+              <el-table-column :label="$tp('创建时间')" align="center" prop="createTime" v-if="columns[6].visible" :width="clacPXToVW(160)">
                 <template #default="scope">
                   <span>{{ parseTime(scope.row.createTime) }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+              <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(220)">
                 <template #default="scope">
                   <div class="operateAppBox flexRowAC" style="justify-content: flex-end;" v-if="scope.row.userId !== 1">
                     <div class="new_table_svg_group" @click.stop="handleUpdate(scope.row)" v-hasPermi="['system:user:edit']">
                       <el-icon><Edit /></el-icon>
-                      <span>修改</span>
+                      <span>{{ $tp("修改") }}</span>
                     </div>
                     <div class="new_table_svg_group" @click.stop="handleDelete(scope.row)" v-hasPermi="['system:user:remove']">
                       <el-icon><Delete /></el-icon>
-                      <span>删除</span>
+                      <span>{{ $tp("删除") }}</span>
                     </div>
                     <el-dropdown @command="(command)=>{userMoreClick(command, scope.row)}">
                       <div class="new_table_svg_group" @click.stop>
-                        <span>更多</span>
+                        <span>{{ $tp("更多") }}</span>
                         <el-icon><ArrowDown /></el-icon>
                       </div>
                       <template #dropdown>
                         <el-dropdown-menu>
-                          <el-dropdown-item command="handleResetPwd" v-if="checkPermi(['system:user:resetPwd'])">重置密码</el-dropdown-item>
-                          <el-dropdown-item command="handleAuthRole" v-if="checkPermi(['system:user:edit'])">分配角色</el-dropdown-item>
+                          <el-dropdown-item command="handleResetPwd" v-if="checkPermi(['system:user:resetPwd'])">{{ $tp("重置密码") }}</el-dropdown-item>
+                          <el-dropdown-item command="handleAuthRole" v-if="checkPermi(['system:user:edit'])">{{ $tp("分配角色") }}</el-dropdown-item>
                         </el-dropdown-menu>
                       </template>
                     </el-dropdown>
@@ -98,54 +98,54 @@
     </el-row>
 
     <!-- 添加或修改用户配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="40%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="open" width="40%" append-to-body>
       <el-form :model="form" :rules="rules" ref="userRef" label-width="80px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户昵称" prop="nickName">
-              <el-input v-model="form.nickName" placeholder="请输入用户昵称" maxlength="30" />
+            <el-form-item :label="$tp('用户昵称')" prop="nickName">
+              <el-input v-model="form.nickName" :placeholder="$tp('请输入用户昵称')" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="归属部门" prop="deptId">
-              <el-tree-select v-model="form.deptId" :data="enabledDeptOptions" :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" placeholder="请选择归属部门" check-strictly />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="手机号码" prop="phonenumber">
-              <el-input v-model="form.phonenumber" placeholder="请输入手机号码" maxlength="11" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="邮箱" prop="email">
-              <el-input v-model="form.email" placeholder="请输入邮箱" maxlength="50" />
+            <el-form-item :label="$tp('归属部门')" prop="deptId">
+              <el-tree-select v-model="form.deptId" :data="enabledDeptOptions" :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" :placeholder="$tp('请选择归属部门')" check-strictly />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户名称" prop="userName">
-              <el-input v-model="form.userName" placeholder="请输入用户名称" maxlength="30" />
+            <el-form-item :label="$tp('手机号码')" prop="phonenumber">
+              <el-input v-model="form.phonenumber" :placeholder="$tp('请输入手机号码')" maxlength="11" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户密码" prop="password">
-              <el-input v-model="form.password" placeholder="请输入用户密码" type="password" maxlength="20" show-password />
+            <el-form-item :label="$tp('邮箱')" prop="email">
+              <el-input v-model="form.email" :placeholder="$tp('请输入邮箱')" maxlength="50" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户性别">
-              <el-select v-model="form.sex" placeholder="请选择">
+            <el-form-item v-if="form.userId == undefined" :label="$tp('用户名称')" prop="userName">
+              <el-input v-model="form.userName" :placeholder="$tp('请输入用户名称')" maxlength="30" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item v-if="form.userId == undefined" :label="$tp('用户密码')" prop="password">
+              <el-input v-model="form.password" :placeholder="$tp('请输入用户密码')" type="password" maxlength="20" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$tp('用户性别')">
+              <el-select v-model="form.sex" :placeholder="$tp('请选择')">
                 <el-option v-for="dict in sys_user_sex" :key="dict.value" :label="dict.label" :value="dict.value"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="状态">
+            <el-form-item :label="$tp('状态')">
               <el-radio-group v-model="form.status">
                 <el-radio v-for="dict in sys_normal_disable" :key="dict.value" :value="dict.value">{{ dict.label }}</el-radio>
               </el-radio-group>
@@ -154,15 +154,15 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="岗位">
-              <el-select v-model="form.postIds" multiple placeholder="请选择">
+            <el-form-item :label="$tp('岗位')">
+              <el-select v-model="form.postIds" multiple :placeholder="$tp('请选择')">
                 <el-option v-for="item in postOptions" :key="item.postId" :label="item.postName" :value="item.postId" :disabled="item.status == 1"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="角色">
-              <el-select v-model="form.roleIds" multiple placeholder="请选择">
+            <el-form-item :label="$tp('角色')">
+              <el-select v-model="form.roleIds" multiple :placeholder="$tp('请选择')">
                 <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId" :disabled="item.status == 1"></el-option>
               </el-select>
             </el-form-item>
@@ -170,39 +170,39 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="备注">
-              <el-input v-model="form.remark" type="textarea" placeholder="请输入内容"></el-input>
+            <el-form-item :label="$tp('备注')">
+              <el-input v-model="form.remark" type="textarea" :placeholder="$tp('请输入内容')"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 用户导入对话框 -->
-    <el-dialog :title="upload.title" v-model="upload.open" width="26%" append-to-body>
+    <el-dialog :title="$tp(upload.title)" v-model="upload.open" width="26%" append-to-body>
       <el-upload ref="uploadRef" :limit="1" accept=".xlsx, .xls" :headers="upload.headers" :action="upload.url + '?updateSupport=' + upload.updateSupport" :disabled="upload.isUploading" :on-progress="handleFileUploadProgress" :on-success="handleFileSuccess" :auto-upload="false" drag>
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <div class="el-upload__text">{{ $tp("将文件拖到此处，或") }}<em>{{ $tp("点击上传") }}</em></div>
         <template #tip>
           <div class="el-upload__tip text-center">
             <div class="el-upload__tip">
-              <el-checkbox v-model="upload.updateSupport" />是否更新已经存在的用户数据
+              <el-checkbox v-model="upload.updateSupport" />{{ $tp("是否更新已经存在的用户数据") }}
             </div>
-            <span>仅允许导入xls、xlsx格式文件。</span>
-            <el-link type="primary" :underline="false" style="font-size: 12px; vertical-align: baseline" @click="importTemplate">下载模板</el-link>
+            <span>{{ $tp("仅允许导入xls、xlsx格式文件。") }}</span>
+            <el-link type="primary" :underline="false" style="font-size: 12px; vertical-align: baseline" @click="importTemplate">{{ $tp("下载模板") }}</el-link>
           </div>
         </template>
       </el-upload>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitFileForm">确 定</el-button>
-          <el-button @click="upload.open = false">取 消</el-button>
+          <el-button type="primary" @click="submitFileForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="upload.open = false">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -228,16 +228,16 @@ const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
 const searchData = computed(() => [
-  { label: '手机号码', value: 'phonenumber', type: 'text', default: '' },
+  { get label() { return translatePhrase("手机号码") }, value: 'phonenumber', type: 'text', default: '' },
   {
-    label: '状态',
+    get label() { return translatePhrase("状态") },
     value: 'status',
     type: 'select',
     option: (sys_normal_disable.value || []).map(d => ({ label: d.label, value: d.value })),
     default: undefined
   },
   {
-    label: '创建时间',
+    get label() { return translatePhrase("创建时间") },
     value: 'dateRange',
     type: 'daterange',
     startP: '开始日期',
@@ -251,9 +251,9 @@ const single = ref(true);
 const multiple = ref(true);
 
 const toolbarButtons = computed(() => [
-  { name: '修改', svg: 'edit', disabled: single.value, permi: ['system:user:edit'], clickFn: () => handleUpdate() },
-  { name: '删除', svg: 'delete', disabled: multiple.value, permi: ['system:user:remove'], clickFn: () => handleDelete() },
-  { name: '导入', svg: 'upload', permi: ['system:user:import'], clickFn: () => handleImport() }
+  { get name() { return translatePhrase("修改") }, svg: 'edit', disabled: single.value, permi: ['system:user:edit'], clickFn: () => handleUpdate() },
+  { get name() { return translatePhrase("删除") }, svg: 'delete', disabled: multiple.value, permi: ['system:user:remove'], clickFn: () => handleDelete() },
+  { get name() { return translatePhrase("导入") }, svg: 'upload', permi: ['system:user:import'], clickFn: () => handleImport() }
 ]);
 const total = ref(0);
 const title = ref("");
@@ -281,13 +281,13 @@ const upload = reactive({
 });
 // 列显隐信息
 const columns = ref([
-  { key: 0, label: `用户编号`, visible: true },
-  { key: 1, label: `用户名称`, visible: true },
-  { key: 2, label: `用户昵称`, visible: true },
-  { key: 3, label: `部门`, visible: true },
-  { key: 4, label: `手机号码`, visible: true },
-  { key: 5, label: `状态`, visible: true },
-  { key: 6, label: `创建时间`, visible: true }
+  { key: 0, get label() { return translatePhrase("用户编号") }, visible: true },
+  { key: 1, get label() { return translatePhrase("用户名称") }, visible: true },
+  { key: 2, get label() { return translatePhrase("用户昵称") }, visible: true },
+  { key: 3, get label() { return translatePhrase("部门") }, visible: true },
+  { key: 4, get label() { return translatePhrase("手机号码") }, visible: true },
+  { key: 5, get label() { return translatePhrase("状态") }, visible: true },
+  { key: 6, get label() { return translatePhrase("创建时间") }, visible: true }
 ]);
 
 const data = reactive({
@@ -301,11 +301,11 @@ const data = reactive({
     deptId: undefined
   },
   rules: {
-    userName: [{ required: true, message: "用户名称不能为空", trigger: "blur" }, { min: 2, max: 20, message: "用户名称长度必须介于 2 和 20 之间", trigger: "blur" }],
-    nickName: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
-    password: [{ required: true, message: "用户密码不能为空", trigger: "blur" }, { min: 5, max: 20, message: "用户密码长度必须介于 5 和 20 之间", trigger: "blur" }, { pattern: /^[^<>"'|\\]+$/, message: "不能包含非法字符：< > \" ' \\\ |", trigger: "blur" }],
-    email: [{ type: "email", message: "请输入正确的邮箱地址", trigger: ["blur", "change"] }],
-    phonenumber: [{ pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur" }]
+    userName: [{ required: true, get message() { return translatePhrase("用户名称不能为空") }, trigger: "blur" }, { min: 2, max: 20, get message() { return translatePhrase("用户名称长度必须介于 2 和 20 之间") }, trigger: "blur" }],
+    nickName: [{ required: true, get message() { return translatePhrase("用户昵称不能为空") }, trigger: "blur" }],
+    password: [{ required: true, get message() { return translatePhrase("用户密码不能为空") }, trigger: "blur" }, { min: 5, max: 20, get message() { return translatePhrase("用户密码长度必须介于 5 和 20 之间") }, trigger: "blur" }, { pattern: /^[^<>"'|\\]+$/, get message() { return translatePhrase("不能包含非法字符：< > \" ' \\ |") }, trigger: "blur" }],
+    email: [{ type: "email", get message() { return translatePhrase("请输入正确的邮箱地址") }, trigger: ["blur", "change"] }],
+    phonenumber: [{ pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, get message() { return translatePhrase("请输入正确的手机号码") }, trigger: "blur" }]
   }
 });
 
@@ -389,11 +389,11 @@ function resetQuery() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const userIds = row?.userId || ids.value;
-  proxy.$modal.confirm('是否确认删除用户编号为"' + userIds + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除用户编号为\"") + userIds + translatePhrase("\"的数据项？")).then(function () {
     return delUser(userIds);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {});
 };
 
@@ -413,10 +413,10 @@ function handleExportType(type) {
 /** 用户状态修改  */
 function handleStatusChange(row) {
   let text = row.status === "0" ? "启用" : "停用";
-  proxy.$modal.confirm('确认要"' + text + '""' + row.userName + '"用户吗?').then(function () {
+  proxy.$modal.confirm(translatePhrase("确认要\"") + text + '""' + row.userName + translatePhrase("\"用户吗?")).then(function () {
     return changeUserStatus(row.userId, row.status);
   }).then(() => {
-    proxy.$modal.msgSuccess(text + "成功");
+    proxy.$modal.msgSuccess(text + translatePhrase("成功"));
   }).catch(function () {
     row.status = row.status === "0" ? "1" : "0";
   });
@@ -465,7 +465,7 @@ function handleResetPwd(row) {
     },
   }).then(({ value }) => {
     resetUserPwd(row.userId, value).then(response => {
-      proxy.$modal.msgSuccess("修改成功，新密码是：" + value);
+      proxy.$modal.msgSuccess(translatePhrase("修改成功，新密码是：") + value);
     });
   }).catch(() => {});
 };
@@ -479,7 +479,7 @@ function handleSelectionChange(selection) {
 
 /** 导入按钮操作 */
 function handleImport() {
-  upload.title = "用户导入";
+  upload.title = translatePhrase("用户导入");
   upload.open = true;
 };
 
@@ -567,13 +567,13 @@ function submitForm() {
     if (valid) {
       if (form.value.userId != undefined) {
         updateUser(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(translatePhrase("修改成功"));
           open.value = false;
           getList();
         });
       } else {
         addUser(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(translatePhrase("新增成功"));
           open.value = false;
           getList();
         });

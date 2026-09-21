@@ -1,7 +1,7 @@
 <template>
   <div class="exportExcelPDF flexRowAC">
     <el-dropdown trigger="hover">
-      <el-button class="exportBtn Btn2 flexRowAC" title="导出">
+      <el-button class="exportBtn Btn2 flexRowAC" :title="$tp('导出')">
         <svg-icon class="BtnImg export" icon-class="export" />
         <div class="line" />
         <el-icon>

@@ -11,7 +11,7 @@
           class="btn-group-icon"
           :icon-class="item.svg"
         />
-        <span>{{ item.name }}</span>
+        <span>{{ $tp(item.name) }}</span>
         <el-dropdown v-if="item.children && item.children.length > 0" @click.stop>
           <div class="new_table_svg_group new_item_more">
             <svg-icon class="btn-group-icon" icon-class="more" />
@@ -29,7 +29,7 @@
                     class="btn-group-icon"
                     :icon-class="itd.svg"
                   />
-                  <span>{{ itd.name }}</span>
+                  <span>{{ $tp(itd.name) }}</span>
                 </div>
               </el-dropdown-item>
             </el-dropdown-menu>

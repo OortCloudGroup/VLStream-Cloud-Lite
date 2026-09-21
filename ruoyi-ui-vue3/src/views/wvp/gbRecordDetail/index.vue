@@ -1,21 +1,21 @@
 <template>
   <div class="detail-page">
     <detail-page-header
-      parent-title="国标设备"
-      title="设备录像"
+      :parent-title="$tp('国标设备')"
+      :title="$tp('设备录像')"
       back-path="/gbmanger/device"
     />
     <div class="detail-body">
     <div style="margin-bottom: 10px;">
-      <el-alert style="margin-bottom: 10px;" title="日期和时间不要选择太大要不然会很卡，解决方法：自行搭配el-table-v2" type="error" />
-      <el-alert title="关于分页问题自行查看国标文件9.7，能否分页取决于厂家是否支持分页功能" type="error" />
+      <el-alert style="margin-bottom: 10px;" :title="$tp('日期和时间不要选择太大要不然会很卡，解决方法：自行搭配el-table-v2')" type="error" />
+      <el-alert :title="$tp('关于分页问题自行查看国标文件9.7，能否分页取决于厂家是否支持分页功能')" type="error" />
     </div>
     <div class="toolbar-with-search">
       <div class="toolbar-left" />
       <div class="searchHeight_out flexRowAC">
         <search-height-box
           keyword="query"
-          placeholder="请通过高级筛选选择时间与类型"
+          :placeholder="$tp('请通过高级筛选选择时间与类型')"
           :data="searchData"
           @handle="searchResetFn"
         />
@@ -23,40 +23,40 @@
       </div>
     </div>
     <table-self :data="detailFiles" height="600" class="new_table" header-cell-class-name="header_tenant_cell" stripe>
-      <el-table-column label="设备ID" align="center" prop="deviceId" />
-      <el-table-column label="位置" align="center" prop="address">
+      <el-table-column :label="$tp('设备ID')" align="center" prop="deviceId" />
+      <el-table-column :label="$tp('位置')" align="center" prop="address">
         <template #default="scope">
           <span v-if="scope.row.address">{{scope.row.address}}</span>
-          <span v-else>无</span>
+          <span v-else>{{ $tp("无") }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开始时间" align="center" prop="startTime" />
-      <el-table-column label="结束时间" align="center" prop="endTime" />
-      <el-table-column label="类型" align="center" prop="type">
+      <el-table-column :label="$tp('开始时间')" align="center" prop="startTime" />
+      <el-table-column :label="$tp('结束时间')" align="center" prop="endTime" />
+      <el-table-column :label="$tp('类型')" align="center" prop="type">
         <template #default="scope">
           <el-tag v-for="item in getMatchingType(scope.row.type)" :key="item.value">
             {{ item.label }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(180)">
+      <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(180)">
         <template #default="scope">
           <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
             <div class="new_table_svg_group" @click.stop="playRecord(scope.row)" v-hasPermi="['gb:playback:start']">
               <el-icon><View /></el-icon>
-              <span>播放</span>
+              <span>{{ $tp("播放") }}</span>
             </div>
             <div class="new_table_svg_group" @click.stop="downloadFun(scope.row)" v-hasPermi="['gb:record:download']">
               <el-icon><Download /></el-icon>
-              <span>下载</span>
+              <span>{{ $tp("下载") }}</span>
             </div>
           </div>
         </template>
       </el-table-column>
     </table-self>
-    <div style="margin-top: 20px; display: flex; justify-content: flex-end;">总条数： {{detailFiles.length}}</div>
+    <div style="margin-top: 20px; display: flex; justify-content: flex-end;">{{ $tp("总条数：") }} {{detailFiles.length}}</div>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="65%" append-to-body>
+    <el-dialog :title="$tp('播放视频')" v-model="openPlay" width="65%" append-to-body>
       <div class="player">
         <easy-player class="player" :video-url="videoUrl" autoplay :live="true"></easy-player>
       </div>
@@ -100,19 +100,19 @@ const openPlay = ref(false)
 const optionsType = ref([
   {
     value: 'time',
-    label: '定时录像',
+    get label() { return translatePhrase("定时录像") },
   },
   {
     value: 'alarm',
-    label: '报警触发录像',
+    get label() { return translatePhrase("报警触发录像") },
   },
   {
     value: 'manual',
-    label: '手动录像',
+    get label() { return translatePhrase("手动录像") },
   },
   {
     value: 'all',
-    label: '全部录像',
+    get label() { return translatePhrase("全部录像") },
   },
 ])
 
@@ -132,7 +132,7 @@ function buildDefaultInterval() {
 
 const searchData = computed(() => [
   {
-    label: '日期/时间',
+    get label() { return translatePhrase("日期/时间") },
     value: 'dataInterval',
     type: 'datetimerange',
     startP: '开始时间',
@@ -141,7 +141,7 @@ const searchData = computed(() => [
     defaultTime: defaultTime.value
   },
   {
-    label: '类型',
+    get label() { return translatePhrase("类型") },
     value: 'type',
     type: 'select',
     option: optionsType.value,

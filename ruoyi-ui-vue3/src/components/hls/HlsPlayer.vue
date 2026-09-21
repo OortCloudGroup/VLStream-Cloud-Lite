@@ -119,7 +119,7 @@ const initializePlayer = async () => {
       }
     })
   } else {
-    emit('error', {type: 'unsupported', message: '当前浏览器不支持 HLS 播放'})
+    emit('error', {type: 'unsupported', get message() { return translatePhrase("当前浏览器不支持 HLS 播放") }})
   }
 }
 

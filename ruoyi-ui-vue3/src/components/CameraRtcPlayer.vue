@@ -4,7 +4,7 @@
     <div v-if="status.state !== 'playing'" class="camera-rtc-status" :class="`is-${status.state}`">
       <span v-if="isPending" class="camera-rtc-spinner" />
       <span class="camera-rtc-message">{{ status.message }}</span>
-      <el-button v-if="status.state === 'failed'" type="primary" size="small" @click="retryNow">重新连接</el-button>
+      <el-button v-if="status.state === 'failed'" type="primary" size="small" @click="retryNow">{{ $tp("重新连接") }}</el-button>
     </div>
   </div>
 </template>
@@ -21,7 +21,7 @@ const props = defineProps({
 })
 
 const videoElement = ref(null)
-const status = reactive({ state: 'connecting', message: '正在初始化播放器…', retryCount: 0 })
+const status = reactive({ state: 'connecting', get message() { return translatePhrase("正在初始化播放器…") }, retryCount: 0 })
 const isPending = computed(() => ['connecting', 'negotiating', 'recovering', 'retrying'].includes(status.state))
 const extraTurnUrls = parseCameraRtcTurnUrls(import.meta.env.VITE_CAMERA_RTC_TURN_URLS)
 let session = null

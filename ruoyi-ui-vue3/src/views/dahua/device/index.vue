@@ -4,14 +4,14 @@
     <div class="toolbar-with-search">
       <div class="toolbar-left">
         <button type="button" class="exportBtn newBtn flexRowAC" @click="handleAdd" v-hasPermi="['dahua:device:add']">
-          <el-icon class="BtnImg"><Plus /></el-icon>新增
+          <el-icon class="BtnImg"><Plus /></el-icon>{{ $tp("新增") }}
         </button>
         <button-group :button-list="toolbarButtons" />
       </div>
       <div class="searchHeight_out flexRowAC">
         <search-height-box
           keyword="name"
-          placeholder="请输入设备名称、IP等关键词"
+          :placeholder="$tp('请输入设备名称、IP等关键词')"
           :data="searchData"
           @handle="searchResetFn"
         />
@@ -29,13 +29,13 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" :width="clacPXToVW(55)" align="center"/>
-      <el-table-column label="所属部门" align="center" prop="deptName" show-overflow-tooltip/>
+      <el-table-column :label="$tp('所属部门')" align="center" prop="deptName" show-overflow-tooltip/>
       <el-table-column label="ip" align="center" prop="ip" show-overflow-tooltip/>
-      <el-table-column label="设备名称" align="center" prop="name" show-overflow-tooltip/>
-      <el-table-column label="地址" align="center" prop="addressMap" show-overflow-tooltip/>
-      <el-table-column label="端口" align="center" prop="port" :width="clacPXToVW(80)"/>
-      <el-table-column label="用户名" align="center" prop="userName"/>
-      <el-table-column label="密码" align="center" prop="password">
+      <el-table-column :label="$tp('设备名称')" align="center" prop="name" show-overflow-tooltip/>
+      <el-table-column :label="$tp('地址')" align="center" prop="addressMap" show-overflow-tooltip/>
+      <el-table-column :label="$tp('端口')" align="center" prop="port" :width="clacPXToVW(80)"/>
+      <el-table-column :label="$tp('用户名')" align="center" prop="userName"/>
+      <el-table-column :label="$tp('密码')" align="center" prop="password">
         <template #default="scope">
           <div class="password-container">
             <span v-if="!passwordVisibility[scope.row.id]">******</span>
@@ -46,39 +46,39 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="播放类型" align="center" prop="playType" :width="clacPXToVW(100)">
+      <el-table-column :label="$tp('播放类型')" align="center" prop="playType" :width="clacPXToVW(100)">
         <template #default="scope">
           <dict-tag :options="play_type" :value="scope.row.playType"/>
         </template>
       </el-table-column>
-      <el-table-column key="streamId" label="流id" prop="streamId" min-width="150" align="center" show-overflow-tooltip/>
-      <el-table-column label="备注" align="center" prop="remark" show-overflow-tooltip/>
-      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+      <el-table-column key="streamId" :label="$tp('流id')" prop="streamId" min-width="150" align="center" show-overflow-tooltip/>
+      <el-table-column :label="$tp('备注')" align="center" prop="remark" show-overflow-tooltip/>
+      <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(220)">
         <template #default="scope">
           <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
             <div class="new_table_svg_group" @click.stop="handleStartPlay(scope.row)" v-hasPermi="['dahua:device:start']">
-              <span>播放</span>
+              <span>{{ $tp("播放") }}</span>
             </div>
             <div class="new_table_svg_group" @click.stop="handleUpdate(scope.row)" v-hasPermi="['dahua:device:edit']">
-              <span>修改</span>
+              <span>{{ $tp("修改") }}</span>
             </div>
             <el-dropdown
               @command="(command)=>{moreClick(command, scope.row)}"
               v-if="checkPermi(['dahua:device:edit', 'dahua:device:remove', 'dahua:device:listScreenshot', 'dahua:device:snapPicture', 'dahua:device:timerCapturePicture', 'dahua:device:stopCapturePicture', 'dahua:device:control'])"
             >
               <div class="new_table_svg_group" @click.stop>
-                <span>更多</span>
+                <span>{{ $tp("更多") }}</span>
                 <el-icon><ArrowDown /></el-icon>
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="handleMap" v-if="checkPermi(['dahua:device:edit'])">修改位置</el-dropdown-item>
-                  <el-dropdown-item command="snapPictureList" v-if="checkPermi(['dahua:device:listScreenshot'])">抓图列表</el-dropdown-item>
-                  <el-dropdown-item command="snapPicture" v-if="checkPermi(['dahua:device:snapPicture'])">抓图</el-dropdown-item>
-                  <el-dropdown-item command="timerCapturePicture" v-if="checkPermi(['dahua:device:timerCapturePicture'])">定时抓图</el-dropdown-item>
-                  <el-dropdown-item command="stopCapturePicture" v-if="checkPermi(['dahua:device:stopCapturePicture'])">停止定时抓图</el-dropdown-item>
-                  <el-dropdown-item command="control" v-if="checkPermi(['dahua:device:control'])">设备控制</el-dropdown-item>
-                  <el-dropdown-item command="handleDelete" style="color: #f56c6c" v-if="checkPermi(['dahua:device:remove'])">删除</el-dropdown-item>
+                  <el-dropdown-item command="handleMap" v-if="checkPermi(['dahua:device:edit'])">{{ $tp("修改位置") }}</el-dropdown-item>
+                  <el-dropdown-item command="snapPictureList" v-if="checkPermi(['dahua:device:listScreenshot'])">{{ $tp("抓图列表") }}</el-dropdown-item>
+                  <el-dropdown-item command="snapPicture" v-if="checkPermi(['dahua:device:snapPicture'])">{{ $tp("抓图") }}</el-dropdown-item>
+                  <el-dropdown-item command="timerCapturePicture" v-if="checkPermi(['dahua:device:timerCapturePicture'])">{{ $tp("定时抓图") }}</el-dropdown-item>
+                  <el-dropdown-item command="stopCapturePicture" v-if="checkPermi(['dahua:device:stopCapturePicture'])">{{ $tp("停止定时抓图") }}</el-dropdown-item>
+                  <el-dropdown-item command="control" v-if="checkPermi(['dahua:device:control'])">{{ $tp("设备控制") }}</el-dropdown-item>
+                  <el-dropdown-item command="handleDelete" style="color: #f56c6c" v-if="checkPermi(['dahua:device:remove'])">{{ $tp("删除") }}</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -96,26 +96,26 @@
     />
 
     <!-- 添加或修改大华设备对话框 -->
-    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="open" width="32%" append-to-body>
       <el-form ref="deviceRef" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="所属部门" prop="deptId">
+        <el-form-item :label="$tp('所属部门')" prop="deptId">
           <el-tree-select v-model="form.deptId" :data="enabledDeptOptions"
                           :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id"
-                          placeholder="请选择归属部门" check-strictly/>
+                          :placeholder="$tp('请选择归属部门')" check-strictly/>
         </el-form-item>
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入摄像头名称" maxlength="30" show-word-limit/>
+        <el-form-item :label="$tp('名称')" prop="name">
+          <el-input v-model="form.name" :placeholder="$tp('请输入摄像头名称')" maxlength="30" show-word-limit/>
         </el-form-item>
-        <el-form-item label="设备id" prop="deviceId">
-          <el-input v-model="form.deviceId" placeholder="请输入设备id" maxlength="30" show-word-limit disabled/>
+        <el-form-item :label="$tp('设备id')" prop="deviceId">
+          <el-input v-model="form.deviceId" :placeholder="$tp('请输入设备id')" maxlength="30" show-word-limit disabled/>
         </el-form-item>
         <el-form-item label="ip" prop="ip">
-          <el-input v-model="form.ip" placeholder="请输入ip" maxlength="50" show-word-limit disabled/>
+          <el-input v-model="form.ip" :placeholder="$tp('请输入ip')" maxlength="50" show-word-limit disabled/>
         </el-form-item>
-        <el-form-item label="端口" prop="port">
-          <el-input v-model="form.port" placeholder="请输入端口" maxlength="10" show-word-limit disabled/>
+        <el-form-item :label="$tp('端口')" prop="port">
+          <el-input v-model="form.port" :placeholder="$tp('请输入端口')" maxlength="10" show-word-limit disabled/>
         </el-form-item>
-        <el-form-item label="播放类型" prop="playType">
+        <el-form-item :label="$tp('播放类型')" prop="playType">
           <el-radio-group v-model="form.playType">
             <el-radio
                 v-for="dict in play_type"
@@ -126,48 +126,48 @@
           </el-radio-group>
         </el-form-item>
         <div v-if="form.playType === '1'">
-          <el-form-item label="用户名" prop="userName">
-            <el-input v-model="form.userName" placeholder="请输入用户名" maxlength="20" show-word-limit/>
+          <el-form-item :label="$tp('用户名')" prop="userName">
+            <el-input v-model="form.userName" :placeholder="$tp('请输入用户名')" maxlength="20" show-word-limit/>
           </el-form-item>
-          <el-form-item label="密码" prop="password">
-            <el-input v-model="form.password" placeholder="请输入密码" maxlength="50" show-word-limit show-password/>
+          <el-form-item :label="$tp('密码')" prop="password">
+            <el-input v-model="form.password" :placeholder="$tp('请输入密码')" maxlength="50" show-word-limit show-password/>
           </el-form-item>
           <el-form-item>
             <template #label>
             <span>
-               <el-tooltip content="登录之后才能获取通道，必须要输入用户名和密码才能获取" placement="top">
+               <el-tooltip :content="$tp('登录之后才能获取通道，必须要输入用户名和密码才能获取')" placement="top">
                   <el-icon><question-filled/></el-icon>
                </el-tooltip>
             </span>
             </template>
-            <el-button type="primary" @click="login">登录</el-button>
+            <el-button type="primary" @click="login">{{ $tp("登录") }}</el-button>
           </el-form-item>
-          <el-form-item label="通道号" prop="channel">
+          <el-form-item :label="$tp('通道号')" prop="channel">
             <el-radio-group v-model="form.channel">
-              <el-radio :value="item" v-for="(item,index) in channelList" :key="index">通道-{{ item }}</el-radio>
+              <el-radio :value="item" v-for="(item,index) in channelList" :key="index">{{ $tp("通道-") }}{{ item }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </div>
-        <el-form-item label="流id" prop="streamId" v-if="form.playType === '2'">
-          <el-input v-model="form.streamId" placeholder="请输入流id" maxlength="100" show-word-limit/>
+        <el-form-item :label="$tp('流id')" prop="streamId" v-if="form.playType === '2'">
+          <el-input v-model="form.streamId" :placeholder="$tp('请输入流id')" maxlength="100" show-word-limit/>
         </el-form-item>
-        <el-form-item label="EasyNTS地址" prop="easyNTSUrl" v-if="form.playType === '3'">
-          <el-input v-model="form.easyNTSUrl" type="textarea" placeholder="请输入EasyNTS地址" maxlength="200"
+        <el-form-item :label="$tp('EasyNTS地址')" prop="easyNTSUrl" v-if="form.playType === '3'">
+          <el-input v-model="form.easyNTSUrl" type="textarea" :placeholder="$tp('请输入EasyNTS地址')" maxlength="200"
                     show-word-limit/>
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" maxlength="255" show-word-limit/>
+        <el-form-item :label="$tp('备注')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="$tp('请输入内容')" maxlength="255" show-word-limit/>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
 
-    <el-dialog title="选择设备" v-model="openDevice" width="40%" append-to-body>
+    <el-dialog :title="$tp('选择设备')" v-model="openDevice" width="40%" append-to-body>
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
           <el-button
@@ -177,7 +177,7 @@
               :disabled="multipleRegisterDevice"
               @click="handleDeviceDelete"
               v-hasPermi="['dahua:device:remove']"
-          >删除
+          >{{ $tp("删除") }}
           </el-button>
         </el-col>
         <right-toolbar :search="false" @queryTable="getRegisterDeviceListFun"></right-toolbar>
@@ -185,26 +185,26 @@
       <el-table v-loading="registerDeviceLoading" :data="registerDeviceList" border height="500px" @selection-change="handleRegisterDeviceSelectionChange">
         <el-table-column type="selection" width="55" align="center"/>
         <el-table-column label="ip" align="center" prop="ip"/>
-        <el-table-column label="设备id" align="center" prop="deviceId"/>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <el-table-column :label="$tp('设备id')" align="center" prop="deviceId"/>
+        <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width">
           <template #default="scope">
-            <el-button link type="primary" icon="Plus" v-hasPermi="['dahua:device:add']" @click="handleDeviceAdd(scope.row)">新增</el-button>
-            <el-button link type="primary" icon="Delete" v-hasPermi="['dahua:device:remove']" @click="handleDeviceDelete(scope.row)">删除</el-button>
+            <el-button link type="primary" icon="Plus" v-hasPermi="['dahua:device:add']" @click="handleDeviceAdd(scope.row)">{{ $tp("新增") }}</el-button>
+            <el-button link type="primary" icon="Delete" v-hasPermi="['dahua:device:remove']" @click="handleDeviceDelete(scope.row)">{{ $tp("删除") }}</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
 
-    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
+    <el-dialog :title="$tp('修改地址')" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
 
-    <el-dialog title="播放视频" v-model="openPlay" width="55%" append-to-body  @close="closeProxyPlay">
+    <el-dialog :title="$tp('播放视频')" v-model="openPlay" width="55%" append-to-body  @close="closeProxyPlay">
       <div>
         <Hikvision :rtsp="videoUrl" v-if="openPlay && (playType === '1' || playType === '3' || playType === '4') "/>
         <div>
           <el-row :gutter="10" style="margin-top: 20px" v-if="openPlay && (playType === '1' || playType === '3' || playType === '4') ">
-            <el-col :span="4"><span style="width: 100px; line-height: 40px; text-align: right;">播放地址：</span></el-col>
+            <el-col :span="4"><span style="width: 100px; line-height: 40px; text-align: right;">{{ $tp("播放地址：") }}</span></el-col>
             <el-col :span="20">
               <el-input v-model="videoUrl" :disabled="true">
                 <template #append>
@@ -263,33 +263,33 @@
               <div>
                 <div class="ptz-btn-box">
                   <div @mousedown="ptzControlUpStartFun('doubling+')" @mouseup="ptzControlUpEndFun('doubling+')"
-                       title="变倍+">
+                       :title="$tp('变倍+')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomIn/>
                     </el-icon>
                   </div>
                   <div @mousedown="ptzControlUpStartFun('doubling-')" @mouseup="ptzControlUpEndFun('doubling-')"
-                       title="变倍-">
+                       :title="$tp('变倍-')">
                     <el-icon class="control-zoom-btn" style="font-size: 24px;">
                       <ZoomOut/>
                     </el-icon>
                   </div>
                 </div>
                 <div class="ptz-btn-box">
-                  <div @mousedown="ptzControlUpStartFun('zoom+')" @mouseup="ptzControlUpEndFun('zoom+')" title="聚焦+">
+                  <div @mousedown="ptzControlUpStartFun('zoom+')" @mouseup="ptzControlUpEndFun('zoom+')" :title="$tp('聚焦+')">
                     <i class="iconfont icon-bianjiao-fangda control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
-                  <div @mousedown="ptzControlUpStartFun('zoom-')" @mouseup="ptzControlUpEndFun('zoom-')" title="聚焦-">
+                  <div @mousedown="ptzControlUpStartFun('zoom-')" @mouseup="ptzControlUpEndFun('zoom-')" :title="$tp('聚焦-')">
                     <i class="iconfont icon-bianjiao-suoxiao control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                 </div>
                 <div class="ptz-btn-box">
                   <div @mousedown="ptzControlUpStartFun('aperture+')" @mouseup="ptzControlUpEndFun('aperture+')"
-                       title="光圈+">
+                       :title="$tp('光圈+')">
                     <i class="iconfont icon-guangquan control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                   <div @mousedown="ptzControlUpStartFun('aperture-')" @mouseup="ptzControlUpEndFun('aperture-')"
-                       title="光圈-">
+                       :title="$tp('光圈-')">
                     <i class="iconfont icon-guangquan- control-zoom-btn" style="font-size: 24px;"></i>
                   </div>
                 </div>
@@ -300,7 +300,7 @@
 
         <div v-if="playType === '2'">
           <el-tabs v-model="activeName" type="card" :stretch="true" v-if="playType === '2'">
-            <el-tab-pane label="flv播放" name="flv">
+            <el-tab-pane :label="$tp('flv播放')" name="flv">
               <el-row>
                 <el-col :span="24">
                   <div class="player" v-if="activeName === 'flv'">
@@ -323,25 +323,25 @@
           </el-tabs>
 
           <el-tabs v-model="tabActiveName" type="card" :stretch="true" style="margin-top: 10px;">
-            <el-tab-pane label="实时视频" name="media">
+            <el-tab-pane :label="$tp('实时视频')" name="media">
               <el-row :gutter="10">
-                <el-col :span="2"><span style="width: 80px; line-height: 40px; text-align: right;">播放地址：</span>
+                <el-col :span="2"><span style="width: 80px; line-height: 40px; text-align: right;">{{ $tp("播放地址：") }}</span>
                 </el-col>
                 <el-col :span="18">
                   <el-input v-model="flvUrl" :disabled="true" v-show="activeName === 'flv'">
-                    <template #prepend>flv地址</template>
+                    <template #prepend>{{ $tp("flv地址") }}</template>
                     <template #append>
                       <el-button type="primary" :icon="DocumentCopy" @click="copyToClipboard(flvUrl)"/>
                     </template>
                   </el-input>
                   <el-input v-model="rtcUrl" :disabled="true" v-show="activeName === 'webRtc'">
-                    <template #prepend>rtcUrl地址</template>
+                    <template #prepend>{{ $tp("rtcUrl地址") }}</template>
                     <template #append>
                       <el-button type="primary" :icon="DocumentCopy" @click="copyToClipboard(rtcUrl)"/>
                     </template>
                   </el-input>
                   <el-input v-model="wsUrl" :disabled="true" v-show="activeName === 'H265'">
-                    <template #prepend>wsUrl地址</template>
+                    <template #prepend>{{ $tp("wsUrl地址") }}</template>
                     <template #append>
                       <el-button type="primary" :icon="DocumentCopy" @click="copyToClipboard(wsUrl)"/>
                     </template>
@@ -353,12 +353,12 @@
               </el-row>
             </el-tab-pane>
 
-            <el-tab-pane label="编码信息" name="codec">
+            <el-tab-pane :label="$tp('编码信息')" name="codec">
               <MediaInfo v-if="tabActiveName === 'codec'" ref="mediaInfo" :app="streamInfo.app"
                          :stream="streamInfo.stream" :mediaServerId="streamInfo.mediaServerId"></MediaInfo>
             </el-tab-pane>
 
-            <el-tab-pane v-if="checkPermi(['dahua:device:ptzCtrl'])" label="云台控制" name="control">
+            <el-tab-pane v-if="checkPermi(['dahua:device:ptzCtrl'])" :label="$tp('云台控制')" name="control">
               <div style="display: grid; grid-template-columns: 240px auto; height: 180px; overflow: auto">
                 <!-- 左侧控制区域 -->
                 <div style="display: grid; grid-template-columns: 100px auto;">
@@ -405,33 +405,33 @@
                   <div>
                     <div class="ptz-btn-box">
                       <div @mousedown="ptzControlUpStartFun('doubling+')" @mouseup="ptzControlUpEndFun('doubling+')"
-                           title="变倍+">
+                           :title="$tp('变倍+')">
                         <el-icon class="control-zoom-btn" style="font-size: 24px;">
                           <ZoomIn/>
                         </el-icon>
                       </div>
                       <div @mousedown="ptzControlUpStartFun('doubling-')" @mouseup="ptzControlUpEndFun('doubling-')"
-                           title="变倍-">
+                           :title="$tp('变倍-')">
                         <el-icon class="control-zoom-btn" style="font-size: 24px;">
                           <ZoomOut/>
                         </el-icon>
                       </div>
                     </div>
                     <div class="ptz-btn-box">
-                      <div @mousedown="ptzControlUpStartFun('zoom+')" @mouseup="ptzControlUpEndFun('zoom+')" title="聚焦+">
+                      <div @mousedown="ptzControlUpStartFun('zoom+')" @mouseup="ptzControlUpEndFun('zoom+')" :title="$tp('聚焦+')">
                         <i class="iconfont icon-bianjiao-fangda control-zoom-btn" style="font-size: 24px;"></i>
                       </div>
-                      <div @mousedown="ptzControlUpStartFun('zoom-')" @mouseup="ptzControlUpEndFun('zoom-')" title="聚焦-">
+                      <div @mousedown="ptzControlUpStartFun('zoom-')" @mouseup="ptzControlUpEndFun('zoom-')" :title="$tp('聚焦-')">
                         <i class="iconfont icon-bianjiao-suoxiao control-zoom-btn" style="font-size: 24px;"></i>
                       </div>
                     </div>
                     <div class="ptz-btn-box">
                       <div @mousedown="ptzControlUpStartFun('aperture+')" @mouseup="ptzControlUpEndFun('aperture+')"
-                           title="光圈+">
+                           :title="$tp('光圈+')">
                         <i class="iconfont icon-guangquan control-zoom-btn" style="font-size: 24px;"></i>
                       </div>
                       <div @mousedown="ptzControlUpStartFun('aperture-')" @mouseup="ptzControlUpEndFun('aperture-')"
-                           title="光圈-">
+                           :title="$tp('光圈-')">
                         <i class="iconfont icon-guangquan- control-zoom-btn" style="font-size: 24px;"></i>
                       </div>
                     </div>
@@ -444,23 +444,23 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="`【${screenshotQueryParams.name}】设备抓图列表`" v-model="openSnapPicture" width="40%"
+    <el-dialog :title="$tp(`【${screenshotQueryParams.name}】设备抓图列表`)" v-model="openSnapPicture" width="40%"
                append-to-body>
       <el-row :gutter="10" class="mb8">
         <right-toolbar :search="false" @queryTable="getListScreenshotFun"></right-toolbar>
       </el-row>
 
       <el-table :data="screenshotList" border>
-        <el-table-column label="抓图路径" align="center" prop="image">
+        <el-table-column :label="$tp('抓图路径')" align="center" prop="image">
           <template #default="scope">
             <image-preview :src="scope.row.image" :width="50" :height="50"/>
           </template>
         </el-table-column>
-        <el-table-column label="抓图时间" align="center" prop="createTime"/>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <el-table-column :label="$tp('抓图时间')" align="center" prop="createTime"/>
+        <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width">
           <template #default="scope">
             <el-button link type="primary" icon="Delete" @click="handleRemoveScreenshot(scope.row)"
-                       v-hasPermi="['dahua:device:removeScreenshot']">删除
+                       v-hasPermi="['dahua:device:removeScreenshot']">{{ $tp("删除") }}
             </el-button>
           </template>
         </el-table-column>
@@ -475,7 +475,7 @@
       />
     </el-dialog>
 
-    <el-dialog :title="`【${controlQueryParams.name}】设备控制`" v-model="openControl" width="40%" append-to-body>
+    <el-dialog :title="$tp(`【${controlQueryParams.name}】设备控制`)" v-model="openControl" width="40%" append-to-body>
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
           <el-button
@@ -483,7 +483,7 @@
               plain
               icon="RefreshRight"
               @click="handleReboot"
-          >重启
+          >{{ $tp("重启") }}
           </el-button>
         </el-col>
 
@@ -493,18 +493,18 @@
               plain
               icon="Clock"
               @click="handleGetTime"
-          >获取时间
+          >{{ $tp("获取时间") }}
           </el-button>
         </el-col>
       </el-row>
 
       <el-row :gutter="10" class="mb8">
-        设备时间：{{ deviceTime }}
+        {{ $tp("设备时间：") }}{{ deviceTime }}
       </el-row>
 
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
-          <el-checkbox v-model="controlQueryParams.type" label="当前时间" size="large" />
+          <el-checkbox v-model="controlQueryParams.type" :label="$tp('当前时间')" size="large" />
         </el-col>
 
         <el-col :span="1.5">
@@ -517,7 +517,7 @@
               plain
               icon="Setting"
               @click="handleSetTime"
-          >设置时间
+          >{{ $tp("设置时间") }}
           </el-button>
         </el-col>
       </el-row>
@@ -604,7 +604,7 @@ const total = ref(0);
 const title = ref("");
 const searchData = ref([
   {
-    label: '所属部门',
+    get label() { return translatePhrase("所属部门") },
     value: 'deptId',
     type: 'tree-select',
     option: [],
@@ -613,8 +613,8 @@ const searchData = ref([
   { label: 'ip', value: 'ip', type: 'text', default: undefined }
 ]);
 const toolbarButtons = computed(() => [
-  { name: '修改', svg: 'edit', disabled: single.value, permi: ['dahua:device:edit'], clickFn: () => handleUpdate() },
-  { name: '删除', svg: 'delete', disabled: multiple.value, permi: ['dahua:device:remove'], clickFn: () => handleDelete() }
+  { get name() { return translatePhrase("修改") }, svg: 'edit', disabled: single.value, permi: ['dahua:device:edit'], clickFn: () => handleUpdate() },
+  { get name() { return translatePhrase("删除") }, svg: 'delete', disabled: multiple.value, permi: ['dahua:device:remove'], clickFn: () => handleDelete() }
 ]);
 
 const position = ref(null);
@@ -671,30 +671,30 @@ const data = reactive({
     name: null,
   },
   rules: {
-    deptId: [{required: true, message: "请选择所属部门", trigger: 'blur'}],
+    deptId: [{required: true, get message() { return translatePhrase("请选择所属部门") }, trigger: 'blur'}],
     ip: [
-      {required: true, message: "ip不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("ip不能为空") }, trigger: "blur"}
     ],
     name: [
-      {required: true, message: "摄像头名称不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("摄像头名称不能为空") }, trigger: "blur"}
     ],
     userName: [
-      {required: true, message: "用户名不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("用户名不能为空") }, trigger: "blur"}
     ],
     password: [
-      {required: true, message: "密码不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("密码不能为空") }, trigger: "blur"}
     ],
     deviceId: [
-      {required: true, message: "设备id不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("设备id不能为空") }, trigger: "blur"}
     ],
     port: [
-      {required: true, message: "端口不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("端口不能为空") }, trigger: "blur"}
     ],
     streamId: [
-      {required: true, message: "流id不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("流id不能为空") }, trigger: "blur"}
     ],
     easyNTSUrl: [
-      {required: true, message: "EasyNTS播放地址不能为空", trigger: "blur"}
+      {required: true, get message() { return translatePhrase("EasyNTS播放地址不能为空") }, trigger: "blur"}
     ],
   }
 });
@@ -744,13 +744,13 @@ const handleProxyPlay = async (row) => {
 
 const copyToClipboard = async (text) => {
   if (!text) {
-    ElMessage.error('内容为空，无法复制');
+    ElMessage.error(translatePhrase("内容为空，无法复制"));
     return;
   }
 
   try {
     await toClipboard(text)
-    ElMessage.success('成功拷贝到粘贴板');
+    ElMessage.success(translatePhrase("成功拷贝到粘贴板"));
   } catch (e) {
     console.error(e)
   }
@@ -797,9 +797,9 @@ const updateDialogMap = (value) => {
   updateDevice(form.value).then(res => {
     showMap.value = false;
     Destruction();
-    proxy.$modal.msgSuccess("操作成功");
+    proxy.$modal.msgSuccess(translatePhrase("操作成功"));
   }).catch(() => {
-    proxy.$modal.msgError("操作失败");
+    proxy.$modal.msgError(translatePhrase("操作失败"));
   })
 }
 
@@ -914,11 +914,11 @@ function handleDeviceAdd(row) {
  */
 function handleDeviceDelete(row){
  const iplist = row.ip || ips.value;
-  proxy.$modal.confirm('是否确认删除大华新增设备"' + iplist + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除大华新增设备\"") + iplist + translatePhrase("\"的数据项？")).then(function () {
     return delRegisterDevice(iplist)
   }).then(() => {
     getRegisterDeviceListFun();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }
@@ -941,20 +941,20 @@ function submitForm() {
     if (valid) {
       if(form.value.playType === '1'){
         if (form.value.channel === null) {
-          proxy.$modal.msgError("请选择通道号");
+          proxy.$modal.msgError(translatePhrase("请选择通道号"));
           return
         }
       }
       if (form.value.id != null) {
         updateDevice(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(translatePhrase("修改成功"));
           open.value = false;
           openDevice.value = false
           getList();
         });
       } else {
         addDevice(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(translatePhrase("新增成功"));
           open.value = false;
           openDevice.value = false
           getList();
@@ -967,11 +967,11 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除大华设备编号为"' + _ids + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除大华设备编号为\"") + _ids + translatePhrase("\"的数据项？")).then(function () {
     return delDevice(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }
@@ -1108,7 +1108,7 @@ function ptzControlUpEndFun(direction) {
  */
 function handleSnapPicture(row) {
   snapPicture(row.id).then(() => {
-    proxy.$modal.msgSuccess("抓图成功");
+    proxy.$modal.msgSuccess(translatePhrase("抓图成功"));
   })
 }
 
@@ -1141,11 +1141,11 @@ function getListScreenshotFun() {
  */
 function handleRemoveScreenshot(row) {
   const _ids = row.id;
-  proxy.$modal.confirm('是否删除大华设备抓图').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否删除大华设备抓图")).then(function () {
     return removeScreenshot(_ids);
   }).then(() => {
     getListScreenshotFun();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }
@@ -1157,7 +1157,7 @@ function handleRemoveScreenshot(row) {
  */
 function handleTimerCapturePicture(row) {
   timerCapturePicture(row.id).then(() => {
-    proxy.$modal.msgSuccess("定时抓图开启成功");
+    proxy.$modal.msgSuccess(translatePhrase("定时抓图开启成功"));
   })
 }
 
@@ -1166,7 +1166,7 @@ function handleTimerCapturePicture(row) {
  */
 function handleStopCapturePicture(row) {
   stopCapturePicture(row.id).then(() => {
-    proxy.$modal.msgSuccess("停止定时抓图成功");
+    proxy.$modal.msgSuccess(translatePhrase("停止定时抓图成功"));
   })
 }
 
@@ -1184,10 +1184,10 @@ function handleControl(row) {
  * 大华设备重启
  */
 function handleReboot() {
-  proxy.$modal.confirm('是否重启设备').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否重启设备")).then(function () {
     return reboot(controlQueryParams.value.dahuaDeviceId);
   }).then(() => {
-    proxy.$modal.msgSuccess("重启成功");
+    proxy.$modal.msgSuccess(translatePhrase("重启成功"));
   }).catch(() => {
   });
 }
@@ -1206,7 +1206,7 @@ function handleGetTime(){
  */
 function handleSetTime(){
   setTime(controlQueryParams.value.dahuaDeviceId,controlQueryParams.value.date,controlQueryParams.value.type).then(()=>{
-    proxy.$modal.msgSuccess("设置成功");
+    proxy.$modal.msgSuccess(translatePhrase("设置成功"));
   })
 }
 

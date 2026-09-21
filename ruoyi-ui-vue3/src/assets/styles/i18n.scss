@@ -2,7 +2,64 @@ html {
   font-family: Inter, "Noto Sans", "Noto Sans CJK SC", "Noto Sans Arabic", "Noto Sans JP", "Noto Sans KR", Arial, sans-serif;
 }
 
-html[lang="ar-SA"] {
+html,
+body,
+#app,
+.app-wrapper,
+.main-container,
+.app-main,
+.app-container,
+.el-container,
+.el-main,
+.el-row,
+.el-col {
+  min-width: 0;
+}
+
+.el-form--inline,
+.el-form--inline .el-form-item,
+.table-toolbar,
+.toolbar,
+.operation-bar,
+.filter-bar {
+  flex-wrap: wrap;
+}
+
+.el-table {
+  max-width: 100%;
+
+  .cell {
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+}
+
+.el-dialog,
+.el-drawer {
+  max-width: 92vw;
+}
+
+.el-dialog__body,
+.el-drawer__body {
+  max-height: min(72vh, 760px);
+  overflow: auto;
+}
+
+html:not([lang="zh-CN"]) {
+  .el-button,
+  .el-tag,
+  .el-form-item__label,
+  .el-table .cell {
+    white-space: normal;
+  }
+
+  .el-dialog .el-form-item__label,
+  .el-drawer .el-form-item__label {
+    line-height: 1.25;
+  }
+}
+
+html[lang="ar"] {
   font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif;
 }
 
@@ -33,6 +90,29 @@ html[dir="rtl"] {
   .el-input__suffix { right: auto; left: 0; }
   .el-input--prefix .el-input__wrapper { padding-left: 11px; padding-right: 30px; }
   .el-input--suffix .el-input__wrapper { padding-right: 11px; padding-left: 30px; }
+
+  .el-input__inner,
+  .el-textarea__inner,
+  .el-table .cell {
+    unicode-bidi: plaintext;
+  }
+
+  .el-pagination,
+  .el-dialog__footer,
+  .el-drawer__footer {
+    direction: rtl;
+  }
+
+  .el-pagination .btn-prev .el-icon,
+  .el-pagination .btn-next .el-icon,
+  .el-breadcrumb__separator {
+    transform: scaleX(-1);
+  }
+
+  .el-table__fixed-right {
+    right: auto;
+    left: 0;
+  }
 }
 
 html[lang="de-DE"],
@@ -43,5 +123,33 @@ html[lang="ru-RU"] {
   .el-menu-item,
   .el-sub-menu__title {
     min-width: max-content;
+  }
+}
+
+@media (max-width: 768px) {
+  .el-dialog {
+    width: 92vw !important;
+    margin-top: 4vh;
+  }
+
+  .el-drawer {
+    width: 92vw !important;
+  }
+
+  html:not([lang="zh-CN"]) .el-dialog .el-form-item,
+  html:not([lang="zh-CN"]) .el-drawer .el-form-item {
+    display: block;
+
+    .el-form-item__label {
+      display: block;
+      width: 100% !important;
+      height: auto;
+      margin-bottom: 6px;
+      text-align: start;
+    }
+
+    .el-form-item__content {
+      margin-inline-start: 0 !important;
+    }
   }
 }

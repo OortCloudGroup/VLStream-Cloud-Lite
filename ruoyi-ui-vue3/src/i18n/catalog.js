@@ -1,4 +1,4 @@
-const localeOrder = ['zh-CN', 'en-US', 'es-MX', 'ar-SA', 'de-DE', 'fr-FR', 'ja-JP', 'pt-BR', 'ru-RU', 'ko-KR', 'id-ID', 'tr-TR']
+const localeOrder = ['zh-CN', 'en-US', 'es-MX', 'ar', 'de-DE', 'fr-FR', 'ja-JP', 'pt-BR', 'ru-RU', 'ko-KR', 'id-ID', 'tr-TR']
 
 const namedMessages = {
   'zh-CN': {
@@ -32,7 +32,7 @@ const namedMessages = {
     tags: { refresh: 'Actualizar', close: 'Cerrar', closeOthers: 'Cerrar los demás', closeLeft: 'Cerrar a la izquierda', closeRight: 'Cerrar a la derecha', closeAll: 'Cerrar todo' },
     request: { sessionExpired: 'Tu sesión venció. Puedes permanecer en esta página o iniciar sesión de nuevo.', relogin: 'Iniciar de nuevo', invalidSession: 'La sesión no es válida o venció. Inicia sesión de nuevo.', network: 'No se pudo conectar con el servicio backend', timeout: 'La solicitud agotó el tiempo de espera', httpError: 'La solicitud falló con el estado {status}', downloading: 'Descargando. Espera...', downloadError: 'No se pudo descargar el archivo. Contacta al administrador.', duplicate: 'La solicitud se está procesando. No la envíes de nuevo.' }
   },
-  'ar-SA': {
+  'ar': {
     common: { confirm: 'تأكيد', cancel: 'إلغاء', prompt: 'تنبيه', systemPrompt: 'تنبيه النظام' }, language: { label: 'اللغة' },
     account: { profile: 'الملف الشخصي', layout: 'إعدادات التخطيط', logout: 'تسجيل الخروج', logoutConfirm: 'هل تريد تسجيل الخروج؟' },
     login: { account: 'الحساب', password: 'كلمة المرور', captcha: 'رمز التحقق', remember: 'تذكر كلمة المرور', signIn: 'تسجيل الدخول', signingIn: 'جارٍ تسجيل الدخول...', register: 'التسجيل الآن', loadingMode: 'جارٍ تحميل طريقة تسجيل الدخول...', reload: 'إعادة التحميل', ssoEnabled: 'تم تمكين تسجيل الدخول الموحد', ssoTip: 'افتح هذا النظام من المنصة الموحدة.', unsupportedMode: 'أعاد الخادم طريقة تسجيل دخول غير مدعومة', localInitFailed: 'تعذرت تهيئة تسجيل الدخول المحلي. حاول لاحقًا.', modeLoadFailed: 'تعذر تحميل طريقة تسجيل الدخول. تحقق من خدمة الخادم.', accountRequired: 'أدخل حسابك', passwordRequired: 'أدخل كلمة المرور', captchaRequired: 'أدخل رمز التحقق', success: 'تم تسجيل الدخول بنجاح' },
@@ -142,7 +142,11 @@ const menuRows = {
   '通道管理': ['通道管理', 'Channel Management', 'Administración de canales', 'إدارة القنوات', 'Kanalverwaltung', 'Gestion des canaux', 'チャンネル管理', 'Gerenciamento de canais', 'Управление каналами', '채널 관리', 'Manajemen kanal', 'Kanal yönetimi'],
   '通道列表': ['通道列表', 'Channel List', 'Lista de canales', 'قائمة القنوات', 'Kanalliste', 'Liste des canaux', 'チャンネル一覧', 'Lista de canais', 'Список каналов', '채널 목록', 'Daftar kanal', 'Kanal listesi'],
   '视图库': ['视图库', 'Video and Image Library', 'Biblioteca audiovisual', 'مكتبة الفيديو والصور', 'Video- und Bildbibliothek', "Bibliothèque d'images et de vidéos", '映像・画像ライブラリ', 'Biblioteca de vídeos e imagens', 'Библиотека видео и изображений', '영상 및 이미지 라이브러리', 'Pustaka video dan gambar', 'Video ve görsel kitaplığı'],
-  '节点管理': ['节点管理', 'Node Management', 'Administración de nodos', 'إدارة العُقد', 'Knotenverwaltung', 'Gestion des nœuds', 'ノード管理', 'Gerenciamento de nós', 'Управление узлами', '노드 관리', 'Manajemen node', 'Düğüm yönetimi']
+  '节点管理': ['节点管理', 'Node Management', 'Administración de nodos', 'إدارة العُقد', 'Knotenverwaltung', 'Gestion des nœuds', 'ノード管理', 'Gerenciamento de nós', 'Управление узлами', '노드 관리', 'Manajemen node', 'Düğüm yönetimi'],
+  'VLStream协议': ['VLStream协议', 'VLStream', 'VLStream', 'VLStream', 'VLStream', 'VLStream', 'VLStream', 'VLStream', 'VLStream', 'VLStream', 'VLStream', 'VLStream'],
+  '行政分组': ['行政分组', 'Administrative Groups', 'Grupos administrativos', 'المجموعات الإدارية', 'Verwaltungsgruppen', 'Groupes administratifs', '行政グループ', 'Grupos administrativos', 'Административные группы', '행정 그룹', 'Grup administratif', 'Yönetim grupları'],
+  '报警管理': ['报警管理', 'Alarm Management', 'Administración de alarmas', 'إدارة الإنذارات', 'Alarmverwaltung', 'Gestion des alarmes', 'アラーム管理', 'Gerenciamento de alarmes', 'Управление тревогами', '알람 관리', 'Manajemen alarm', 'Alarm yönetimi'],
+  '日志管理': ['日志管理', 'Log Management', 'Administración de registros', 'إدارة السجلات', 'Protokollverwaltung', 'Gestion des journaux', 'ログ管理', 'Gerenciamento de logs', 'Управление журналами', '로그 관리', 'Manajemen log', 'Günlük yönetimi']
 }
 
 const loginRows = {

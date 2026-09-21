@@ -2,7 +2,7 @@
 <template>
   <div style="position: absolute;height: 100%;width: 100%;display: flex;align-items: center;justify-content: center;">
     <div class="video" v-show="isPlay" :id="elId"></div>
-    <div v-show="!isPlay" style="color: #08979C;font-size: 25px;">暂无视频源</div>
+    <div v-show="!isPlay" style="color: #08979C;font-size: 25px;">{{ $tp("暂无视频源") }}</div>
   </div>
 </template>
 

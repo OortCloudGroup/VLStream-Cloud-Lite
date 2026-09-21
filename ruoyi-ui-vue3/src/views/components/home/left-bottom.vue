@@ -50,13 +50,13 @@ function setData(netList) {
       },
       series: [
         {
-          name: '下载',
+          get name() { return translatePhrase("下载") },
           type: 'line',
           showSymbol: false,
           data: inList
         },
         {
-          name: '上传',
+          get name() { return translatePhrase("上传") },
           type: 'line',
           showSymbol: false,
           data: outList

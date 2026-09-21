@@ -1,16 +1,16 @@
 <template>
   <div>
-    <el-dialog title="添加选项" v-model="open" width="50%" :close-on-click-modal="false" :modal-append-to-body="false"
+    <el-dialog :title="$tp('添加选项')" v-model="open" width="50%" :close-on-click-modal="false" :modal-append-to-body="false"
       @open="onOpen" @close="onClose">
       <el-form ref="treeNodeForm" :model="formData" :rules="rules" label-width="100px">
         <el-col :span="24">
-          <el-form-item label="选项名" prop="label">
-            <el-input v-model="formData.label" placeholder="请输入选项名" clearable />
+          <el-form-item :label="$tp('选项名')" prop="label">
+            <el-input v-model="formData.label" :placeholder="$tp('请输入选项名')" clearable />
           </el-form-item>
         </el-col>
         <el-col :span="24">
-          <el-form-item label="选项值" prop="value">
-            <el-input v-model="formData.value" placeholder="请输入选项值" clearable>
+          <el-form-item :label="$tp('选项值')" prop="value">
+            <el-input v-model="formData.value" :placeholder="$tp('请输入选项值')" clearable>
               <template #append>
                 <el-select v-model="dataType" :style="{ width: '100px' }">
                   <el-option v-for="(item, index) in dataTypeOptions" :key="index" :label="item.label" :value="item.value"
@@ -24,8 +24,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handelConfirm">确 定</el-button>
-          <el-button @click="onClose">取 消</el-button>
+          <el-button type="primary" @click="handelConfirm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="onClose">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -42,14 +42,14 @@ const rules = {
   label: [
     {
       required: true,
-      message: '请输入选项名',
+      get message() { return translatePhrase("请输入选项名") },
       trigger: 'blur'
     }
   ],
   value: [
     {
       required: true,
-      message: '请输入选项值',
+      get message() { return translatePhrase("请输入选项值") },
       trigger: 'blur'
     }
   ]
@@ -57,11 +57,11 @@ const rules = {
 const dataType = ref('string')
 const dataTypeOptions = ref([
   {
-    label: '字符串',
+    get label() { return translatePhrase("字符串") },
     value: 'string'
   },
   {
-    label: '数字',
+    get label() { return translatePhrase("数字") },
     value: 'number'
   }
 ])

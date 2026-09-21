@@ -2,22 +2,22 @@
   <div class="app-container">
     <el-card>
       <el-form ref="queryForm" :model="queryParams" :inline="true" v-show="showSearch">
-        <el-form-item label="视图库名称" prop="serverName">
+        <el-form-item :label="$tp('视图库名称')" prop="serverName">
           <el-input
               v-model="queryParams.serverName"
-              placeholder="请输入视图库名称"
+              :placeholder="$tp('请输入视图库名称')"
               clearable
           />
         </el-form-item>
-        <el-form-item label="是否在线" prop="isOnline">
-          <el-select v-model="queryParams.isOnline" clearable placeholder="请选择是否在线" style="width: 240px;">
-            <el-option label="在线" value="1"/>
-            <el-option label="离线" value="2"/>
+        <el-form-item :label="$tp('是否在线')" prop="isOnline">
+          <el-select v-model="queryParams.isOnline" clearable :placeholder="$tp('请选择是否在线')" style="width: 240px;">
+            <el-option :label="$tp('在线')" value="1"/>
+            <el-option :label="$tp('离线')" value="2"/>
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+          <el-button type="primary" icon="Search" @click="handleQuery">{{ $tp("搜索") }}</el-button>
+          <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -29,7 +29,7 @@
               icon="Plus"
               @click="handleAdd"
               v-hasPermi="['viid:server:add']"
-          >新增
+          >{{ $tp("新增") }}
           </el-button>
         </el-col>
         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -41,31 +41,31 @@
           border
           tooltip-effect="dark"
       >
-        <el-table-column prop="serverId" label="视图库编号" align="center" show-overflow-tooltip />
-        <el-table-column prop="serverName" label="视图库名称" align="center" show-overflow-tooltip />
-        <el-table-column prop="host" label="视图库地址" align="center" :formatter="serverHostFormmatter"  show-overflow-tooltip />
-        <el-table-column prop="category" label="节点类型" align="center" :formatter="categoryFormatter" />
-        <el-table-column prop="username" label="授权用户" align="center" show-overflow-tooltip />
-        <el-table-column prop="enabled" label="是否启用" align="center" >
+        <el-table-column prop="serverId" :label="$tp('视图库编号')" align="center" show-overflow-tooltip />
+        <el-table-column prop="serverName" :label="$tp('视图库名称')" align="center" show-overflow-tooltip />
+        <el-table-column prop="host" :label="$tp('视图库地址')" align="center" :formatter="serverHostFormmatter"  show-overflow-tooltip />
+        <el-table-column prop="category" :label="$tp('节点类型')" align="center" :formatter="categoryFormatter" />
+        <el-table-column prop="username" :label="$tp('授权用户')" align="center" show-overflow-tooltip />
+        <el-table-column prop="enabled" :label="$tp('是否启用')" align="center" >
           <template #default="scope">
             <el-switch v-model="scope.row.enabled" :active-value="true" :inactive-value="false" @change="changeServerEnable(scope.row)"></el-switch>
           </template>
         </el-table-column>
-        <el-table-column prop="keepalive" label="开启双向保活" >
+        <el-table-column prop="keepalive" :label="$tp('开启双向保活')" >
           <template #default="scope">
             <el-switch v-model="scope.row.keepalive" :active-value="true" :inactive-value="false" @change="changeServerKeepalive(scope.row)"></el-switch>
           </template>
         </el-table-column>
-        <el-table-column prop="online" label="在线状态" :formatter="onlineFormatter" />
-        <el-table-column label="操作" align="center" fixed="right">
+        <el-table-column prop="online" :label="$tp('在线状态')" :formatter="onlineFormatter" />
+        <el-table-column :label="$tp('操作')" align="center" fixed="right">
           <template #default="scope">
             <div style="display:flex; align-items: center;justify-content: center">
               <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                         v-hasPermi="['viid:server:edit']">修改
+                         v-hasPermi="['viid:server:edit']">{{ $tp("修改") }}
               </el-button>
               <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                          style="color: #f56c6c"
-                         v-hasPermi="['viid:server:remove']">删除
+                         v-hasPermi="['viid:server:remove']">{{ $tp("删除") }}
               </el-button>
             </div>
           </template>
@@ -80,59 +80,59 @@
           @pagination="getList"
       />
 
-      <el-dialog :title="title" v-model="open" width="50%" append-to-body>
+      <el-dialog :title="$tp(title)" v-model="open" width="50%" append-to-body>
         <el-form ref="ServerManageRef" :model="form" :rules="rules" label-width="120px">
-          <el-form-item label="视图库编号" prop="serverId">
-            <el-input v-model="form.serverId" placeholder="请输入视图库编号" :disabled="openServerId"/>
+          <el-form-item :label="$tp('视图库编号')" prop="serverId">
+            <el-input v-model="form.serverId" :placeholder="$tp('请输入视图库编号')" :disabled="openServerId"/>
           </el-form-item>
-          <el-form-item label="节点类别" prop="category">
-            <el-select v-model="form.category" placeholder="请选择协议">
-              <el-option label="下级节点" value="1"></el-option>
-              <el-option label="上级节点" value="2"></el-option>
+          <el-form-item :label="$tp('节点类别')" prop="category">
+            <el-select v-model="form.category" :placeholder="$tp('请选择协议')">
+              <el-option :label="$tp('下级节点')" value="1"></el-option>
+              <el-option :label="$tp('上级节点')" value="2"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="视图库名称" prop="serverName">
-            <el-input v-model="form.serverName" placeholder="请输入视图库编号" />
+          <el-form-item :label="$tp('视图库名称')" prop="serverName">
+            <el-input v-model="form.serverName" :placeholder="$tp('请输入视图库编号')" />
           </el-form-item>
-          <el-form-item label="视图库地址" prop="serverName">
+          <el-form-item :label="$tp('视图库地址')" prop="serverName">
             <el-row>
               <el-col>
-                <el-select v-model="form.scheme" slot="prepend" placeholder="请选择协议" style="width: 120px;">
+                <el-select v-model="form.scheme" slot="prepend" :placeholder="$tp('请选择协议')" style="width: 120px;">
                   <el-option label="HTTP" value="http"></el-option>
                   <el-option label="HTTPS" value="https"></el-option>
                 </el-select>
-                <el-input placeholder="视图库地址" v-model="form.host" class="input-with-select"
+                <el-input :placeholder="$tp('视图库地址')" v-model="form.host" class="input-with-select"
                           style="width: 300px;">
                 </el-input>
-                <el-input v-model="form.port" placeholder="端口" style="width: 90px;" class="clear-number-input"
+                <el-input v-model="form.port" :placeholder="$tp('端口')" style="width: 90px;" class="clear-number-input"
                           type="number" :min="1" />
               </el-col>
             </el-row>
           </el-form-item>
-          <el-form-item label="授权用户" prop="username">
-            <el-input v-model="form.username" placeholder="请输入授权用户" />
+          <el-form-item :label="$tp('授权用户')" prop="username">
+            <el-input v-model="form.username" :placeholder="$tp('请输入授权用户')" />
           </el-form-item>
-          <el-form-item label="授权凭证" prop="authenticate">
-            <el-input v-model="form.authenticate" placeholder="请输入授权凭证" />
+          <el-form-item :label="$tp('授权凭证')" prop="authenticate">
+            <el-input v-model="form.authenticate" :placeholder="$tp('请输入授权凭证')" />
           </el-form-item>
-          <el-form-item label="数据传输类型" prop="transmission">
-            <el-select v-model="form.transmission" placeholder="请选择数据传输类型">
-              <el-option label="标准http协议" value="http"></el-option>
-              <el-option label="跨网websocket协议" value="websocket"></el-option>
-              <el-option label="设备直推" value="device"></el-option>
+          <el-form-item :label="$tp('数据传输类型')" prop="transmission">
+            <el-select v-model="form.transmission" :placeholder="$tp('请选择数据传输类型')">
+              <el-option :label="$tp('标准http协议')" value="http"></el-option>
+              <el-option :label="$tp('跨网websocket协议')" value="websocket"></el-option>
+              <el-option :label="$tp('设备直推')" value="device"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="代理网络类型" prop="proxyNetwork">
-            <el-select v-model="form.proxyNetwork" placeholder="请选择代理网络类型">
-              <el-option label="直连网络" value="1"></el-option>
-              <el-option label="跨网边界" value="2"></el-option>
+          <el-form-item :label="$tp('代理网络类型')" prop="proxyNetwork">
+            <el-select v-model="form.proxyNetwork" :placeholder="$tp('请选择代理网络类型')">
+              <el-option :label="$tp('直连网络')" value="1"></el-option>
+              <el-option :label="$tp('跨网边界')" value="2"></el-option>
             </el-select>
           </el-form-item>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">取 消</el-button>
+            <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+            <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -175,22 +175,22 @@ const validatePort = (rule, value, callback) => {
 };
 const rules = ref({
   serverId: [
-    { required: true, message: '请输入视图库编号', trigger: 'blur' },
+    { required: true, get message() { return translatePhrase("请输入视图库编号") }, trigger: 'blur' },
   ],
   category: [
-    { required: true, message: '请选择节点类别', trigger: 'change' }
+    { required: true, get message() { return translatePhrase("请选择节点类别") }, trigger: 'change' }
   ],
   serverName: [
-    { required: true, message: '请输入视图库名称', trigger: 'blur' },
+    { required: true, get message() { return translatePhrase("请输入视图库名称") }, trigger: 'blur' },
   ],
   scheme: [
-    { required: true, message: '请选择协议', trigger: 'change' }
+    { required: true, get message() { return translatePhrase("请选择协议") }, trigger: 'change' }
   ],
   host: [
-    { required: true, message: '请输入视图库地址', trigger: 'blur' },
+    { required: true, get message() { return translatePhrase("请输入视图库地址") }, trigger: 'blur' },
     {
       pattern: /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$|^([a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*)$/,
-      message: '请输入有效的IP地址或域名',
+      get message() { return translatePhrase("请输入有效的IP地址或域名") },
       trigger: 'blur'
     }
   ],
@@ -198,16 +198,16 @@ const rules = ref({
     { required: true, validator: validatePort, trigger: 'blur' }
   ],
   username: [
-    { required: true, message: '请输入授权用户', trigger: 'blur' },
+    { required: true, get message() { return translatePhrase("请输入授权用户") }, trigger: 'blur' },
   ],
   authenticate: [
-    { required: true, message: '请输入授权凭证', trigger: 'blur' },
+    { required: true, get message() { return translatePhrase("请输入授权凭证") }, trigger: 'blur' },
   ],
   transmission: [
-    { required: true, message: '请选择数据传输类型', trigger: 'change' }
+    { required: true, get message() { return translatePhrase("请选择数据传输类型") }, trigger: 'change' }
   ],
   proxyNetwork: [
-    { required: true, message: '请选择代理网络类型', trigger: 'change' }
+    { required: true, get message() { return translatePhrase("请选择代理网络类型") }, trigger: 'change' }
   ]
 });
 const total = ref(0);
@@ -254,19 +254,19 @@ function handleUpdate(row){
 }
 
 function handleDelete(row){
-  proxy.$modal.confirm('选中数据将被永久删除, 是否继续？').then(function () {
+  proxy.$modal.confirm(translatePhrase("选中数据将被永久删除, 是否继续？")).then(function () {
     return delServers(row.serverId);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   });
 }
 
 function onlineFormatter(row, column, cellValue, index) {
   if (cellValue === '1') {
-    return h('el-tag', { type: 'success' }, '在线');
+    return h('el-tag', { type: 'success' }, translatePhrase("在线"));
   } else {
-    return h('el-tag', { type: 'warning' }, '离线');
+    return h('el-tag', { type: 'warning' }, translatePhrase("离线"));
   }
 }
 
@@ -275,7 +275,7 @@ function categoryFormatter(row, column, cellValue, index) {
     '1': h('el-tag', { type: 'info' }, '下级节点'),
     '2': h('el-tag', { type: 'info' }, '上级节点')
   };
-  return types[cellValue] || h('el-tag', { type: 'info' }, '未知节点');
+  return types[cellValue] || h('el-tag', { type: 'info' }, translatePhrase("未知节点"));
 }
 
 function serverHostFormmatter(row, column, cellValue, index) {

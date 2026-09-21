@@ -2,18 +2,18 @@
   <el-row :gutter="20">
     <el-col :span="12">
       <div style="display:flex;align-items: center">
-        <el-input v-model="site" clearable id="searchInput" placeholder="请输入地址">
+        <el-input v-model="site" clearable id="searchInput" :placeholder="$tp('请输入地址')">
           <template #prefix>
             <el-icon class="el-input__icon">
               <search />
             </el-icon>
           </template>
         </el-input>
-        <el-button type="primary" style="margin-left: 20px" @click="onSearch">搜索</el-button>
+        <el-button type="primary" style="margin-left: 20px" @click="onSearch">{{ $tp("搜索") }}</el-button>
       </div>
     </el-col>
     <el-col :span="12">
-      <el-button style="float: right" type="primary" @click="onConfirm">确定</el-button>
+      <el-button style="float: right" type="primary" @click="onConfirm">{{ $tp("确定") }}</el-button>
     </el-col>
   </el-row>
   <div id="container" style="margin-top: 20px" class="map"></div>
@@ -237,7 +237,7 @@ var emit = defineEmits(['update-value']);
 /** 子组件向父组件传值 */
 const onConfirm = () => {
   if (site.value.length <= 0) {
-    proxy?.$modal.msgWarning("未选择任何地址");
+    proxy?.$modal.msgWarning(translatePhrase("未选择任何地址"));
   } else {
     emit('update-value', {
       show: false,
@@ -265,7 +265,7 @@ const poiS = ref(null);
 
 const onSearch = () => {
   if (site.value.length <= 0) {
-    proxy?.$modal.msgError("没有输入搜索内容");
+    proxy?.$modal.msgError(translatePhrase("没有输入搜索内容"));
   } else {
     map.setZoom(10);
 

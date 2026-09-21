@@ -2,15 +2,15 @@
   <div class="app-container">
     <el-card>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
-        <el-form-item label="卡口标识" prop="tollgateId">
+        <el-form-item :label="$tp('卡口标识')" prop="tollgateId">
           <el-select v-model="queryParams.tollgateId" clearable filterable remote :remote-method="loadTollgateOptions"
-                     placeholder="请选择卡口" style="width: 180px;">
+                     :placeholder="$tp('请选择卡口')" style="width: 180px;">
             <el-option v-for="item in tollgateOptions" :key="item.id" :value="item.value" :label="item.label"/>
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+          <el-button type="primary" icon="Search" @click="handleQuery">{{ $tp("搜索") }}</el-button>
+          <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -22,7 +22,7 @@
                 icon="Plus"
                 @click="handleAdd"
                 v-hasPermi="['viid:lane:add']"
-            >新增
+            >{{ $tp("新增") }}
             </el-button>
           </el-col>
           <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -33,14 +33,14 @@
           <el-table-column v-if="item.show" :key="index" :prop="item.prop" :label="item.label" :formatter="item.formatter"
                            align="center" show-overflow-tooltip />
         </template>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="250">
+        <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width" fixed="right" width="250">
           <template #default="scope">
             <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                       v-hasPermi="['viid:lane:edit']">修改
+                       v-hasPermi="['viid:lane:edit']">{{ $tp("修改") }}
             </el-button>
             <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                        style="color: #f56c6c"
-                       v-hasPermi="['viid:lane:remove']">删除
+                       v-hasPermi="['viid:lane:remove']">{{ $tp("删除") }}
             </el-button>
           </template>
         </el-table-column>
@@ -56,54 +56,54 @@
 
     </el-card>
 
-    <el-dialog :title="title" v-model="open" width="50%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="open" width="50%" append-to-body>
       <el-form ref="laneManageRef" :model="form" :rules="rules" label-width="120px">
-        <el-tooltip class="item" effect="dark" content="国标格式卡口编号(6位地区编码+0000121+7位随机数)设备唯一不可重复" placement="top">
-          <el-form-item label="卡口编号" prop="tollgateId">
-            <el-select v-model="form.tollgateId" clearable filterable remote :remote-method="loadTollgateOptions" placeholder="请选择卡口">
+        <el-tooltip class="item" effect="dark" :content="$tp('国标格式卡口编号(6位地区编码+0000121+7位随机数)设备唯一不可重复')" placement="top">
+          <el-form-item :label="$tp('卡口编号')" prop="tollgateId">
+            <el-select v-model="form.tollgateId" clearable filterable remote :remote-method="loadTollgateOptions" :placeholder="$tp('请选择卡口')">
               <el-option v-for="item in tollgateOptions" :key="item.id" :value="item.value" :label="item.label" />
             </el-select>
           </el-form-item>
         </el-tooltip>
-        <el-form-item label="车道ID" prop="laneId">
-          <el-input type="number" v-model="form.laneId" placeholder="请输入车道ID" :disabled="!addAndUpdate"  />
+        <el-form-item :label="$tp('车道ID')" prop="laneId">
+          <el-input type="number" v-model="form.laneId" :placeholder="$tp('请输入车道ID')" :disabled="!addAndUpdate"  />
         </el-form-item>
-        <el-form-item label="车道编号" prop="laneNo">
-          <el-input type="number" v-model="form.laneNo" placeholder="请输入车道编号"/>
+        <el-form-item :label="$tp('车道编号')" prop="laneNo">
+          <el-input type="number" v-model="form.laneNo" :placeholder="$tp('请输入车道编号')"/>
         </el-form-item>
-        <el-form-item label="车道名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入车道名称" />
+        <el-form-item :label="$tp('车道名称')" prop="name">
+          <el-input v-model="form.name" :placeholder="$tp('请输入车道名称')" />
         </el-form-item>
-        <el-form-item label="车道方向" prop="direction">
-          <el-select v-model="form.direction" placeholder="请选择车道方向">
-            <el-option value="1" label="东"></el-option>
-            <el-option value="2" label="西"></el-option>
-            <el-option value="3" label="南"></el-option>
-            <el-option value="4" label="北"></el-option>
-            <el-option value="5" label="东北"></el-option>
-            <el-option value="6" label="西南"></el-option>
-            <el-option value="7" label="东南"></el-option>
-            <el-option value="8" label="西北"></el-option>
-            <el-option value="9" label="其他"></el-option>
+        <el-form-item :label="$tp('车道方向')" prop="direction">
+          <el-select v-model="form.direction" :placeholder="$tp('请选择车道方向')">
+            <el-option value="1" :label="$tp('东')"></el-option>
+            <el-option value="2" :label="$tp('西')"></el-option>
+            <el-option value="3" :label="$tp('南')"></el-option>
+            <el-option value="4" :label="$tp('北')"></el-option>
+            <el-option value="5" :label="$tp('东北')"></el-option>
+            <el-option value="6" :label="$tp('西南')"></el-option>
+            <el-option value="7" :label="$tp('东南')"></el-option>
+            <el-option value="8" :label="$tp('西北')"></el-option>
+            <el-option value="9" :label="$tp('其他')"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="车道描述" prop="desc">
-          <el-input v-model="form.desc" placeholder="请输入车道描述" />
+        <el-form-item :label="$tp('车道描述')" prop="desc">
+          <el-input v-model="form.desc" :placeholder="$tp('请输入车道描述')" />
         </el-form-item>
-        <el-form-item label="限速" prop="maxSpeed">
-          <el-input type="number" v-model="form.maxSpeed" placeholder="请输入车道限速" />
+        <el-form-item :label="$tp('限速')" prop="maxSpeed">
+          <el-input type="number" v-model="form.maxSpeed" :placeholder="$tp('请输入车道限速')" />
         </el-form-item>
-        <el-form-item label="出入城" prop="cityPass">
-          <el-select v-model="form.cityPass" placeholder="请选择车道出入城">
-            <el-option :value="1" label="进城"></el-option>
-            <el-option :value="2" label="出城"></el-option>
-            <el-option :value="3" label="非进出城"></el-option>
-            <el-option :value="4" label="进出城混合"></el-option>
+        <el-form-item :label="$tp('出入城')" prop="cityPass">
+          <el-select v-model="form.cityPass" :placeholder="$tp('请选择车道出入城')">
+            <el-option :value="1" :label="$tp('进城')"></el-option>
+            <el-option :value="2" :label="$tp('出城')"></el-option>
+            <el-option :value="3" :label="$tp('非进出城')"></el-option>
+            <el-option :value="4" :label="$tp('进出城混合')"></el-option>
           </el-select>
         </el-form-item>
-        <el-tooltip class="item" effect="dark" content="车道关联的设备编号" placement="top">
-          <el-form-item label="关联采集设备" type="number" prop="apeId">
-            <el-select v-model="form.apeId" clearable filterable remote :remote-method="loadDeviceOptions" placeholder="请选择关联采集设备">
+        <el-tooltip class="item" effect="dark" :content="$tp('车道关联的设备编号')" placement="top">
+          <el-form-item :label="$tp('关联采集设备')" type="number" prop="apeId">
+            <el-select v-model="form.apeId" clearable filterable remote :remote-method="loadDeviceOptions" :placeholder="$tp('请选择关联采集设备')">
               <el-option v-for="item in deviceOptions" :key="item.id" :value="item.value" :label="item.label" />
             </el-select>
           </el-form-item>
@@ -111,8 +111,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -130,15 +130,15 @@ const loading = ref(true);
 const open = ref(false);
 const title = ref("");
 const tableColumns = ref([
-  {prop: 'tollgateId', label: '卡口', show: true},
-  {prop: 'laneId', label: '车道ID', show: true},
-  {prop: 'laneNo', label: '车道编号', show: true},
-  {prop: 'name', label: '车道名称', show: true},
-  {prop: 'direction', label: '车道方向', show: true},
-  {prop: 'desc', label: '车道描述', show: true},
-  {prop: 'maxSpeed', label: '限速', show: true},
-  {prop: 'cityPass', label: '车道出入城', show: true},
-  {prop: 'apeId', label: '设备编号', show: true}
+  {prop: 'tollgateId', get label() { return translatePhrase("卡口") }, show: true},
+  {prop: 'laneId', get label() { return translatePhrase("车道ID") }, show: true},
+  {prop: 'laneNo', get label() { return translatePhrase("车道编号") }, show: true},
+  {prop: 'name', get label() { return translatePhrase("车道名称") }, show: true},
+  {prop: 'direction', get label() { return translatePhrase("车道方向") }, show: true},
+  {prop: 'desc', get label() { return translatePhrase("车道描述") }, show: true},
+  {prop: 'maxSpeed', get label() { return translatePhrase("限速") }, show: true},
+  {prop: 'cityPass', get label() { return translatePhrase("车道出入城") }, show: true},
+  {prop: 'apeId', get label() { return translatePhrase("设备编号") }, show: true}
 ]);
 const tableList = ref([]);
 const total = ref(0);
@@ -154,11 +154,11 @@ const tollgateOptions = ref([]);
 const deviceOptions = ref([]);
 const form = ref({});
 const rules = ref({
-  tollgateId: [{ required: true, message: '卡口编号不能为空', trigger: 'blur' }],
-  laneId: [{ required: true, message: '车道ID不能为空', trigger: 'blur' }],
-  laneNo: [{ required: true, message: '车道编号不能为空', trigger: 'blur' }],
-  name: [{ required: true, message: '车道名称不能为空', trigger: 'blur' }],
-  direction: [{ required: true, message: '车道方向不能为空', trigger: 'blur' }]
+  tollgateId: [{ required: true, get message() { return translatePhrase("卡口编号不能为空") }, trigger: 'blur' }],
+  laneId: [{ required: true, get message() { return translatePhrase("车道ID不能为空") }, trigger: 'blur' }],
+  laneNo: [{ required: true, get message() { return translatePhrase("车道编号不能为空") }, trigger: 'blur' }],
+  name: [{ required: true, get message() { return translatePhrase("车道名称不能为空") }, trigger: 'blur' }],
+  direction: [{ required: true, get message() { return translatePhrase("车道方向不能为空") }, trigger: 'blur' }]
 });
 const loadDeviceOptions = (keyword, id) => {
   getDeviceOptions({name: keyword, apeId: id, pageNum: 1}).then(response => {
@@ -185,10 +185,10 @@ const loadTollgateOptions = (keyword, id) => {
 }
 
 function handleDelete(row) {
-  proxy.$modal.confirm('是否确认删除视图库车道编号为"' + row.id + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除视图库车道编号为\"") + row.id + translatePhrase("\"的数据项？")).then(function () {
     delLanes(row.id).then(response => {
       if (response.success) {
-        proxy.$modal.msgSuccess('删除成功')
+        proxy.$modal.msgSuccess(translatePhrase("删除成功"))
         getList()
       }
     })
@@ -208,7 +208,7 @@ async function submitForm() {
       if (addAndUpdate.value){
         addLane(form.value).then(response => {
           if(response.success){
-            proxy.$modal.msgSuccess("操作成功");
+            proxy.$modal.msgSuccess(translatePhrase("操作成功"));
             getList();
             cancel();
           }
@@ -216,7 +216,7 @@ async function submitForm() {
       } else {
         updateLane(form.value).then(response => {
           if(response.success){
-            proxy.$modal.msgSuccess("操作成功");
+            proxy.$modal.msgSuccess(translatePhrase("操作成功"));
             getList();
             cancel();
           }

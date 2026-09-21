@@ -2,7 +2,7 @@
   <div class="thoroughfare-layout">
     <aside v-yResize class="thoroughfare-aside">
       <div class="head-container">
-        <el-input v-model="regionName" placeholder="请输入区域名称" clearable prefix-icon="Search"
+        <el-input v-model="regionName" :placeholder="$tp('请输入区域名称')" clearable prefix-icon="Search"
                   style="margin-bottom: 20px"/>
       </div>
       <div class="head-container thoroughfare-tree">
@@ -27,14 +27,14 @@
               @click="handleAdd"
               v-hasPermi="['wvp:channel:addRegionChannel']"
             >
-              <el-icon class="BtnImg"><Plus /></el-icon>新增
+              <el-icon class="BtnImg"><Plus /></el-icon>{{ $tp("新增") }}
             </button>
             <button-group :button-list="toolbarButtons" />
           </div>
           <div class="searchHeight_out flexRowAC">
             <search-height-box
               keyword="query"
-              placeholder="请输入关键字"
+              :placeholder="$tp('请输入关键字')"
               :data="searchData"
               @handle="searchResetFn"
             />
@@ -51,28 +51,28 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" :width="clacPXToVW(55)" align="center"/>
-          <el-table-column prop="gbName" label="名称" align="center" show-overflow-tooltip/>
-          <el-table-column prop="gbDeviceId" label="编号" align="center" show-overflow-tooltip/>
-          <el-table-column prop="gbManufacturer" label="厂家" align="center" show-overflow-tooltip/>
-          <el-table-column prop="gbAddress" label="位置" align="center" show-overflow-tooltip/>
-          <el-table-column label="类型" :width="clacPXToVW(110)" align="center">
+          <el-table-column prop="gbName" :label="$tp('名称')" align="center" show-overflow-tooltip/>
+          <el-table-column prop="gbDeviceId" :label="$tp('编号')" align="center" show-overflow-tooltip/>
+          <el-table-column prop="gbManufacturer" :label="$tp('厂家')" align="center" show-overflow-tooltip/>
+          <el-table-column prop="gbAddress" :label="$tp('位置')" align="center" show-overflow-tooltip/>
+          <el-table-column :label="$tp('类型')" :width="clacPXToVW(110)" align="center">
             <template #default="scope">
-              <el-tag effect="plain" v-if="scope.row.dataType === 1">国标设备</el-tag>
-              <el-tag effect="plain" type="success" v-else-if="scope.row.dataType === 2">推流设备</el-tag>
-              <el-tag effect="plain" type="warning" v-else-if="scope.row.dataType === 3">拉流代理</el-tag>
+              <el-tag effect="plain" v-if="scope.row.dataType === 1">{{ $tp("国标设备") }}</el-tag>
+              <el-tag effect="plain" type="success" v-else-if="scope.row.dataType === 2">{{ $tp("推流设备") }}</el-tag>
+              <el-tag effect="plain" type="warning" v-else-if="scope.row.dataType === 3">{{ $tp("拉流代理") }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="状态" :width="clacPXToVW(90)" align="center">
+          <el-table-column :label="$tp('状态')" :width="clacPXToVW(90)" align="center">
             <template #default="scope">
-              <el-tag v-if="scope.row.gbStatus === 'ON'">在线</el-tag>
-              <el-tag type="info" v-else>离线</el-tag>
+              <el-tag v-if="scope.row.gbStatus === 'ON'">{{ $tp("在线") }}</el-tag>
+              <el-tag type="info" v-else>{{ $tp("离线") }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(120)">
+          <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(120)">
             <template #default="scope">
               <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
                 <div class="new_table_svg_group" @click.stop="onMap(scope.row)">
-                  <span>设置位置</span>
+                  <span>{{ $tp("设置位置") }}</span>
                 </div>
               </div>
             </template>
@@ -87,31 +87,31 @@
             @pagination="getList"
         />
 
-        <el-dialog :title="title" v-model="open" width="70%" append-to-body>
+        <el-dialog :title="$tp(title)" v-model="open" width="70%" append-to-body>
           <el-form :model="queryParamsSelect" ref="querySelectRef" :inline="true" v-show="showSearchSelect"
                    label-width="68px">
-            <el-form-item label="关键字" prop="query">
-              <el-input v-model="queryParamsSelect.query" placeholder="请输入关键字" clearable style="width: 240px"
+            <el-form-item :label="$tp('关键字')" prop="query">
+              <el-input v-model="queryParamsSelect.query" :placeholder="$tp('请输入关键字')" clearable style="width: 240px"
                         @keyup.enter="handleSelectQuery"/>
             </el-form-item>
-            <el-form-item label="类型" prop="channelType">
-              <el-select v-model="queryParamsSelect.channelType" placeholder="请选择类型" style="width: 250px;"
+            <el-form-item :label="$tp('类型')" prop="channelType">
+              <el-select v-model="queryParamsSelect.channelType" :placeholder="$tp('请选择类型')" style="width: 250px;"
                          default-first-option>
-                <el-option label="国标设备" :value="1"></el-option>
-                <el-option label="推流设备" :value="2"></el-option>
-                <el-option label="拉流代理" :value="3"></el-option>
+                <el-option :label="$tp('国标设备')" :value="1"></el-option>
+                <el-option :label="$tp('推流设备')" :value="2"></el-option>
+                <el-option :label="$tp('拉流代理')" :value="3"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="在线状态" prop="online">
-              <el-select v-model="queryParamsSelect.online" placeholder="请选择在线状态" style="width: 250px;"
+            <el-form-item :label="$tp('在线状态')" prop="online">
+              <el-select v-model="queryParamsSelect.online" :placeholder="$tp('请选择在线状态')" style="width: 250px;"
                          default-first-option>
-                <el-option label="在线" value="true"></el-option>
-                <el-option label="离线" value="false"></el-option>
+                <el-option :label="$tp('在线')" value="true"></el-option>
+                <el-option :label="$tp('离线')" value="false"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" icon="Search" @click="handleSelectQuery">搜索</el-button>
-              <el-button icon="Refresh" @click="resetSelectQuery">重置</el-button>
+              <el-button type="primary" icon="Search" @click="handleSelectQuery">{{ $tp("搜索") }}</el-button>
+              <el-button icon="Refresh" @click="resetSelectQuery">{{ $tp("重置") }}</el-button>
             </el-form-item>
           </el-form>
 
@@ -122,7 +122,7 @@
                          icon="Select"
                          :disabled="multipleSelect"
                          @click="handleSelect">
-                选择
+                {{ $tp("选择") }}
               </el-button>
             </el-col>
             <right-toolbar v-model:showSearch="showSearchSelect" @queryTable="getChannelList"></right-toolbar>
@@ -130,23 +130,23 @@
 
           <el-table v-loading="loadingSelect" :data="channelSelectList" @selection-change="handleSelectionSelectChange">
             <el-table-column type="selection" width="55" align="center"/>
-            <el-table-column prop="gbName" label="名称" align="center"/>
-            <el-table-column prop="gbDeviceId" label="编号" align="center"/>
-            <el-table-column prop="gbManufacturer" label="厂家" align="center"/>
-            <el-table-column label="类型" align="center">
+            <el-table-column prop="gbName" :label="$tp('名称')" align="center"/>
+            <el-table-column prop="gbDeviceId" :label="$tp('编号')" align="center"/>
+            <el-table-column prop="gbManufacturer" :label="$tp('厂家')" align="center"/>
+            <el-table-column :label="$tp('类型')" align="center">
               <template #default="scope">
                 <div slot="reference" class="name-wrapper">
-                  <el-tag effect="plain" v-if="scope.row.dataType === 1">国标设备</el-tag>
-                  <el-tag effect="plain" type="success" v-else-if="scope.row.dataType === 2">推流设备</el-tag>
-                  <el-tag effect="plain" type="warning" v-else-if="scope.row.dataType === 3">拉流代理</el-tag>
+                  <el-tag effect="plain" v-if="scope.row.dataType === 1">{{ $tp("国标设备") }}</el-tag>
+                  <el-tag effect="plain" type="success" v-else-if="scope.row.dataType === 2">{{ $tp("推流设备") }}</el-tag>
+                  <el-tag effect="plain" type="warning" v-else-if="scope.row.dataType === 3">{{ $tp("拉流代理") }}</el-tag>
                 </div>
               </template>
             </el-table-column>
-            <el-table-column label="状态" align="center">
+            <el-table-column :label="$tp('状态')" align="center">
               <template #default="scope">
                 <div slot="reference" class="name-wrapper">
-                  <el-tag v-if="scope.row.gbStatus === 'ON'">在线</el-tag>
-                  <el-tag type="info" v-if="scope.row.gbStatus !== 'ON'">离线</el-tag>
+                  <el-tag v-if="scope.row.gbStatus === 'ON'">{{ $tp("在线") }}</el-tag>
+                  <el-tag type="info" v-if="scope.row.gbStatus !== 'ON'">{{ $tp("离线") }}</el-tag>
                 </div>
               </template>
             </el-table-column>
@@ -162,7 +162,7 @@
         </el-dialog>
     </main>
 
-    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
+    <el-dialog :title="$tp('修改地址')" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="formMap.gbAddress"/>
     </el-dialog>
   </div>
@@ -196,30 +196,30 @@ const title = ref("");
 const dataType = ref('civilCode');
 const searchData = ref([
   {
-    label: '类型',
+    get label() { return translatePhrase("类型") },
     value: 'channelType',
     type: 'select',
     option: [
-      { label: '国标设备', value: 1 },
-      { label: '推流设备', value: 2 },
-      { label: '拉流代理', value: 3 }
+      { get label() { return translatePhrase("国标设备") }, value: 1 },
+      { get label() { return translatePhrase("推流设备") }, value: 2 },
+      { get label() { return translatePhrase("拉流代理") }, value: 3 }
     ],
     default: undefined
   },
   {
-    label: '在线状态',
+    get label() { return translatePhrase("在线状态") },
     value: 'online',
     type: 'select',
     option: [
-      { label: '在线', value: 'true' },
-      { label: '离线', value: 'false' }
+      { get label() { return translatePhrase("在线") }, value: 'true' },
+      { get label() { return translatePhrase("离线") }, value: 'false' }
     ],
     default: undefined
   }
 ]);
 const toolbarButtons = computed(() => [
   {
-    name: '删除',
+    get name() { return translatePhrase("删除") },
     svg: 'delete',
     disabled: multiple.value,
     permi: ['wvp:channel:deleteRegionChannel'],
@@ -289,9 +289,9 @@ const updateDialogMap = (value) => {
   updateChannelData(formMap.value).then(res => {
     showMap.value = false;
     Destruction();
-    proxy.$modal.msgSuccess("操作成功");
+    proxy.$modal.msgSuccess(translatePhrase("操作成功"));
   }).catch(() => {
-    proxy.$modal.msgError("操作失败");
+    proxy.$modal.msgError(translatePhrase("操作失败"));
   })
 }
 
@@ -341,11 +341,11 @@ function handleDelete() {
   for (let i = 0; i < selectionList.value.length; i++) {
     channels.push(selectionList.value[i].gbId)
   }
-  proxy.$modal.confirm('是否删除选择的数据？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否删除选择的数据？")).then(function () {
     return deleteChannelToRegion({channelIds: channels});
   }).then(() => {
     getList()
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }
@@ -373,7 +373,7 @@ function handleNodeClick(data) {
 /** 新增按钮操作 */
 function handleAdd() {
   if (regionDeviceId.value === "" || regionDeviceId.value === ' ') {
-    proxy.$modal.msgError("请选择左侧行政区划");
+    proxy.$modal.msgError(translatePhrase("请选择左侧行政区划"));
     return;
   }
 
@@ -419,7 +419,7 @@ function handleSelectionSelectChange(selection) {
 }
 
 function handleSelect() {
-  proxy.$modal.msgSuccess("选择成功");
+  proxy.$modal.msgSuccess(translatePhrase("选择成功"));
   open.value = false;
   addChannelToCivilCode(regionDeviceId.value, selectionSelectList.value)
 }
@@ -438,7 +438,7 @@ onMounted(() => {
   queryForTree({}).then((res) => {
     let data = [
       {
-        name: "根资源组",
+        get name() { return translatePhrase("根资源组") },
         children: []
       }
     ]

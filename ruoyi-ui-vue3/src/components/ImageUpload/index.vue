@@ -21,19 +21,19 @@
     </el-upload>
     <!-- 上传提示 -->
     <div class="el-upload__tip" v-if="showTip">
-      请上传
+      {{ $tp("请上传") }}
       <template v-if="fileSize">
-        大小不超过 <b style="color: #f56c6c">{{ fileSize }}MB</b>
+        {{ $tp("大小不超过") }} <b style="color: #f56c6c">{{ fileSize }}MB</b>
       </template>
       <template v-if="fileType">
-        格式为 <b style="color: #f56c6c">{{ fileType.join("/") }}</b>
+        {{ $tp("格式为") }} <b style="color: #f56c6c">{{ fileType.join("/") }}</b>
       </template>
-      的文件
+      {{ $tp("的文件") }}
     </div>
 
     <el-dialog
       v-model="dialogVisible"
-      title="预览"
+      :title="$tp('预览')"
       width="50%"
       append-to-body
     >
@@ -125,27 +125,27 @@ function handleBeforeUpload(file) {
     isImg = file.type.indexOf("image") > -1;
   }
   if (!isImg) {
-    proxy.$modal.msgError(`文件格式不正确，请上传${props.fileType.join("/")}图片格式文件!`);
+    proxy.$modal.msgError(translatePhrase("文件格式不正确，请上传{value1}图片格式文件!", { value1: props.fileType.join("/") }));
     return false;
   }
   if (file.name.includes(',')) {
-    proxy.$modal.msgError('文件名不正确，不能包含英文逗号!');
+    proxy.$modal.msgError(translatePhrase("文件名不正确，不能包含英文逗号!"));
     return false;
   }
   if (props.fileSize) {
     const isLt = file.size / 1024 / 1024 < props.fileSize;
     if (!isLt) {
-      proxy.$modal.msgError(`上传头像图片大小不能超过 ${props.fileSize} MB!`);
+      proxy.$modal.msgError(translatePhrase("上传头像图片大小不能超过 {fileSize} MB!", { fileSize: props.fileSize }));
       return false;
     }
   }
-  proxy.$modal.loading("正在上传图片，请稍候...");
+  proxy.$modal.loading(translatePhrase("正在上传图片，请稍候..."));
   number.value++;
 }
 
 // 文件个数超出
 function handleExceed() {
-  proxy.$modal.msgError(`上传文件数量不能超过 ${props.limit} 个!`);
+  proxy.$modal.msgError(translatePhrase("上传文件数量不能超过 {limit} 个!", { limit: props.limit }));
 }
 
 // 上传成功回调
@@ -185,7 +185,7 @@ function uploadedSuccessfully() {
 
 // 上传失败
 function handleUploadError() {
-  proxy.$modal.msgError("上传图片失败");
+  proxy.$modal.msgError(translatePhrase("上传图片失败"));
   proxy.$modal.closeLoading();
 }
 

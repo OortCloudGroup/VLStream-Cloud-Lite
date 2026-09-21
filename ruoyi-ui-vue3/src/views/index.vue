@@ -5,7 +5,7 @@
         <el-card class="dashboard-card">
           <template #header>
             <div class="card-header">
-              <span>设备总览</span>
+              <span>{{ $tp("设备总览") }}</span>
             </div>
           </template>
           <LeftTop/>
@@ -15,7 +15,7 @@
         <el-card class="dashboard-card">
           <template #header>
             <div class="card-header">
-              <span>国标统计</span>
+              <span>{{ $tp("国标统计") }}</span>
             </div>
           </template>
           <TopCenter/>
@@ -37,7 +37,7 @@
         <el-card class="dashboard-card">
           <template #header>
             <div class="card-header">
-              <span>网络</span>
+              <span>{{ $tp("网络") }}</span>
             </div>
           </template>
           <LeftBottom ref="LeftBottomRef"/>
@@ -47,7 +47,7 @@
         <el-card class="dashboard-card">
           <template #header>
             <div class="card-header">
-              <span>内存</span>
+              <span>{{ $tp("内存") }}</span>
             </div>
           </template>
           <BottomCenter ref="BottomCenterRef"/>
@@ -57,7 +57,7 @@
         <el-card class="dashboard-card">
           <template #header>
             <div class="card-header">
-              <span>磁盘</span>
+              <span>{{ $tp("磁盘") }}</span>
             </div>
           </template>
           <RightBottom ref="RightBottomRef"/>

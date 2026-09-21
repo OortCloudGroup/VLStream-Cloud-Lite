@@ -4,7 +4,7 @@
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path, onlyOneChild.query)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
           <svg-icon :icon-class="resolveIcon(onlyOneChild.meta?.icon || item.meta?.icon)"/>
-          <template #title><span class="menu-title" :title="hasTitle(translateRouteTitle(onlyOneChild.meta.title))">{{ translateRouteTitle(onlyOneChild.meta.title) }}</span></template>
+          <template #title><span class="menu-title" :title="$tp(hasTitle(translateRouteTitle(onlyOneChild.meta.title)))">{{ translateRouteTitle(onlyOneChild.meta.title) }}</span></template>
         </el-menu-item>
       </app-link>
     </template>
@@ -21,7 +21,7 @@
     >
       <template v-if="item.meta" #title>
         <svg-icon :icon-class="resolveIcon(item.meta?.icon)" />
-        <span class="menu-title" :title="hasTitle(translateRouteTitle(item.meta.title))">{{ translateRouteTitle(item.meta.title) }}</span>
+        <span class="menu-title" :title="$tp(hasTitle(translateRouteTitle(item.meta.title)))">{{ translateRouteTitle(item.meta.title) }}</span>
       </template>
 
       <sidebar-item

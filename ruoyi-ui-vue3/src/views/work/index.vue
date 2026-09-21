@@ -5,31 +5,31 @@
       <el-tab-pane label="ONVIF" name="ONVIF"></el-tab-pane>
       <el-tab-pane label="RTSP" name="RTSP"></el-tab-pane>
       <el-tab-pane label="ISUP" name="ISUP"></el-tab-pane>
-      <el-tab-pane label="大华" name="DAHUA"></el-tab-pane>
+      <el-tab-pane :label="$tp('大华')" name="DAHUA"></el-tab-pane>
     </el-tabs>
 
     <div class="workbench-layout">
       <aside v-yResize class="workbench-aside">
         <div class="aside-header">
-          <div class="aside-title">设备列表</div>
+          <div class="aside-title">{{ $tp("设备列表") }}</div>
           <div class="aside-actions">
-            <el-button type="primary" link @click="handleSave">保存</el-button>
-            <el-button type="danger" link @click="handleCleanUp">清除</el-button>
+            <el-button type="primary" link @click="handleSave">{{ $tp("保存") }}</el-button>
+            <el-button type="danger" link @click="handleCleanUp">{{ $tp("清除") }}</el-button>
           </div>
         </div>
 
         <div v-show="activeName === 'GB'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('搜索设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px"/>
               </div>
               <div class="top">
-                <div>通道列表</div>
+                <div>{{ $tp("通道列表") }}</div>
                 <div>
                   <el-switch
                       v-model="activeValue"
-                      active-text="行政区划"
-                      inactive-text="业务分组"
+                      :active-text="$tp('行政区划')"
+                      :inactive-text="$tp('业务分组')"
                       @change="onSwitch"
                   />
                 </div>
@@ -196,30 +196,30 @@
                     <!-- 变倍、聚焦、光圈控制 -->
                     <div>
                       <div class="ptz-btn-box">
-                        <div @mousedown="ptzCamera('zoomin')" @mouseup="ptzCamera('stop')" title="变倍+">
+                        <div @mousedown="ptzCamera('zoomin')" @mouseup="ptzCamera('stop')" :title="$tp('变倍+')">
                           <el-icon class="control-zoom-btn" style="font-size: 24px;">
                             <ZoomIn/>
                           </el-icon>
                         </div>
-                        <div @mousedown="ptzCamera('zoomout')" @mouseup="ptzCamera('stop')" title="变倍-">
+                        <div @mousedown="ptzCamera('zoomout')" @mouseup="ptzCamera('stop')" :title="$tp('变倍-')">
                           <el-icon class="control-zoom-btn" style="font-size: 24px;">
                             <ZoomOut/>
                           </el-icon>
                         </div>
                       </div>
                       <div class="ptz-btn-box">
-                        <div @mousedown="focusCamera('near')" @mouseup="focusCamera('stop')" title="聚焦+">
+                        <div @mousedown="focusCamera('near')" @mouseup="focusCamera('stop')" :title="$tp('聚焦+')">
                           <i class="iconfont icon-bianjiao-fangda control-zoom-btn" style="font-size: 24px;"></i>
                         </div>
-                        <div @mousedown="focusCamera('far')" @mouseup="focusCamera('stop')" title="聚焦-">
+                        <div @mousedown="focusCamera('far')" @mouseup="focusCamera('stop')" :title="$tp('聚焦-')">
                           <i class="iconfont icon-bianjiao-suoxiao control-zoom-btn" style="font-size: 24px;"></i>
                         </div>
                       </div>
                       <div class="ptz-btn-box">
-                        <div @mousedown="irisCamera('in')" @mouseup="irisCamera('stop')" title="光圈+">
+                        <div @mousedown="irisCamera('in')" @mouseup="irisCamera('stop')" :title="$tp('光圈+')">
                           <i class="iconfont icon-guangquan control-zoom-btn" style="font-size: 24px;"></i>
                         </div>
-                        <div @mousedown="irisCamera('out')" @mouseup="irisCamera('stop')" title="光圈-">
+                        <div @mousedown="irisCamera('out')" @mouseup="irisCamera('stop')" :title="$tp('光圈-')">
                           <i class="iconfont icon-guangquan- control-zoom-btn" style="font-size: 24px;"></i>
                         </div>
                       </div>
@@ -230,7 +230,7 @@
         </div>
         <div v-show="activeName === 'ONVIF'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('搜索设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
 
@@ -299,11 +299,11 @@
                 </div>
               </div>
 
-              <el-empty v-if="listDevice.length === 0" :image-size="50" description="暂无数据"/>
+              <el-empty v-if="listDevice.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
         </div>
         <div v-show="activeName === 'RTSP'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('搜索设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
               <InfiniteList
@@ -323,11 +323,11 @@
                 </div>
               </InfiniteList>
 
-              <el-empty v-if="listDevice.length === 0" :image-size="50" description="暂无数据"/>
+              <el-empty v-if="listDevice.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
         </div>
         <div v-show="activeName === 'ISUP'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('搜索设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
 
@@ -394,7 +394,7 @@
                       <!-- 变倍、聚焦、光圈控制 -->
                       <div>
                         <div style="margin-left: 20px;width: 100px;">
-                          聚焦
+                          {{ $tp("聚焦") }}
                           <el-slider v-model="haikangControSpeedFocus" :max="100" :min="-100"
                                      @change="haikangFocusCamera"/>
                         </div>
@@ -405,11 +405,11 @@
               </div>
 
 
-              <el-empty v-if="listDevice.length === 0" :image-size="50" description="暂无数据"/>
+              <el-empty v-if="listDevice.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
         </div>
         <div v-show="activeName === 'DAHUA'" class="aside-body">
               <div class="head-container">
-                <el-input v-model="deviceName" placeholder="搜索设备名称" clearable prefix-icon="Search"
+                <el-input v-model="deviceName" :placeholder="$tp('搜索设备名称')" clearable prefix-icon="Search"
                           style="margin-bottom: 20px" @change="deviceChange"/>
               </div>
 
@@ -477,13 +477,13 @@
                       <div>
                         <div class="ptz-btn-box">
                           <div @mousedown="ptzControlUpStartFun('doubling+')" @mouseup="ptzControlUpEndFun('doubling+')"
-                               title="变倍+">
+                               :title="$tp('变倍+')">
                             <el-icon class="control-zoom-btn" style="font-size: 24px;">
                               <ZoomIn/>
                             </el-icon>
                           </div>
                           <div @mousedown="ptzControlUpStartFun('doubling-')" @mouseup="ptzControlUpEndFun('doubling-')"
-                               title="变倍-">
+                               :title="$tp('变倍-')">
                             <el-icon class="control-zoom-btn" style="font-size: 24px;">
                               <ZoomOut/>
                             </el-icon>
@@ -491,21 +491,21 @@
                         </div>
                         <div class="ptz-btn-box">
                           <div @mousedown="ptzControlUpStartFun('zoom+')" @mouseup="ptzControlUpEndFun('zoom+')"
-                               title="聚焦+">
+                               :title="$tp('聚焦+')">
                             <i class="iconfont icon-bianjiao-fangda control-zoom-btn" style="font-size: 24px;"></i>
                           </div>
                           <div @mousedown="ptzControlUpStartFun('zoom-')" @mouseup="ptzControlUpEndFun('zoom-')"
-                               title="聚焦-">
+                               :title="$tp('聚焦-')">
                             <i class="iconfont icon-bianjiao-suoxiao control-zoom-btn" style="font-size: 24px;"></i>
                           </div>
                         </div>
                         <div class="ptz-btn-box">
                           <div @mousedown="ptzControlUpStartFun('aperture+')" @mouseup="ptzControlUpEndFun('aperture+')"
-                               title="光圈+">
+                               :title="$tp('光圈+')">
                             <i class="iconfont icon-guangquan control-zoom-btn" style="font-size: 24px;"></i>
                           </div>
                           <div @mousedown="ptzControlUpStartFun('aperture-')" @mouseup="ptzControlUpEndFun('aperture-')"
-                               title="光圈-">
+                               :title="$tp('光圈-')">
                             <i class="iconfont icon-guangquan- control-zoom-btn" style="font-size: 24px;"></i>
                           </div>
                         </div>
@@ -515,7 +515,7 @@
                 </div>
               </div>
 
-              <el-empty v-if="listDevice.length === 0" :image-size="50" description="暂无数据"/>
+              <el-empty v-if="listDevice.length === 0" :image-size="50" :description="$tp('暂无数据')"/>
         </div>
       </aside>
 
@@ -532,27 +532,27 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="8">
-                  <svg-icon icon-class="screen8" class="dropdown-screen-icon" /> 八画面
+                  <svg-icon icon-class="screen8" class="dropdown-screen-icon" /> {{ $tp("八画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="16">
-                  <svg-icon icon-class="screen16" class="dropdown-screen-icon" /> 十六画面
+                  <svg-icon icon-class="screen16" class="dropdown-screen-icon" /> {{ $tp("十六画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="17">
-                  <svg-icon icon-class="screen17" class="dropdown-screen-icon" /> 十七画面
+                  <svg-icon icon-class="screen17" class="dropdown-screen-icon" /> {{ $tp("十七画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="21">
-                  <svg-icon icon-class="screen21" class="dropdown-screen-icon" /> 二十一画面
+                  <svg-icon icon-class="screen21" class="dropdown-screen-icon" /> {{ $tp("二十一画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="23">
-                  <svg-icon icon-class="screen23" class="dropdown-screen-icon" /> 二十三画面
+                  <svg-icon icon-class="screen23" class="dropdown-screen-icon" /> {{ $tp("二十三画面") }}
                 </el-dropdown-item>
                 <el-dropdown-item command="24">
-                  <svg-icon icon-class="screen24" class="dropdown-screen-icon" /> 二十四画面
+                  <svg-icon icon-class="screen24" class="dropdown-screen-icon" /> {{ $tp("二十四画面") }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <el-button size="small" @click="handleCustomScreen">自定义</el-button>
+          <el-button size="small" @click="handleCustomScreen">{{ $tp("自定义") }}</el-button>
           <svg-icon class="flex-icon" icon-class="screen-full" @click="toggleWorkbenchFullscreen" />
         </div>
         <div class="workbench-players" ref="workbenchPlayersRef">
@@ -566,7 +566,7 @@
                 @click="setActivePlayer(index)"
                 @dblclick="togglePlayerFullscreen($event)">
               <div v-if="item.data" class="player-delete">
-                <el-tooltip effect="dark" content="删除" placement="top">
+                <el-tooltip effect="dark" :content="$tp('删除')" placement="top">
                   <el-icon @click.stop="deleteVideo(index)"><Delete/></el-icon>
                 </el-tooltip>
               </div>
@@ -583,17 +583,17 @@
                   <video v-else :id="'rtspVideo' + index" muted playsinline controls class="player-fill"></video>
                 </div>
               </template>
-              <div v-else class="player-empty">无效信号</div>
+              <div v-else class="player-empty">{{ $tp("无效信号") }}</div>
             </div>
           </div>
         </div>
       </main>
     </div>
 
-    <el-dialog v-model="customDialogVisible" title="自定义视图" width="26%" append-to-body destroy-on-close>
+    <el-dialog v-model="customDialogVisible" :title="$tp('自定义视图')" width="26%" append-to-body destroy-on-close>
       <div class="custom-view-form">
         <div class="custom-view-field">
-          <div class="custom-view-label">行(输入值1-9)</div>
+          <div class="custom-view-label">{{ $tp("行(输入值1-9)") }}</div>
           <el-input
               v-model="customRows"
               maxlength="1"
@@ -603,7 +603,7 @@
         </div>
         <span class="custom-view-x">x</span>
         <div class="custom-view-field">
-          <div class="custom-view-label">列(输入值1-9)</div>
+          <div class="custom-view-label">{{ $tp("列(输入值1-9)") }}</div>
           <el-input
               v-model="customCols"
               maxlength="1"
@@ -614,7 +614,7 @@
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="confirmCustomScreen">确定</el-button>
+          <el-button type="primary" @click="confirmCustomScreen">{{ $tp("确定") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -627,8 +627,8 @@
         :popper-style="{ left: `${menuPosition.x}px`, top: `${menuPosition.y}px`, position: 'absolute' }"
         trigger="manual">
       <div>
-        <div @click="favorites" style="cursor: pointer;">收藏设备</div>
-        <div @click="markNode" style="cursor: pointer;">标记设备</div>
+        <div @click="favorites" style="cursor: pointer;">{{ $tp("收藏设备") }}</div>
+        <div @click="markNode" style="cursor: pointer;">{{ $tp("标记设备") }}</div>
       </div>
     </el-popover>
 
@@ -686,18 +686,18 @@ const formFavorites = ref({
   gbDeviceId: undefined,
 });
 const rulesFavorites = ref({
-  channelId: [{ required: true, message: '请输入国标通道id', trigger: 'blur' }],
-  gbName: [{ required: true, message: '请输入国标通道名称', trigger: 'blur' }],
-  gbParentid: [{ required: true, message: '请输入国标设备id', trigger: 'blur' }],
-  gbDeviceid: [{ required: true, message: '请输入国标通道id', trigger: 'blur' }],
-  favoritesId: [{ required: true, message: '请选择收藏夹', trigger: 'change' }]
+  channelId: [{ required: true, get message() { return translatePhrase("请输入国标通道id") }, trigger: 'blur' }],
+  gbName: [{ required: true, get message() { return translatePhrase("请输入国标通道名称") }, trigger: 'blur' }],
+  gbParentid: [{ required: true, get message() { return translatePhrase("请输入国标设备id") }, trigger: 'blur' }],
+  gbDeviceid: [{ required: true, get message() { return translatePhrase("请输入国标通道id") }, trigger: 'blur' }],
+  favoritesId: [{ required: true, get message() { return translatePhrase("请选择收藏夹") }, trigger: 'change' }]
 });
 const rulesMarks = ref({
-  channelId: [{ required: true, message: '请输入国标通道id', trigger: 'blur' }],
-  gbName: [{ required: true, message: '请输入国标通道名称', trigger: 'blur' }],
-  gbParentid: [{ required: true, message: '请输入国标设备id', trigger: 'blur' }],
-  gbDeviceid: [{ required: true, message: '请输入国标通道id', trigger: 'blur' }],
-  markId: [{ required: true, message: '请选择标记', trigger: 'change' }]
+  channelId: [{ required: true, get message() { return translatePhrase("请输入国标通道id") }, trigger: 'blur' }],
+  gbName: [{ required: true, get message() { return translatePhrase("请输入国标通道名称") }, trigger: 'blur' }],
+  gbParentid: [{ required: true, get message() { return translatePhrase("请输入国标设备id") }, trigger: 'blur' }],
+  gbDeviceid: [{ required: true, get message() { return translatePhrase("请输入国标通道id") }, trigger: 'blur' }],
+  markId: [{ required: true, get message() { return translatePhrase("请选择标记") }, trigger: 'change' }]
 });
 const favoritesOptions = ref([]);
 const closeDevice = ref(true);
@@ -739,11 +739,11 @@ const defaultProps = {
 const splitLayouts = ref(JSON.parse(JSON.stringify(layouts)));
 
 const handleFavoriteSuccess = () => {
-  proxy.$modal.msgSuccess("收藏成功")
+  proxy.$modal.msgSuccess(translatePhrase("收藏成功"))
 }
 
 const handleMarkSuccess = () => {
-  proxy.$modal.msgSuccess("标记成功")
+  proxy.$modal.msgSuccess(translatePhrase("标记成功"))
 }
 
 function loadFavoritesOptions() {
@@ -763,7 +763,7 @@ function favorites() {
     contextMenuVisible.value = false;
     openFavorites.value = true;
   } else {
-    proxy.$modal.msgError("请先选择国标通道");
+    proxy.$modal.msgError(translatePhrase("请先选择国标通道"));
   }
 }
 
@@ -788,7 +788,7 @@ function markNode(event, node, treeNode) {
     contextMenuVisible.value = false;
     openMarks.value = true;
   } else {
-    proxy.$modal.msgError("请先选择国标通道");
+    proxy.$modal.msgError(translatePhrase("请先选择国标通道"));
   }
 }
 
@@ -817,7 +817,7 @@ const groupLoadNode = async (node, resolve) => {
     return resolve([{
       treeId: "",
       deviceId: "",
-      name: "根资源组",
+      get name() { return translatePhrase("根资源组") },
       isLeaf: false,
       type: 0
     }]);
@@ -849,7 +849,7 @@ const loadNode = async (node, resolve) => {
     return resolve([{
       treeId: "",
       deviceId: "",
-      name: "根资源组",
+      get name() { return translatePhrase("根资源组") },
       isLeaf: false,
       type: 0
     }]);
@@ -884,7 +884,7 @@ const handleNodeClick = async (data) => {
     return
   }
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
@@ -907,7 +907,7 @@ const handleNodeClick = async (data) => {
       }
 
     } else {
-      proxy.$modal.msgError('通道或设备不存在')
+      proxy.$modal.msgError(translatePhrase("通道或设备不存在"))
     }
   }
 
@@ -1089,7 +1089,7 @@ async function getTreeData() {
     {
       treeId: "",
       deviceId: "",
-      name: "根资源组",
+      get name() { return translatePhrase("根资源组") },
       isLeaf: false,
       type: 0,
       children: []
@@ -1112,7 +1112,7 @@ async function getFavoriteTreeData(){
     {
       treeId: 0,
       deviceId: "",
-      name: "收藏",
+      get name() { return translatePhrase("收藏") },
       isLeaf: false,
       type: 0,
       children: []
@@ -1129,7 +1129,7 @@ const loadFavoriteNode = async (node, resolve) => {
       {
         treeId: 0,
         deviceId: "",
-        name: "收藏夹",
+        get name() { return translatePhrase("收藏夹") },
         isLeaf: false,
         type: 0,
         children: []
@@ -1162,7 +1162,7 @@ const loadFavoriteNode = async (node, resolve) => {
 
 const handleNodeFavoriteClick = async (data) => {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   const params = {
@@ -1189,7 +1189,7 @@ function getMarkTreeData() {
     {
       treeId: 0,
       deviceId: "",
-      name: "标记",
+      get name() { return translatePhrase("标记") },
       isLeaf: false,
       type: 0,
       children: []
@@ -1204,7 +1204,7 @@ const loadMarkNode = async (node, resolve) => {
       {
         treeId: 0,
         deviceId: "",
-        name: "收藏夹",
+        get name() { return translatePhrase("收藏夹") },
         isLeaf: false,
         type: 0,
         children: []
@@ -1237,7 +1237,7 @@ const loadMarkNode = async (node, resolve) => {
 
 const handleNodeMarkClick = async (data) => {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   const params = {
@@ -1259,7 +1259,7 @@ async function getGroupQueryForTree() {
     {
       treeId: "",
       deviceId: "",
-      name: "根资源组",
+      get name() { return translatePhrase("根资源组") },
       isLeaf: false,
       type: 0,
       children: []
@@ -1272,7 +1272,7 @@ async function getGroupQueryForTree() {
 function spiltIndex(index) {
   const key = Number(index)
   if (!layouts[key]) {
-    ElMessage.warning('暂不支持该分屏')
+    ElMessage.warning(translatePhrase("暂不支持该分屏"))
     return
   }
   customLayout.value = null
@@ -1306,7 +1306,7 @@ function confirmCustomScreen() {
   const rows = Number(customRows.value)
   const cols = Number(customCols.value)
   if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows < 1 || rows > 9 || cols < 1 || cols > 9) {
-    ElMessage.warning('行和列请输入 1-9 的整数')
+    ElMessage.warning(translatePhrase("行和列请输入 1-9 的整数"))
     return
   }
   const layout = getCustomEqualLayout(rows, cols)
@@ -1448,7 +1448,7 @@ async function playGB(data, index) {
         vUrls[index] = res.data.flv;
       }
     } else {
-      proxy.$modal.msgError('通道或设备不存在')
+      proxy.$modal.msgError(translatePhrase("通道或设备不存在"))
     }
   }
 
@@ -1506,7 +1506,7 @@ async function getList() {
 
 async function deviceClick(data) {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
 
@@ -1555,12 +1555,12 @@ function handleSave() {
     layoutList: JSON.stringify(splitLayouts.value),
     index: splitShow.value
   }).then(() => {
-    proxy.$modal.msgSuccess("保存成功");
+    proxy.$modal.msgSuccess(translatePhrase("保存成功"));
   })
 }
 
 function handleCleanUp() {
-  proxy.$modal.confirm('是否清除显示的分屏？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否清除显示的分屏？")).then(function () {
     splitLayouts.value = JSON.parse(JSON.stringify(layouts));
     return
   }).then(() => {
@@ -1571,12 +1571,12 @@ function handleCleanUp() {
 }
 
 function deleteVideo(index) {
-  proxy.$modal.confirm('是否删除该分屏').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否删除该分屏")).then(function () {
     let layoutData = splitLayouts.value[splitShow.value][index]
     layoutData.data = null
     layoutData.type = ''
   }).then(() => {
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }
@@ -1607,12 +1607,12 @@ const onvifControSpeed = ref(0.1);
 
 const ptzCamera = async (command) => {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   const url = {
@@ -1630,12 +1630,12 @@ const ptzCamera = async (command) => {
 
 const focusCamera = async (command) => {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   const url = {
@@ -1647,17 +1647,17 @@ const focusCamera = async (command) => {
     speed: parseInt(controSpeed.value * 255 / 100),
   }
   await getFocusCamera(url, params);
-  ElMessage.success('操作成功！');
+  ElMessage.success(translatePhrase("操作成功！"));
 }
 
 const irisCamera = async (command) => {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   const url = {
@@ -1669,7 +1669,7 @@ const irisCamera = async (command) => {
     speed: parseInt(controSpeed.value * 255 / 100),
   }
   await getIrIsCamera(url, params);
-  ElMessage.success('操作成功！');
+  ElMessage.success(translatePhrase("操作成功！"));
 }
 
 /**
@@ -1679,12 +1679,12 @@ const irisCamera = async (command) => {
  */
 function ptzControlUpStartFun(direction) {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   ptzControlUpStart(layoutData.data.id, direction, dahuaControSpeed.value)
@@ -1697,12 +1697,12 @@ function ptzControlUpStartFun(direction) {
  */
 function ptzControlUpEndFun(direction) {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   setTimeout(() => {
@@ -1716,12 +1716,12 @@ function ptzControlUpEndFun(direction) {
  */
 function ptzCtrlStartFun(direction) {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   ptzCtrlStart(layoutData.data.id, direction, controSpeed.value)
@@ -1732,12 +1732,12 @@ function ptzCtrlStartFun(direction) {
  */
 function ptzCtrlEndFun() {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   ptzCtrlEnd(layoutData.data.id)
@@ -1748,12 +1748,12 @@ function ptzCtrlEndFun() {
  */
 function haikangFocusCamera() {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   ptzCtrlFocus(layoutData.data.id, haikangControSpeedFocus.value)
@@ -1766,12 +1766,12 @@ function haikangFocusCamera() {
  */
 function onvifPtzCtrlStartFun(direction) {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   onvifPZTStart({
@@ -1786,12 +1786,12 @@ function onvifPtzCtrlStartFun(direction) {
  */
 function onvifPtzCtrlEndFun() {
   if (activePlayerIndex.value == null) {
-    proxy.$modal.msgError("请先选择一个播放窗口");
+    proxy.$modal.msgError(translatePhrase("请先选择一个播放窗口"));
     return
   }
   let layoutData = splitLayouts.value[splitShow.value][activePlayerIndex.value]
   if (!layoutData.data) {
-    proxy.$modal.msgError("该窗口没有播放视频");
+    proxy.$modal.msgError(translatePhrase("该窗口没有播放视频"));
     return
   }
   setTimeout(() => {

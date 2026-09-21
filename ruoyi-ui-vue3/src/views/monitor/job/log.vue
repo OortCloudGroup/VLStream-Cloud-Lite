@@ -68,7 +68,7 @@
       <!--        </el-form-item>-->
       <!--      </el-form>-->
       <div class="el-login-footer">
-        <span>Copyright © 2024-2025 视频监控平台 All Rights Reserved.</span>
+        <span>{{ $tp("Copyright © 2024-2025 视频监控平台 All Rights Reserved.") }}</span>
       </div>
     </div>
     <!--  底部  -->

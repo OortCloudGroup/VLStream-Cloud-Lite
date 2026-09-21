@@ -1,6 +1,6 @@
 <template>
   <el-dropdown trigger="click" @command="setLocale">
-    <button class="language-switch" type="button" :aria-label="$t('language.label')" :title="$t('language.label')">
+    <button class="language-switch" type="button" :aria-label="$t('language.label')" :title="$tp($t('language.label'))">
       <span class="language-switch__icon" aria-hidden="true">🌐</span>
       <span class="language-switch__code">{{ activeLocale.shortCode.toUpperCase() }}</span>
     </button>

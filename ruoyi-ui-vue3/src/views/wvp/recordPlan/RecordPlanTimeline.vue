@@ -1,9 +1,9 @@
 <template>
   <div class="record-plan-timeline">
     <el-form v-if="repeat === 'next'" class="interval_form" label-position="top" :model="intervalForm">
-      <el-form-item label="每隔">
+      <el-form-item :label="$tp('每隔')">
         <el-input v-model.number="intervalForm.interval" class="interval_input" @change="emitChange">
-          <template #suffix>天</template>
+          <template #suffix>{{ $tp("天") }}</template>
         </el-input>
       </el-form-item>
     </el-form>
@@ -62,7 +62,7 @@
           <el-time-picker
             v-model="editPop.start"
             class="edit_time_picker"
-            placeholder="开始时间"
+            :placeholder="$tp('开始时间')"
             format="HH:mm"
             value-format="HH:mm:ss"
             :clearable="false"
@@ -71,15 +71,15 @@
           <el-time-picker
             v-model="editPop.end"
             class="edit_time_picker"
-            placeholder="结束时间"
+            :placeholder="$tp('结束时间')"
             format="HH:mm"
             value-format="HH:mm:ss"
             :clearable="false"
           />
         </div>
         <div class="edit_actions">
-          <div class="edit_delete" @click="handleEditDelete">删除</div>
-          <div class="edit_save" @click="handleEditSave">保存</div>
+          <div class="edit_delete" @click="handleEditDelete">{{ $tp("删除") }}</div>
+          <div class="edit_save" @click="handleEditSave">{{ $tp("保存") }}</div>
         </div>
       </div>
     </div>
@@ -120,9 +120,9 @@ const dayRows = computed(() => {
     return weekdayKeys.map((key, i) => ({ key, label: weekdayLabels[i] }));
   }
   if (props.repeat === "next") {
-    return [{ key: "next", label: "隔天" }];
+    return [{ key: "next", get label() { return translatePhrase("隔天") } }];
   }
-  return [{ key: "day", label: "每天" }];
+  return [{ key: "day", get label() { return translatePhrase("每天") } }];
 });
 
 const tickStyle = (index) => ({
@@ -417,11 +417,11 @@ const handleEditSave = () => {
   const start = snapHalfHour(timeToHours(editPop.start));
   const end = snapHalfHour(timeToHours(editPop.end));
   if (!(start >= 0 && start <= 24 && end >= 0 && end <= 24) || end <= start) {
-    ElMessage.error("结束时间必须大于开始时间");
+    ElMessage.error(translatePhrase("结束时间必须大于开始时间"));
     return;
   }
   if (checkOverlap(editPop.dayKey, start, end, editPop.segId)) {
-    ElMessage.error("时间段重叠，请调整时间");
+    ElMessage.error(translatePhrase("时间段重叠，请调整时间"));
     return;
   }
   const seg = (segmentsByDay[editPop.dayKey] || []).find((s) => s.id === editPop.segId);
@@ -586,7 +586,7 @@ const handleMouseUp = () => {
       } else if (seg && checkOverlap(dragState.value.dayKey, seg.start, seg.end, seg.id)) {
         const index = segments.indexOf(seg);
         if (index > -1) segments.splice(index, 1);
-        ElMessage.error("时间段重叠，请重新选择");
+        ElMessage.error(translatePhrase("时间段重叠，请重新选择"));
       }
     }
     dragState.value = {

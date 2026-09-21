@@ -11,9 +11,9 @@
       >
         <h3 class="title">{{ $t('login.productTitle') }}</h3>
         <el-form-item v-if="giteeStar === 'true'">
-          <el-text class="mx-1">给本项目 star 后即可访问：</el-text>
+          <el-text class="mx-1">{{ $tp("给本项目 star 后即可访问：") }}</el-text>
           <el-link type="primary" href="https://gitee.com/xiaochemgzi/RuoYi-Wvp" target="_blank">
-            点我去 star
+            {{ $tp("点我去 star") }}
           </el-link>
         </el-form-item>
         <el-form-item prop="username">
@@ -96,24 +96,24 @@
       </div>
     </div>
 
-    <el-dialog v-if="authMode === 'local'" v-model="open" title="关注公众号" width="32%" append-to-body>
+    <el-dialog v-if="authMode === 'local'" v-model="open" :title="$tp('关注公众号')" width="32%" append-to-body>
       <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="120px">
-        <el-form-item label="公众号二维码">
+        <el-form-item :label="$tp('公众号二维码')">
           <el-image style="width: 150px" :src="gzhImage" :preview-src-list="[gzhImage]" />
         </el-form-item>
-        <el-form-item label="公众号 code" prop="publicCode">
+        <el-form-item :label="$tp('公众号 code')" prop="publicCode">
           <el-input
             v-model="loginForm.publicCode"
             type="text"
             size="large"
-            placeholder="请输入公众号 code"
+            :placeholder="$tp('请输入公众号 code')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="open = false">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="open = false">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -153,7 +153,7 @@ const loginRules = computed(() => ({
   username: [{ required: true, trigger: 'blur', message: t('login.accountRequired') }],
   password: [{ required: true, trigger: 'blur', message: t('login.passwordRequired') }],
   code: [{ required: true, trigger: 'change', message: t('login.captchaRequired') }],
-  publicCode: [{ required: true, trigger: 'change', message: '请输入公众号 code' }]
+  publicCode: [{ required: true, trigger: 'change', get message() { return translatePhrase("请输入公众号 code") } }]
 }))
 
 const codeUrl = ref('')
@@ -205,7 +205,7 @@ async function initializeLocalLogin() {
     await login()
     proxy.$modal.msgSuccess(t('login.success'))
   } else if (giteeCode === 'false') {
-    proxy.$modal.msgError('登录失败：请先点 star 再登录')
+    proxy.$modal.msgError(translatePhrase("登录失败：请先点 star 再登录"))
   }
 }
 
@@ -219,7 +219,7 @@ function handleLogin() {
       return
     }
     if (giteeStar.value === 'true' && loginForm.value.username !== 'admin') {
-      proxy.$modal.confirm('访问本系统需检测是否 star 本项目，是否继续？').then(() => {
+      proxy.$modal.confirm(translatePhrase("访问本系统需检测是否 star 本项目，是否继续？")).then(() => {
         saveRememberedLogin()
         giteeLogin().then(res => {
           window.location.href = res.msg

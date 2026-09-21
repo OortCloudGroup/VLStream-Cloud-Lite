@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-tabs v-model="activeName" class="work-tabs" @tab-click="handleClick">
-      <el-tab-pane label="行政区划" name="region">
+      <el-tab-pane :label="$tp('行政区划')" name="region">
 
         <div class="toolbar-with-search">
           <div class="toolbar-left">
@@ -18,32 +18,32 @@
             :default-expand-all="isExpandAll"
             :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
          class="new_table" header-cell-class-name="header_tenant_cell" stripe>
-          <el-table-column prop="name" label="名称" :show-overflow-tooltip="true"></el-table-column>
-          <el-table-column prop="deviceId" label="设备编号" :show-overflow-tooltip="true"
+          <el-table-column prop="name" :label="$tp('名称')" :show-overflow-tooltip="true"></el-table-column>
+          <el-table-column prop="deviceId" :label="$tp('设备编号')" :show-overflow-tooltip="true"
           ></el-table-column>
-          <el-table-column prop="createTime" label="创建时间" :show-overflow-tooltip="true"
+          <el-table-column prop="createTime" :label="$tp('创建时间')" :show-overflow-tooltip="true"
           ></el-table-column>
-          <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+          <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(220)">
             <template #default="scope">
               <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
                 <div class="new_table_svg_group" @click.stop="handleRegionUpdate(scope.row)" v-if="scope.row.id" v-hasPermi="['wvp:region:edit']">
                   <el-icon><Edit /></el-icon>
-                  <span>修改</span>
+                  <span>{{ $tp("修改") }}</span>
                 </div>
                 <div class="new_table_svg_group" @click.stop="handleRegionAdd(scope.row)" v-hasPermi="['wvp:region:add']">
                   <el-icon><Plus /></el-icon>
-                  <span>新增</span>
+                  <span>{{ $tp("新增") }}</span>
                 </div>
                 <div class="new_table_svg_group" @click.stop="handleRegionDelete(scope.row)" v-if="scope.row.id" v-hasPermi="['wvp:region:delete']">
                   <el-icon><Delete /></el-icon>
-                  <span>删除</span>
+                  <span>{{ $tp("删除") }}</span>
                 </div>
               </div>
             </template>
           </el-table-column>
         </table-self>
 
-        <el-dialog :title="title" v-model="openRegion" width="65%" append-to-body>
+        <el-dialog :title="$tp(title)" v-model="openRegion" width="65%" append-to-body>
           <el-tabs v-model="activeKeyRegion" style="padding: 0 1rem; margin: auto 0" @tab-click="getRegionList">
             <el-tab-pane name="0">
               <template #label>
@@ -62,7 +62,7 @@
               </template>
               <el-radio :key="-1" v-model="allValRegion[1].val" @change="deviceChange" label=""
                         style="line-height: 2rem">
-                不添加
+                {{ $tp("不添加") }}
               </el-radio>
               <el-radio v-for="item in regionList" v-model="allValRegion[1].val" @change="deviceChange(item)"
                         :key="item.deviceId" :label="item.deviceId.substring(2)" style="line-height: 2rem">
@@ -76,7 +76,7 @@
               </template>
               <el-radio :key="-1" label="" v-model="allValRegion[2].val" style="line-height: 2rem"
                         @change="deviceChange">
-                不添加
+                {{ $tp("不添加") }}
               </el-radio>
               <el-radio v-for="item in regionList" v-model="allValRegion[2].val" @change="deviceChange(item)"
                         :key="item.deviceId" :label="item.deviceId.substring(4)" style="line-height: 2rem">
@@ -92,7 +92,7 @@
               <el-input
                   style="width: 400px"
                   type="text"
-                  placeholder="请手动输入基层接入单位编码,两位数字"
+                  :placeholder="$tp('请手动输入基层接入单位编码,两位数字')"
                   v-model="allValRegion[3].val"
                   maxlength="2"
                   :disabled="allValRegion[3].lock"
@@ -106,12 +106,12 @@
           <el-form ref="formRegionRef" :model="formRegion" :rules="rulesRegion" label-width="80px">
             <el-row>
               <el-col :span="12">
-                <el-form-item label="名称" prop="name">
-                  <el-input v-model="formRegion.name" autocomplete="off" placeholder="请输入名称"></el-input>
+                <el-form-item :label="$tp('名称')" prop="name">
+                  <el-input v-model="formRegion.name" autocomplete="off" :placeholder="$tp('请输入名称')"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="编号" prop="deviceId">
+                <el-form-item :label="$tp('编号')" prop="deviceId">
                   <el-input v-model="formRegion.deviceId" disabled autocomplete="off"></el-input>
                 </el-form-item>
               </el-col>
@@ -120,13 +120,13 @@
 
           <template #footer>
             <div class="dialog-footer">
-              <el-button type="primary" @click="submitFormRegion">确 定</el-button>
-              <el-button @click="cancel">取 消</el-button>
+              <el-button type="primary" @click="submitFormRegion">{{ $tp("确 定") }}</el-button>
+              <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
             </div>
           </template>
         </el-dialog>
       </el-tab-pane>
-      <el-tab-pane label="业务分组" name="group">
+      <el-tab-pane :label="$tp('业务分组')" name="group">
         <div class="toolbar-with-search">
           <div class="toolbar-left">
             <button-group :button-list="toolbarButtons" />
@@ -142,55 +142,55 @@
             :default-expand-all="isExpandAll"
             :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
          class="new_table" header-cell-class-name="header_tenant_cell" stripe>
-          <el-table-column prop="name" label="名称" :show-overflow-tooltip="true"></el-table-column>
-          <el-table-column prop="deviceId" label="设备编号" :show-overflow-tooltip="true"
+          <el-table-column prop="name" :label="$tp('名称')" :show-overflow-tooltip="true"></el-table-column>
+          <el-table-column prop="deviceId" :label="$tp('设备编号')" :show-overflow-tooltip="true"
           ></el-table-column>
-          <el-table-column prop="createTime" label="创建时间" :show-overflow-tooltip="true"
+          <el-table-column prop="createTime" :label="$tp('创建时间')" :show-overflow-tooltip="true"
           ></el-table-column>
-          <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(220)">
+          <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(220)">
             <template #default="scope">
               <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
                 <div class="new_table_svg_group" @click.stop="handleGroupUpdate(scope.row)" v-if="scope.row.id" v-hasPermi="['wvp:group:edit']">
                   <el-icon><Edit /></el-icon>
-                  <span>修改</span>
+                  <span>{{ $tp("修改") }}</span>
                 </div>
                 <div class="new_table_svg_group" @click.stop="handleGroupAdd(scope.row)" v-hasPermi="['wvp:group:add']">
                   <el-icon><Plus /></el-icon>
-                  <span>新增</span>
+                  <span>{{ $tp("新增") }}</span>
                 </div>
                 <div class="new_table_svg_group" @click.stop="handleGroupDelete(scope.row)" v-if="scope.row.id" v-hasPermi="['wvp:group:delete']">
                   <el-icon><Delete /></el-icon>
-                  <span>删除</span>
+                  <span>{{ $tp("删除") }}</span>
                 </div>
               </div>
             </template>
           </el-table-column>
         </table-self>
 
-        <el-dialog :title="title" v-model="openGroup" width="65%" append-to-body>
+        <el-dialog :title="$tp(title)" v-model="openGroup" width="65%" append-to-body>
           <el-form ref="formGroupRef" :model="formGroup" :rules="rulesGroup" label-width="80px">
-            <el-form-item label="节点编号" prop="deviceId">
-              <el-input v-model="formGroup.deviceId" placeholder="请输入编码">
+            <el-form-item :label="$tp('节点编号')" prop="deviceId">
+              <el-input v-model="formGroup.deviceId" :placeholder="$tp('请输入编码')">
                 <template #append>
-                  <el-button @click="buildDeviceIdCode(formGroup.deviceId)">生成</el-button>
+                  <el-button @click="buildDeviceIdCode(formGroup.deviceId)">{{ $tp("生成") }}</el-button>
                 </template>
               </el-input>
             </el-form-item>
-            <el-form-item label="节点名称" prop="name">
+            <el-form-item :label="$tp('节点名称')" prop="name">
               <el-input v-model="formGroup.name" clearable></el-input>
             </el-form-item>
-            <el-form-item label="行政区划" prop="civilCode">
+            <el-form-item :label="$tp('行政区划')" prop="civilCode">
               <el-input v-model="formGroup.civilCode">
                 <template #append>
-                  <el-button @click="chooseCivilCodeFun(formGroup.civilCode)">选择</el-button>
+                  <el-button @click="chooseCivilCodeFun(formGroup.civilCode)">{{ $tp("选择") }}</el-button>
                 </template>
               </el-input>
             </el-form-item>
           </el-form>
           <template #footer>
             <div class="dialog-footer">
-              <el-button type="primary" @click="submitFormGroup">确 定</el-button>
-              <el-button @click="cancel">取 消</el-button>
+              <el-button type="primary" @click="submitFormGroup">{{ $tp("确 定") }}</el-button>
+              <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
             </div>
           </template>
         </el-dialog>
@@ -226,13 +226,13 @@ const allValRegion = ref([]);
 const data = reactive({
   formRegion: {},
   rulesRegion: {
-    name: [{required: true, message: "请输入名称", trigger: "blur"}],
+    name: [{required: true, get message() { return translatePhrase("请输入名称") }, trigger: "blur"}],
   },
   formGroup: {},
   rulesGroup: {
-    name: [{required: true, message: "请输入节点名称", trigger: "blur"}],
-    deviceId: [{required: true, message: "请选择节点编号", trigger: "change"}],
-    civilCode: [{required: true, message: "请选择行政区划", trigger: "change"}],
+    name: [{required: true, get message() { return translatePhrase("请输入节点名称") }, trigger: "blur"}],
+    deviceId: [{required: true, get message() { return translatePhrase("请选择节点编号") }, trigger: "change"}],
+    civilCode: [{required: true, get message() { return translatePhrase("请选择行政区划") }, trigger: "change"}],
   }
 });
 
@@ -242,7 +242,7 @@ const channelCodeRef = ref(null);
 const chooseCivilCodeRef = ref(null);
 
 const toolbarButtons = computed(() => [
-  { name: '展开/折叠', svg: 'list', clickFn: () => toggleExpandAll() }
+  { get name() { return translatePhrase("展开/折叠") }, svg: 'list', clickFn: () => toggleExpandAll() }
 ]);
 
 const {formRegion, rulesRegion, formGroup, rulesGroup} = toRefs(data);
@@ -254,7 +254,7 @@ function getList() {
     queryForTree().then(res => {
       let data = [
         {
-          name: "根资源组",
+          get name() { return translatePhrase("根资源组") },
           children: []
         }
       ]
@@ -266,7 +266,7 @@ function getList() {
     queryGroupForTree().then(res => {
       let data = [
         {
-          name: "根资源组",
+          get name() { return translatePhrase("根资源组") },
           children: []
         }
       ]
@@ -408,10 +408,10 @@ function cancel() {
 }
 
 function handleRegionDelete(row) {
-  proxy.$modal.confirm('是否确认删除名称为"' + row.name + '"的数据项?').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除名称为\"") + row.name + translatePhrase("\"的数据项?")).then(function () {
     deleteRegion(row.id).then(() => {
       getList();
-      proxy.$modal.msgSuccess("删除成功");
+      proxy.$modal.msgSuccess(translatePhrase("删除成功"));
 
     })
   })
@@ -422,13 +422,13 @@ function submitFormRegion() {
     if (valid) {
       if (formRegion.value.id) {
         updateRegion(formRegion.value).then(() => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(translatePhrase("修改成功"));
           openRegion.value = false;
           getList();
         })
       } else {
         addRegion(formRegion.value).then(() => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(translatePhrase("新增成功"));
           openRegion.value = false;
           getList();
         })
@@ -454,7 +454,7 @@ function getRegionList() {
         }
       }
       if (activeKeyRegion.value !== '0' && parent === '') {
-        proxy.$modal.msgError("请先选择上级行政区划");
+        proxy.$modal.msgError(translatePhrase("请先选择上级行政区划"));
       }
       if (parent !== "") {
         queryChildList(parent);
@@ -553,13 +553,13 @@ function submitFormGroup() {
     if (valid) {
       if (formGroup.value.id) {
         updateGroup(formGroup.value).then(() => {
-          proxy.$modal.msgSuccess("修改成功");
+          proxy.$modal.msgSuccess(translatePhrase("修改成功"));
           openGroup.value = false;
           getList();
         })
       } else {
         addGroup(formGroup.value).then(() => {
-          proxy.$modal.msgSuccess("新增成功");
+          proxy.$modal.msgSuccess(translatePhrase("新增成功"));
           openGroup.value = false;
           getList();
         })
@@ -569,10 +569,10 @@ function submitFormGroup() {
 }
 
 function handleGroupDelete(row) {
-  proxy.$modal.confirm('是否确认删除名称为"' + row.name + '"的数据项?').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除名称为\"") + row.name + translatePhrase("\"的数据项?")).then(function () {
     deleteGroup(row.id).then(() => {
       getList();
-      proxy.$modal.msgSuccess("删除成功");
+      proxy.$modal.msgSuccess(translatePhrase("删除成功"));
     })
   })
 }

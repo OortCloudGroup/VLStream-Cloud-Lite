@@ -7,7 +7,7 @@
 
       <div class="tree-title">{{ activeLabel }}</div>
       <div class="tree-search-content">
-        <el-input v-model="treeSearchKeyword" placeholder="搜索" clearable prefix-icon="Search" />
+        <el-input v-model="treeSearchKeyword" :placeholder="$tp('搜索')" clearable prefix-icon="Search" />
       </div>
 
       <el-tree
@@ -24,7 +24,7 @@
       >
         <template #empty>
           <div class="tree-empty" :class="{ readonly }" @click="openRootAdd">
-            {{ readonly ? '暂无数据' : '暂无数据，点击新增' }}
+            {{ readonly ? $tp('暂无数据') : $tp('暂无数据，点击新增') }}
           </div>
         </template>
         <template #default="{ node, data }">
@@ -51,10 +51,10 @@
               class="tree-node-actions"
               @click.stop
             >
-              <el-tooltip content="删除" placement="top">
+              <el-tooltip :content="$tp('删除')" placement="top">
                 <el-icon class="tree-action-icon danger" @click="handleRemoveNode(data)"><Delete /></el-icon>
               </el-tooltip>
-              <el-tooltip content="新增子分类" placement="top">
+              <el-tooltip :content="$tp('新增子分类')" placement="top">
                 <el-icon class="tree-action-icon" @click="handleAddChild(data)"><Plus /></el-icon>
               </el-tooltip>
             </div>
@@ -64,9 +64,9 @@
 
       <template v-if="showAssignment">
         <el-button class="assign-button" type="primary" plain :disabled="normalizedDeviceKeys.length === 0" @click="openAssignment">
-          设置分类<span v-if="normalizedDeviceKeys.length">（{{ normalizedDeviceKeys.length }}）</span>
+          {{ $tp("设置分类") }}<span v-if="normalizedDeviceKeys.length">（{{ normalizedDeviceKeys.length }}）</span>
         </el-button>
-        <div class="selection-hint">勾选一台可单独设置，勾选多台可批量设置</div>
+        <div class="selection-hint">{{ $tp("勾选一台可单独设置，勾选多台可批量设置") }}</div>
       </template>
     </aside>
 
@@ -74,9 +74,9 @@
       <div class="classification-content-body"><slot /></div>
     </main>
 
-    <el-dialog v-model="categoryDialog.visible" :title="categoryDialog.mode === 'add' ? `新增${activeLabel}` : `修改${activeLabel}`" width="30%" append-to-body>
+    <el-dialog v-model="categoryDialog.visible" :title="$tp(categoryDialog.mode === 'add' ? `新增${activeLabel}` : `修改${activeLabel}`)" width="30%" append-to-body>
       <el-form ref="categoryFormRef" :model="categoryForm" :rules="categoryRules" label-width="90px">
-        <el-form-item label="上级节点" prop="parentId">
+        <el-form-item :label="$tp('上级节点')" prop="parentId">
           <el-tree-select
             v-model="categoryForm.parentId"
             :data="parentOptions"
@@ -87,42 +87,42 @@
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="分类名称" prop="categoryName">
+        <el-form-item :label="$tp('分类名称')" prop="categoryName">
           <el-input v-model="categoryForm.categoryName" maxlength="100" show-word-limit />
         </el-form-item>
-        <el-form-item label="显示顺序" prop="sortNum">
+        <el-form-item :label="$tp('显示顺序')" prop="sortNum">
           <el-input-number v-model="categoryForm.sortNum" :min="0" :max="9999" controls-position="right" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="categoryDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="categoryDialog.saving" @click="submitCategory">确定</el-button>
+        <el-button @click="categoryDialog.visible = false">{{ $tp("取消") }}</el-button>
+        <el-button type="primary" :loading="categoryDialog.saving" @click="submitCategory">{{ $tp("确定") }}</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-if="showAssignment" v-model="assignmentDialog.visible" title="设置设备分类" width="34%" append-to-body>
+    <el-dialog v-if="showAssignment" v-model="assignmentDialog.visible" :title="$tp('设置设备分类')" width="34%" append-to-body>
       <el-alert
         v-if="normalizedDeviceKeys.length > 1"
-        title="批量设置会用本次选择覆盖这些设备原有的区域、分组和标签"
+        :title="$tp('批量设置会用本次选择覆盖这些设备原有的区域、分组和标签')"
         type="warning"
         :closable="false"
         show-icon
         class="assignment-alert"
       />
       <el-form label-width="80px">
-        <el-form-item label="区域">
+        <el-form-item :label="$tp('区域')">
           <el-tree-select v-model="assignmentForm.regionId" :data="treeCache.REGION.tree" node-key="id" check-strictly clearable default-expand-all :props="treeProps" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="分组">
+        <el-form-item :label="$tp('分组')">
           <el-tree-select v-model="assignmentForm.groupId" :data="treeCache.GROUP.tree" node-key="id" check-strictly clearable default-expand-all :props="treeProps" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="标签">
+        <el-form-item :label="$tp('标签')">
           <el-tree-select v-model="assignmentForm.tagIds" :data="treeCache.TAG.tree" node-key="id" multiple show-checkbox check-strictly clearable default-expand-all :props="treeProps" style="width: 100%" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="assignmentDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="assignmentDialog.saving" @click="submitAssignment">保存</el-button>
+        <el-button @click="assignmentDialog.visible = false">{{ $tp("取消") }}</el-button>
+        <el-button type="primary" :loading="assignmentDialog.saving" @click="submitAssignment">{{ $tp("保存") }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -150,9 +150,9 @@ const props = defineProps({
 const emit = defineEmits(['filter-change', 'assigned'])
 
 const tabs = [
-  { label: '区域', value: 'REGION' },
-  { label: '分组', value: 'GROUP' },
-  { label: '标签', value: 'TAG' }
+  { get label() { return translatePhrase("区域") }, value: 'REGION' },
+  { get label() { return translatePhrase("分组") }, value: 'GROUP' },
+  { get label() { return translatePhrase("标签") }, value: 'TAG' }
 ]
 const treeProps = { label: 'categoryName', children: 'children' }
 const activeType = ref('REGION')
@@ -205,7 +205,7 @@ function handleNodeClick(node) {
 const categoryDialog = reactive({ visible: false, mode: 'add', saving: false })
 const categoryFormRef = ref()
 const categoryForm = reactive({ id: undefined, categoryType: 'REGION', parentId: '0', categoryName: '', sortNum: 0 })
-const categoryRules = { categoryName: [{ required: true, message: '请输入分类名称', trigger: 'blur' }] }
+const categoryRules = { categoryName: [{ required: true, get message() { return translatePhrase("请输入分类名称") }, trigger: 'blur' }] }
 
 function cloneWithoutNode(nodes, excludedId) {
   return nodes.filter(node => String(node.id) !== String(excludedId)).map(node => ({
@@ -254,7 +254,7 @@ async function submitCategory() {
     const payload = { ...categoryForm }
     if (categoryDialog.mode === 'add') await addClassificationCategory(payload)
     else await updateClassificationCategory(payload)
-    ElMessage.success('保存成功')
+    ElMessage.success(translatePhrase("保存成功"))
     categoryDialog.visible = false
     selectedCategory.value = null
     await loadTree(activeType.value)
@@ -266,9 +266,9 @@ async function submitCategory() {
 async function removeCategory(node) {
   const target = node || selectedCategory.value
   if (!target) return
-  await ElMessageBox.confirm(`确认删除“${target.categoryName}”吗？`, '提示', { type: 'warning' })
+  await ElMessageBox.confirm(translatePhrase("确认删除“{categoryName}”吗？", { categoryName: target.categoryName }), translatePhrase("提示"), { type: 'warning' })
   await deleteClassificationCategory(String(target.id))
-  ElMessage.success('删除成功')
+  ElMessage.success(translatePhrase("删除成功"))
   selectedCategory.value = null
   await loadTree(activeType.value)
   emit('filter-change', { categoryType: undefined, categoryId: undefined, unclassified: undefined })
@@ -303,7 +303,7 @@ async function submitAssignment() {
       groupId: assignmentForm.groupId,
       tagIds: assignmentForm.tagIds
     })
-    ElMessage.success('分类设置成功')
+    ElMessage.success(translatePhrase("分类设置成功"))
     assignmentDialog.visible = false
     await loadAllTrees()
     emit('assigned')

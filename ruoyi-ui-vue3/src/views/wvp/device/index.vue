@@ -4,7 +4,7 @@
     <div class="toolbar-with-search">
       <div class="toolbar-left">
         <button type="button" class="exportBtn newBtn flexRowAC" @click="showInfo" v-hasPermi="['wvp:server:configInfo']">
-          <el-icon class="BtnImg"><InfoFilled /></el-icon>平台信息
+          <el-icon class="BtnImg"><InfoFilled /></el-icon>{{ $tp("平台信息") }}
         </button>
         <button
           type="button"
@@ -13,13 +13,13 @@
           @click="handleBatchDelete"
           v-hasPermi="['wvp:device:remove']"
         >
-          <el-icon class="BtnImg"><Delete /></el-icon>删除
+          <el-icon class="BtnImg"><Delete /></el-icon>{{ $tp("删除") }}
         </button>
       </div>
       <div class="searchHeight_out flexRowAC">
         <search-height-box
           keyword="name"
-          placeholder="请输入设备名称等关键词"
+          :placeholder="$tp('请输入设备名称等关键词')"
           :data="searchData"
           @handle="searchResetFn"
         />
@@ -37,80 +37,80 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" :width="clacPXToVW(55)" align="center"/>
-      <el-table-column type="index" label="编号" :width="clacPXToVW(70)" align="center"/>
-      <el-table-column label="所属部门" align="center" prop="deptName" show-overflow-tooltip/>
-      <el-table-column prop="name" label="名称" :width="clacPXToVW(100)" align="center" show-overflow-tooltip/>
-      <el-table-column prop="deviceId" label="设备编号" align="center" :width="clacPXToVW(150)" show-overflow-tooltip/>
-      <el-table-column label="地址" align="center" prop="addressMap" :width="clacPXToVW(150)" show-overflow-tooltip/>
-      <el-table-column label="IP地址" :width="clacPXToVW(160)" align="center" show-overflow-tooltip>
+      <el-table-column type="index" :label="$tp('编号')" :width="clacPXToVW(70)" align="center"/>
+      <el-table-column :label="$tp('所属部门')" align="center" prop="deptName" show-overflow-tooltip/>
+      <el-table-column prop="name" :label="$tp('名称')" :width="clacPXToVW(100)" align="center" show-overflow-tooltip/>
+      <el-table-column prop="deviceId" :label="$tp('设备编号')" align="center" :width="clacPXToVW(150)" show-overflow-tooltip/>
+      <el-table-column :label="$tp('地址')" align="center" prop="addressMap" :width="clacPXToVW(150)" show-overflow-tooltip/>
+      <el-table-column :label="$tp('IP地址')" :width="clacPXToVW(160)" align="center" show-overflow-tooltip>
         <template #default="scope">
           <el-tag v-if="scope.row.hostAddress">{{ scope.row.hostAddress }}</el-tag>
-          <el-tag v-else type="info">未知</el-tag>
+          <el-tag v-else type="info">{{ $tp("未知") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="manufacturer" label="厂家" :width="clacPXToVW(90)" align="center" show-overflow-tooltip/>
-      <el-table-column prop="transport" label="信令传输模式" :width="clacPXToVW(110)" align="center"/>
-      <el-table-column label="流传输模式" :width="clacPXToVW(150)" align="center">
+      <el-table-column prop="manufacturer" :label="$tp('厂家')" :width="clacPXToVW(90)" align="center" show-overflow-tooltip/>
+      <el-table-column prop="transport" :label="$tp('信令传输模式')" :width="clacPXToVW(110)" align="center"/>
+      <el-table-column :label="$tp('流传输模式')" :width="clacPXToVW(150)" align="center">
         <template #default="scope">
           <el-select
             v-if="checkPermi(['wvp:device:updateTransport'])"
             @change="transportChange(scope.row)"
             v-model="scope.row.streamMode"
-            placeholder="请选择"
+            :placeholder="$tp('请选择')"
             style="width: 120px"
           >
             <el-option key="UDP" label="UDP" value="UDP"/>
-            <el-option key="TCP-ACTIVE" label="TCP主动模式" value="TCP-ACTIVE"/>
-            <el-option key="TCP-PASSIVE" label="TCP被动模式" value="TCP-PASSIVE"/>
+            <el-option key="TCP-ACTIVE" :label="$tp('TCP主动模式')" value="TCP-ACTIVE"/>
+            <el-option key="TCP-PASSIVE" :label="$tp('TCP被动模式')" value="TCP-PASSIVE"/>
           </el-select>
           <template v-else>
             <el-tag v-if="scope.row.streamMode === 'UDP'">UDP</el-tag>
-            <el-tag v-else-if="scope.row.streamMode === 'TCP-ACTIVE'">TCP主动模式</el-tag>
-            <el-tag v-else-if="scope.row.streamMode === 'TCP-PASSIVE'">TCP被动模式</el-tag>
+            <el-tag v-else-if="scope.row.streamMode === 'TCP-ACTIVE'">{{ $tp("TCP主动模式") }}</el-tag>
+            <el-tag v-else-if="scope.row.streamMode === 'TCP-PASSIVE'">{{ $tp("TCP被动模式") }}</el-tag>
           </template>
         </template>
       </el-table-column>
-      <el-table-column label="通道数" :width="clacPXToVW(80)" align="center">
+      <el-table-column :label="$tp('通道数')" :width="clacPXToVW(80)" align="center">
         <template #default="scope">{{ scope.row.channelCount }}</template>
       </el-table-column>
-      <el-table-column label="状态" :width="clacPXToVW(80)" align="center">
+      <el-table-column :label="$tp('状态')" :width="clacPXToVW(80)" align="center">
         <template #default="scope">
-          <el-tag v-if="scope.row.onLine">在线</el-tag>
-          <el-tag type="info" v-else>离线</el-tag>
+          <el-tag v-if="scope.row.onLine">{{ $tp("在线") }}</el-tag>
+          <el-tag type="info" v-else>{{ $tp("离线") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="订阅" :min-width="clacPXToVW(220)" align="center">
+      <el-table-column :label="$tp('订阅')" :min-width="clacPXToVW(220)" align="center">
         <template #default="scope">
           <el-checkbox
             v-if="checkPermi(['wvp:device:subscribeCatalog'])"
-            label="目录"
+            :label="$tp('目录')"
             :checked="scope.row.subscribeCycleForCatalog > 0"
             @change="(e)=>subscribeForCatalog(scope.row.id, e)"
           />
           <el-checkbox
             v-else
-            label="目录"
+            :label="$tp('目录')"
             :checked="scope.row.subscribeCycleForCatalog > 0"
             disabled
           />
           <el-checkbox
             v-if="checkPermi(['wvp:device:subscribeMobilePosition'])"
-            label="位置"
+            :label="$tp('位置')"
             :checked="scope.row.subscribeCycleForMobilePosition > 0"
             @change="(e)=>subscribeForMobilePosition(scope.row.id, e)"
           />
           <el-checkbox
             v-else
-            label="位置"
+            :label="$tp('位置')"
             disabled
             :checked="scope.row.subscribeCycleForMobilePosition > 0"
           />
-          <el-checkbox label="报警" disabled :checked="scope.row.subscribeCycleForAlarm > 0"/>
+          <el-checkbox :label="$tp('报警')" disabled :checked="scope.row.subscribeCycleForAlarm > 0"/>
         </template>
       </el-table-column>
-      <el-table-column prop="keepaliveTime" label="最近心跳" :width="clacPXToVW(150)" align="center" show-overflow-tooltip/>
-      <el-table-column prop="registerTime" label="最近注册" :width="clacPXToVW(150)" align="center" show-overflow-tooltip/>
-      <el-table-column label="操作" align="right" fixed="right" :width="clacPXToVW(240)">
+      <el-table-column prop="keepaliveTime" :label="$tp('最近心跳')" :width="clacPXToVW(150)" align="center" show-overflow-tooltip/>
+      <el-table-column prop="registerTime" :label="$tp('最近注册')" :width="clacPXToVW(150)" align="center" show-overflow-tooltip/>
+      <el-table-column :label="$tp('操作')" align="right" fixed="right" :width="clacPXToVW(240)">
         <template #default="scope">
           <div class="operateAppBox flexRowAC" style="justify-content: flex-end;">
             <div
@@ -119,37 +119,37 @@
               @click.stop="scope.row.online !== 0 && refDevice(scope.row)"
               v-hasPermi="['wvp:device:sync']"
             >
-              <span>刷新</span>
+              <span>{{ $tp("刷新") }}</span>
             </div>
             <div
               class="new_table_svg_group"
               @click.stop="showChannelList(scope.row)"
               v-if="checkPermi(['wvp:device:channels'])"
             >
-              <span>通道</span>
+              <span>{{ $tp("通道") }}</span>
             </div>
             <div
               class="new_table_svg_group"
               @click.stop="handleUpdate(scope.row)"
               v-if="checkPermi(['wvp:device:edit'])"
             >
-              <span>修改</span>
+              <span>{{ $tp("修改") }}</span>
             </div>
             <el-dropdown
               @command="(command)=>{moreClick(command, scope.row)}"
               v-if="checkPermi(['wvp:device:remove','wvp:control:guardApi','wvp:config:cdownloadApi','wvp:device:edit'])"
             >
               <div class="new_table_svg_group" @click.stop>
-                <span>更多</span>
+                <span>{{ $tp("更多") }}</span>
                 <el-icon><ArrowDown /></el-icon>
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="handleMap" v-if="checkPermi(['wvp:device:edit'])">修改位置</el-dropdown-item>
-                  <el-dropdown-item command="delete" style="color: #f56c6c" v-if="checkPermi(['wvp:device:remove'])">删除</el-dropdown-item>
-                  <el-dropdown-item command="setGuard" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:control:guardApi'])">布防</el-dropdown-item>
-                  <el-dropdown-item command="resetGuard" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:control:guardApi'])">撤防</el-dropdown-item>
-                  <el-dropdown-item command="syncBasicParam" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:config:cdownloadApi'])">基础配置同步</el-dropdown-item>
+                  <el-dropdown-item command="handleMap" v-if="checkPermi(['wvp:device:edit'])">{{ $tp("修改位置") }}</el-dropdown-item>
+                  <el-dropdown-item command="delete" style="color: #f56c6c" v-if="checkPermi(['wvp:device:remove'])">{{ $tp("删除") }}</el-dropdown-item>
+                  <el-dropdown-item command="setGuard" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:control:guardApi'])">{{ $tp("布防") }}</el-dropdown-item>
+                  <el-dropdown-item command="resetGuard" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:control:guardApi'])">{{ $tp("撤防") }}</el-dropdown-item>
+                  <el-dropdown-item command="syncBasicParam" :disabled="!scope.row.onLine" v-if="checkPermi(['wvp:config:cdownloadApi'])">{{ $tp("基础配置同步") }}</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -167,29 +167,29 @@
     />
 
     <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="32%" append-to-body>
+    <el-dialog :title="$tp(title)" v-model="open" width="32%" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="设备编号" prop="deviceId">
+        <el-form-item :label="$tp('设备编号')" prop="deviceId">
           <el-input v-model="form.deviceId" disabled></el-input>
         </el-form-item>
-        <el-form-item label="所属部门" prop="deptId">
-          <el-tree-select v-model="form.deptId" :data="enabledDeptOptions" :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" placeholder="请选择归属部门" check-strictly />
+        <el-form-item :label="$tp('所属部门')" prop="deptId">
+          <el-tree-select v-model="form.deptId" :data="enabledDeptOptions" :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" :placeholder="$tp('请选择归属部门')" check-strictly />
         </el-form-item>
-        <el-form-item label="设备名称" prop="name">
+        <el-form-item :label="$tp('设备名称')" prop="name">
           <el-input v-model="form.name" clearable></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="password">
+        <el-form-item :label="$tp('密码')" prop="password">
           <el-input v-model="form.password" clearable></el-input>
         </el-form-item>
-        <el-form-item label="收流IP" prop="sdpIp">
+        <el-form-item :label="$tp('收流IP')" prop="sdpIp">
           <el-input v-model="form.sdpIp" clearable></el-input>
         </el-form-item>
-        <el-form-item label="厂家" prop="manufacturer">
+        <el-form-item :label="$tp('厂家')" prop="manufacturer">
           <el-input v-model="form.manufacturer" clearable></el-input>
         </el-form-item>
-        <el-form-item label="流媒体ID" prop="mediaServerId">
+        <el-form-item :label="$tp('流媒体ID')" prop="mediaServerId">
           <el-select v-model="form.mediaServerId" style="float: left; width: 100%">
-            <el-option key="auto" label="自动负载最小" value="auto"></el-option>
+            <el-option key="auto" :label="$tp('自动负载最小')" value="auto"></el-option>
             <el-option
                 v-for="item in mediaServerList"
                 :key="item.id"
@@ -199,40 +199,40 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="字符集" prop="charset">
+        <el-form-item :label="$tp('字符集')" prop="charset">
           <el-select v-model="form.charset" style="float: left; width: 100%">
             <el-option key="GB2312" label="GB2312" value="gb2312"></el-option>
             <el-option key="UTF-8" label="UTF-8" value="utf-8"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="其他选项">
-          <el-checkbox label="SSRC校验" v-model="form.ssrcCheck" style="float: left"></el-checkbox>
-          <el-checkbox label="作为消息通道" v-model="form.asMessageChannel" style="float: left"></el-checkbox>
-          <el-checkbox label="收到ACK后发流" v-model="form.broadcastPushAfterAck" style="float: left"></el-checkbox>
+        <el-form-item :label="$tp('其他选项')">
+          <el-checkbox :label="$tp('SSRC校验')" v-model="form.ssrcCheck" style="float: left"></el-checkbox>
+          <el-checkbox :label="$tp('作为消息通道')" v-model="form.asMessageChannel" style="float: left"></el-checkbox>
+          <el-checkbox :label="$tp('收到ACK后发流')" v-model="form.broadcastPushAfterAck" style="float: left"></el-checkbox>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
+          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
         </div>
       </template>
     </el-dialog>
 
     <el-dialog
-        title="国标服务信息"
+        :title="$tp('国标服务信息')"
         width="65%"
         v-model="showDialog"
         append-to-body
     >
-      <template #header><div class="gb-dialog-heading"><span>国标服务信息</span><el-button link type="primary" @click="showHelp = true">帮助说明</el-button></div></template>
+      <template #header><div class="gb-dialog-heading"><span>{{ $tp("国标服务信息") }}</span><el-button link type="primary" @click="showHelp = true">{{ $tp("帮助说明") }}</el-button></div></template>
       <div id="shared" style="margin-top: 1rem;">
         <el-descriptions v-if="configInfoData.sip" :span="2" border>
-          <el-descriptions-item label="编号">{{ configInfoData.sip.id }}</el-descriptions-item>
-          <el-descriptions-item label="域">{{ configInfoData.sip.domain }}</el-descriptions-item>
+          <el-descriptions-item :label="$tp('编号')">{{ configInfoData.sip.id }}</el-descriptions-item>
+          <el-descriptions-item :label="$tp('域')">{{ configInfoData.sip.domain }}</el-descriptions-item>
           <el-descriptions-item label="IP">{{ configInfoData.sip.showIp }}</el-descriptions-item>
-          <el-descriptions-item label="端口">{{ configInfoData.sip.port }}</el-descriptions-item>
-          <el-descriptions-item label="密码">
+          <el-descriptions-item :label="$tp('端口')">{{ configInfoData.sip.port }}</el-descriptions-item>
+          <el-descriptions-item :label="$tp('密码')">
             <el-tag size="small">{{ configInfoData.sip.password }}</el-tag>
           </el-descriptions-item>
         </el-descriptions>
@@ -240,7 +240,7 @@
     </el-dialog>
 
     <el-dialog
-        title="刷新设备"
+        :title="$tp('刷新设备')"
         width="20%"
         v-model="showProgress"
         append-to-body
@@ -255,7 +255,7 @@
 
 
     <GbHelpDialog v-model="showHelp" mode="service" />
-    <el-dialog title="修改地址" v-model="showMap" width="50%" append-to-body>
+    <el-dialog :title="$tp('修改地址')" v-model="showMap" width="50%" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
   </div>
@@ -307,31 +307,31 @@ const deptOptions = ref(undefined);
 const enabledDeptOptions = ref(undefined);
 const searchData = ref([
   {
-    label: '所属部门',
+    get label() { return translatePhrase("所属部门") },
     value: 'deptId',
     type: 'tree-select',
     option: [],
     default: undefined
   },
   {
-    label: '地址',
+    get label() { return translatePhrase("地址") },
     value: 'ip',
     type: 'text',
     default: undefined
   },
   {
-    label: '厂家',
+    get label() { return translatePhrase("厂家") },
     value: 'manufacturer',
     type: 'text',
     default: undefined
   },
   {
-    label: '在线状态',
+    get label() { return translatePhrase("在线状态") },
     value: 'status',
     type: 'select',
     option: [
-      { label: '在线', value: '1' },
-      { label: '离线', value: '0' }
+      { get label() { return translatePhrase("在线") }, value: '1' },
+      { get label() { return translatePhrase("离线") }, value: '0' }
     ],
     default: undefined
   }
@@ -369,8 +369,8 @@ const data = reactive({
     deptId: undefined,
   },
   rules: {
-    deviceId: [{required: true, message: "请输入设备编号", trigger: "blur"}],
-    deptId: [{ required: true, message: "请选择所属部门", trigger: 'blur' }],
+    deviceId: [{required: true, get message() { return translatePhrase("请输入设备编号") }, trigger: "blur"}],
+    deptId: [{ required: true, get message() { return translatePhrase("请选择所属部门") }, trigger: 'blur' }],
   }
 });
 
@@ -473,7 +473,7 @@ function submitForm() {
     if (valid) {
       updateDevice(form.value).then(response => {
         getList();
-        proxy.$modal.msgSuccess("修改成功");
+        proxy.$modal.msgSuccess(translatePhrase("修改成功"));
         open.value = false;
       })
     }
@@ -491,7 +491,7 @@ function handleDelete(row) {
     return deleteDevice(deviceId);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }
@@ -632,9 +632,9 @@ const updateDialogMap = (value) => {
   updateDevice(form.value).then(res => {
     showMap.value = false;
     Destruction();
-    proxy.$modal.msgSuccess("操作成功");
+    proxy.$modal.msgSuccess(translatePhrase("操作成功"));
   }).catch(() => {
-    proxy.$modal.msgError("操作失败");
+    proxy.$modal.msgError(translatePhrase("操作失败"));
   })
 }
 
@@ -653,7 +653,7 @@ function setGuard(row) {
     guardCmdStr: 'SetGuard',
   }).then(() => {
     ElMessage({
-      message: '布防成功',
+      message: translatePhrase("布防成功"),
       type: 'success',
     })
   })
@@ -665,7 +665,7 @@ function resetGuard(row) {
     guardCmdStr: 'ResetGuard',
   }).then(() => {
     ElMessage({
-      message: '撤防成功',
+      message: translatePhrase("撤防成功"),
       type: 'success',
     })
   })
@@ -677,7 +677,7 @@ function syncBasicParam(row) {
     configType: "BasicParam",
   }).then((res) => {
     ElMessage({
-      message: `配置已同步，当前心跳间隔： ${res.BasicParam.HeartBeatInterval} 心跳间隔:${res.BasicParam.HeartBeatCount}`,
+      get message() { return translatePhrase("配置已同步，当前心跳间隔：{interval}，心跳次数：{count}", { interval: res.BasicParam.HeartBeatInterval, count: res.BasicParam.HeartBeatCount }) },
       type: 'success',
     })
   })
@@ -692,11 +692,11 @@ function handleSelectionChange(selection) {
 
 const handleBatchDelete = () => {
   const _ids = ids.value;
-  proxy.$modal.confirm('是否确认删除国标设备编号为"' + _ids + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除国标设备编号为\"") + _ids + translatePhrase("\"的数据项？")).then(function () {
     return batchDeleteDevice(_ids);
   }).then(() => {
     getList();
-    proxy.$modal.msgSuccess("删除成功");
+    proxy.$modal.msgSuccess(translatePhrase("删除成功"));
   }).catch(() => {
   });
 }

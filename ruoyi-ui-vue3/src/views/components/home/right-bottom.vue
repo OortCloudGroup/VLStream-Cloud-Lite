@@ -49,12 +49,12 @@ function setData(diskList) {
       },
       series: [
         {
-          name: '未使用',
+          get name() { return translatePhrase("未使用") },
           type: 'bar',
           data: freeList
         },
         {
-          name: '已使用',
+          get name() { return translatePhrase("已使用") },
           type: 'bar',
           data: useList
         }

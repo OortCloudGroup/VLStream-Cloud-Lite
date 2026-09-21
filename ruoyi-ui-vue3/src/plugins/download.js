@@ -62,7 +62,7 @@ export default {
       downloadLoadingInstance.close();
     }).catch((r) => {
       console.error(r)
-      ElMessage.error('下载文件出现错误，请联系管理员！')
+      ElMessage.error(translatePhrase("下载文件出现错误，请联系管理员！"))
       downloadLoadingInstance.close();
     })
   },

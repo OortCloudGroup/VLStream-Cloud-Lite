@@ -69,7 +69,7 @@ onMounted(()=>{
         },
         series: [
           {
-            name: "国标总览",
+            get name() { return translatePhrase("国标总览") },
             type: "pie",
             radius: ["38%", "56%"],
             // avoidLabelOverlap: false,
@@ -117,14 +117,14 @@ onMounted(()=>{
             data: [
               {
                 value: state.onlineNum,
-                name: "在线",
+                get name() { return translatePhrase("在线") },
                 itemStyle: {
                   color: echartsGraphic(["#0BFC7F", "#A3FDE0"]),
                 },
               },
               {
                 value: state.offlineNum,
-                name: "离线",
+                get name() { return translatePhrase("离线") },
                 itemStyle: {
                   color: echartsGraphic(["#A0A0A0", "#DBDFDD"]),
                 },

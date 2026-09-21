@@ -1,21 +1,21 @@
 <template>
   <div>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
-        <el-form-item label="设备编码" prop="deviceId">
-          <el-input v-model="queryParams.deviceId" placeholder="请输入客户端名称" clearable disabled/>
+        <el-form-item :label="$tp('设备编码')" prop="deviceId">
+          <el-input v-model="queryParams.deviceId" :placeholder="$tp('请输入客户端名称')" clearable disabled/>
         </el-form-item>
-        <el-form-item label="数据时间">
+        <el-form-item :label="$tp('数据时间')">
           <el-date-picker v-model="queryParams.startTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
-                          placeholder="选择开始时间" align="center">
+                          :placeholder="$tp('选择开始时间')" align="center">
           </el-date-picker>
           -
           <el-date-picker v-model="queryParams.endTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
-                          placeholder="选择结束时间" align="center">
+                          :placeholder="$tp('选择结束时间')" align="center">
           </el-date-picker>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+          <el-button type="primary" icon="Search" @click="handleQuery">{{ $tp("搜索") }}</el-button>
+          <el-button icon="Refresh" @click="resetQuery">{{ $tp("重置") }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -28,7 +28,7 @@
           <el-table-column v-if="item.show" :key="index" :prop="item.prop" :label="item.label"
                            :formatter="item.formatter" align="center" show-overflow-tooltip />
         </template>
-        <el-table-column label="图片列表" align="center" show-overflow-tooltip>
+        <el-table-column :label="$tp('图片列表')" align="center" show-overflow-tooltip>
           <template #default="scope">
             <el-row>
               <el-col :span="12" v-for="(image, index) in scope.row.subImageList.SubImageInfoObject" :key="index">
@@ -37,11 +37,11 @@
             </el-row>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="100">
+        <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width" fixed="right" width="100">
           <template #default="scope">
             <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                        style="color: #f56c6c"
-                       v-hasPermi="['viid:vehicle:remove']">删除
+                       v-hasPermi="['viid:vehicle:remove']">{{ $tp("删除") }}
             </el-button>
           </template>
         </el-table-column>
@@ -84,27 +84,27 @@ const queryParams = ref({
   endTime: null
 });
 const tableColumns = ref([
-  {prop: 'motorVehicleId', label: '机动车标识', show: true},
-  {prop: 'deviceId', label: '设备编码', show: true},
-  {prop: 'leftTopX', label: '左上角X坐标', show: false},
-  {prop: 'leftTopY', label: '左上角Y坐标', show: false},
-  {prop: 'rightBtmX', label: '右下角X坐标', show: false},
-  {prop: 'rightBtmY', label: '右下角Y坐标', show: false},
-  {prop: 'passTime', label: '过车时间', show: true},
-  {prop: 'plateNo', label: '车牌号', show: true},
-  {prop: 'vehicleColor', label: '车身颜色', show: true},
-  {prop: 'vehicleClass', label: '车辆类型', show: false},
-  {prop: 'vehicleBrand', label: '车辆品牌', show: true},
-  {prop: 'vehicleModel', label: '车辆型号', show: false},
-  {prop: 'vehicleLength', label: '车辆长度', show: true},
-  {prop: 'direction', label: '行驶方向', show: true}
+  {prop: 'motorVehicleId', get label() { return translatePhrase("机动车标识") }, show: true},
+  {prop: 'deviceId', get label() { return translatePhrase("设备编码") }, show: true},
+  {prop: 'leftTopX', get label() { return translatePhrase("左上角X坐标") }, show: false},
+  {prop: 'leftTopY', get label() { return translatePhrase("左上角Y坐标") }, show: false},
+  {prop: 'rightBtmX', get label() { return translatePhrase("右下角X坐标") }, show: false},
+  {prop: 'rightBtmY', get label() { return translatePhrase("右下角Y坐标") }, show: false},
+  {prop: 'passTime', get label() { return translatePhrase("过车时间") }, show: true},
+  {prop: 'plateNo', get label() { return translatePhrase("车牌号") }, show: true},
+  {prop: 'vehicleColor', get label() { return translatePhrase("车身颜色") }, show: true},
+  {prop: 'vehicleClass', get label() { return translatePhrase("车辆类型") }, show: false},
+  {prop: 'vehicleBrand', get label() { return translatePhrase("车辆品牌") }, show: true},
+  {prop: 'vehicleModel', get label() { return translatePhrase("车辆型号") }, show: false},
+  {prop: 'vehicleLength', get label() { return translatePhrase("车辆长度") }, show: true},
+  {prop: 'direction', get label() { return translatePhrase("行驶方向") }, show: true}
 ]);
 
 function handleDelete(row){
-  proxy.$modal.confirm('是否确认删除机动车编号为"' + row.id + '"的数据项？').then(function () {
+  proxy.$modal.confirm(translatePhrase("是否确认删除机动车编号为\"") + row.id + translatePhrase("\"的数据项？")).then(function () {
     delMotorVehicles(row.id).then(response => {
       if (response.success) {
-        proxy.$modal.msgSuccess('删除成功');
+        proxy.$modal.msgSuccess(translatePhrase("删除成功"));
         getList();
       }
     });

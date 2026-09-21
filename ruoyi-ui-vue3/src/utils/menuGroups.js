@@ -7,9 +7,9 @@
  */
 
 export const PRODUCT_TABS = [
-  { key: 'workbench', title: '工作台' },
-  { key: 'video', title: '视频汇聚' },
-  { key: 'system', title: '系统设置' }
+  { key: 'workbench', title: "工作台" },
+  { key: 'video', title: "视频汇聚" },
+  { key: 'system', title: "系统设置" }
 ]
 
 /** 工作台：按 path 片段 / 标题匹配 */
@@ -27,16 +27,16 @@ const VIDEO_MAP_KEYS = [
  * 视频汇聚 - 设备管理下协议
  */
 const DEVICE_PROTOCOLS = [
-  { key: '/vlstream', title: 'VLStream协议', titles: ['VLStream', 'VLStream协议'], icon: 'vlstream' },
-  { key: '/gbmanger', title: '国标协议', titles: ['国标协议', '国际协议'], icon: 'gb' },
-  { key: '/onvif', title: 'ONVIF协议', titles: ['onvif协议', 'ONVIF协议', 'ONVIF'], icon: 'onvif' },
-  { key: '/rtsp', title: 'RTSP协议', titles: ['rtsp协议', 'RTSP协议', 'RTSP'], icon: 'rtsp' },
-  { key: '/isup', title: 'ISUP协议', titles: ['海康协议', 'ISUP协议', 'ISUP'], icon: 'isup' },
-  { key: '/ehome', title: 'EHome协议', titles: ['EHome协议', 'EHome'], icon: 'ehome' },
-  { key: '/dahua', title: '大华协议', titles: ['大华协议'], icon: 'dahua' },
-  { key: '/yingshi', title: '萤石协议', titles: ['萤石协议', '萤石'], icon: 'device' },
-  { key: '/lecheng', title: '乐橙协议', titles: ['乐橙协议', '乐橙'], icon: 'device' },
-  { key: '/custom', title: '自定义协议', titles: ['自定义协议'], icon: 'device' }
+  { key: '/vlstream', title: "VLStream协议", titles: ['VLStream', 'VLStream协议'], icon: 'vlstream' },
+  { key: '/gbmanger', title: "国标协议", titles: ['国标协议', '国际协议'], icon: 'gb' },
+  { key: '/onvif', title: "ONVIF协议", titles: ['onvif协议', 'ONVIF协议', 'ONVIF'], icon: 'onvif' },
+  { key: '/rtsp', title: "RTSP协议", titles: ['rtsp协议', 'RTSP协议', 'RTSP'], icon: 'rtsp' },
+  { key: '/isup', title: "ISUP协议", titles: ['海康协议', 'ISUP协议', 'ISUP'], icon: 'isup' },
+  { key: '/ehome', title: "EHome协议", titles: ['EHome协议', 'EHome'], icon: 'ehome' },
+  { key: '/dahua', title: "大华协议", titles: ['大华协议'], icon: 'dahua' },
+  { key: '/yingshi', title: "萤石协议", titles: ['萤石协议', '萤石'], icon: 'device' },
+  { key: '/lecheng', title: "乐橙协议", titles: ['乐橙协议', '乐橙'], icon: 'device' },
+  { key: '/custom', title: "自定义协议", titles: ['自定义协议'], icon: 'device' }
 ]
 
 const DEVICE_MANAGE_ICON = 'device'
@@ -118,7 +118,7 @@ function reshapeProtocolNode(route, proto) {
         ...child,
         meta: {
           ...(child.meta || {}),
-          title: '设备管理',
+          title: "设备管理",
           icon: DEVICE_MANAGE_ICON
         }
       }
@@ -497,7 +497,7 @@ export function buildSidebarByGroup(allRoutes, groupKey) {
         name: 'VideoDeviceManage',
         alwaysShow: true,
         redirect: 'noRedirect',
-        meta: { title: '设备管理', icon: DEVICE_MANAGE_ICON },
+        meta: { title: "设备管理", icon: DEVICE_MANAGE_ICON },
         children: protocolChildren
       })
     }
