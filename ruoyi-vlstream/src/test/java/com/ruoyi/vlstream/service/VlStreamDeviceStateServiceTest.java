@@ -25,7 +25,7 @@ public class VlStreamDeviceStateServiceTest {
         when(messages.insertIgnore(any(), any(), any(), any())).thenReturn(1);
         VlStreamDevice device = new VlStreamDevice();
         device.setId(1L);
-        when(devices.selectByDeviceId("location-test")).thenReturn(device);
+        when(devices.selectByDeviceIdForUpdate("location-test")).thenReturn(device);
         VlStreamDeviceStateService service = new VlStreamDeviceStateService(devices, mock(VlStreamDeviceStreamMapper.class), messages);
         JSONObject message = JSON.parseObject("{\"deviceId\":\"location-test\",\"messageId\":\"loc-1\",\"payload\":{\"online\":true,\"location\":{\"longitude\":113.123456789,\"latitude\":0}}}");
         service.handle(message);
@@ -72,7 +72,7 @@ public class VlStreamDeviceStateServiceTest {
         VlStreamDevice device = new VlStreamDevice();
         device.setId(1L);
         device.setOnline(false);
-        when(devices.selectByDeviceId("test")).thenReturn(device);
+        when(devices.selectByDeviceIdForUpdate("test")).thenReturn(device);
         VlStreamDeviceStateService service = new VlStreamDeviceStateService(devices, streams, messages);
         JSONObject message = JSON.parseObject("{\"deviceId\":\"test\",\"messageId\":\"one\",\"payload\":{\"online\":true,\"capabilities\":[\"aiInfer\"],\"models\":[{\"modelId\":\"2096927699258966018\",\"status\":\"running\"}]}}");
         service.handle(message);
@@ -119,11 +119,12 @@ public class VlStreamDeviceStateServiceTest {
         VlStreamDeviceStateService service = new VlStreamDeviceStateService(devices, mock(VlStreamDeviceStreamMapper.class), messages);
         JSONObject message = JSON.parseObject("{\"deviceId\":\"test\",\"messageId\":\"old\",\"sentAt\":\"2026-01-01T00:00:00Z\",\"payload\":{\"online\":true,\"models\":[]}}");
         service.handle(message);
-        org.mockito.Mockito.verifyNoInteractions(devices);
+        org.mockito.Mockito.verify(devices, org.mockito.Mockito.never()).insert(any());
+        org.mockito.Mockito.verify(devices, org.mockito.Mockito.never()).update(any());
         when(messages.insertIgnore(any(), any(), any(), any())).thenReturn(1);
         VlStreamDevice device = new VlStreamDevice();
         device.setLastReportedAt(java.util.Date.from(java.time.Instant.parse("2026-09-08T00:00:00Z")));
-        when(devices.selectByDeviceId("test")).thenReturn(device);
+        when(devices.selectByDeviceIdForUpdate("test")).thenReturn(device);
         service.handle(message);
         org.mockito.Mockito.verify(devices, org.mockito.Mockito.never()).update(any());
         org.junit.Assert.assertNull(device.getLastOnlineTime());

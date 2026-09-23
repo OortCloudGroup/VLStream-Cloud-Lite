@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.session.Configuration;
@@ -26,8 +27,17 @@ public class DeviceClassificationServiceTest {
 
     @Before
     public void setUp() {
+        com.ruoyi.common.core.domain.model.LoginUser user = new com.ruoyi.common.core.domain.model.LoginUser();
+        user.setTenantId("tenant-a");
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(user, null));
         mapper = mock(DeviceClassificationMapper.class);
         service = new DeviceClassificationService(mapper);
+    }
+
+    @After
+    public void tearDown() {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -37,13 +47,13 @@ public class DeviceClassificationServiceTest {
         DeviceCategory child = category(2L, 1L, "子区域");
         when(mapper.selectCategoriesByType(DeviceClassificationService.REGION))
             .thenReturn(Arrays.asList(root, child));
-        when(mapper.selectLogicalRelations(DeviceClassificationService.REGION))
+        when(mapper.selectLogicalRelations(DeviceClassificationService.REGION, "tenant-a", "000000"))
             .thenReturn(Arrays.asList(
                 relation(1L, "ISUP", "device-1"),
                 relation(2L, "VLSTREAM", "device-1"),
                 relation(2L, "VLSTREAM", "device-2")
             ));
-        when(mapper.countLogicalDevices()).thenReturn(3);
+        when(mapper.countLogicalDevices("tenant-a", "000000")).thenReturn(3);
 
         Map<String, Object> result = service.tree("region", "all");
 
@@ -53,8 +63,8 @@ public class DeviceClassificationServiceTest {
         assertEquals(2, tree.get(0).getChildren().get(0).getDeviceCount());
         assertEquals(3, result.get("totalCount"));
         assertEquals(1, result.get("unclassifiedCount"));
-        verify(mapper).selectLogicalRelations(DeviceClassificationService.REGION);
-        verify(mapper).countLogicalDevices();
+        verify(mapper).selectLogicalRelations(DeviceClassificationService.REGION, "tenant-a", "000000");
+        verify(mapper).countLogicalDevices("tenant-a", "000000");
     }
 
     @Test
@@ -80,7 +90,7 @@ public class DeviceClassificationServiceTest {
     public void logicalDeviceIdsIncludeSelectedCategoryAndItsDescendants() {
         DeviceCategory category = category(2L, 1L, "子区域");
         when(mapper.selectCategoryById(2L)).thenReturn(category);
-        when(mapper.selectLogicalDeviceIds(DeviceClassificationService.REGION, 2L))
+        when(mapper.selectLogicalDeviceIds(DeviceClassificationService.REGION, 2L, "tenant-a", "000000"))
             .thenReturn(Arrays.asList("device-1", "device-2"));
 
         List<String> result = service.logicalDeviceIds("REGION", 2L);
@@ -91,8 +101,8 @@ public class DeviceClassificationServiceTest {
     @Test
     public void protocolSpecificTreeKeepsExistingBehavior() {
         when(mapper.selectCategoriesByType(DeviceClassificationService.TAG)).thenReturn(Collections.emptyList());
-        when(mapper.selectRelations("VLSTREAM", DeviceClassificationService.TAG)).thenReturn(Collections.emptyList());
-        when(mapper.countProtocolDevices("VLSTREAM")).thenReturn(4);
+        when(mapper.selectRelations("VLSTREAM", DeviceClassificationService.TAG, "tenant-a", "000000")).thenReturn(Collections.emptyList());
+        when(mapper.countProtocolDevices("VLSTREAM", "tenant-a", "000000")).thenReturn(4);
 
         Map<String, Object> result = service.tree("TAG", "VLSTREAM");
 

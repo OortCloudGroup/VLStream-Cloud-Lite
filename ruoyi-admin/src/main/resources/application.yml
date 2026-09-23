@@ -365,6 +365,8 @@ vlstream:
     keep-alive-seconds: ${VLSTREAM_MQTT_KEEP_ALIVE_SECONDS:60}
     connection-timeout-seconds: ${VLSTREAM_MQTT_CONNECTION_TIMEOUT_SECONDS:10}
   device:
+    default-tenant-id: ${VLSTREAM_DEVICE_DEFAULT_TENANT_ID:000000}
+    tenant-binding-secret: ${VLSTREAM_DEVICE_TENANT_BINDING_SECRET:}
     offline-timeout-seconds: ${VLSTREAM_DEVICE_OFFLINE_TIMEOUT_SECONDS:180}
     message-retention-hours: ${VLSTREAM_MQTT_MESSAGE_RETENTION_HOURS:24}
   firmware:

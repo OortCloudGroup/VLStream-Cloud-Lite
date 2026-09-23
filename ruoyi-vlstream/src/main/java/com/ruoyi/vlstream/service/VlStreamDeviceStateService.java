@@ -10,6 +10,9 @@ import com.ruoyi.vlstream.mapper.VlStreamDeviceStreamMapper;
 import com.ruoyi.vlstream.mapper.VlStreamMessageMapper;
 import com.ruoyi.vlstream.mqtt.VlStreamProtocol;
 import com.ruoyi.vlstream.util.VlStreamPlaybackUtils;
+import com.ruoyi.vlstream.config.VlStreamDeviceProperties;
+import com.ruoyi.common.exception.ServiceException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,13 +29,24 @@ public class VlStreamDeviceStateService {
     private final VlStreamDeviceMapper deviceMapper;
     private final VlStreamDeviceStreamMapper streamMapper;
     private final VlStreamMessageMapper messageMapper;
+    private final VlStreamDeviceTenantService tenantService;
 
     public VlStreamDeviceStateService(VlStreamDeviceMapper deviceMapper,
                                       VlStreamDeviceStreamMapper streamMapper,
                                       VlStreamMessageMapper messageMapper) {
+        this(deviceMapper, streamMapper, messageMapper,
+            new VlStreamDeviceTenantService(new VlStreamDeviceProperties(), deviceMapper));
+    }
+
+    @Autowired
+    public VlStreamDeviceStateService(VlStreamDeviceMapper deviceMapper,
+                                      VlStreamDeviceStreamMapper streamMapper,
+                                      VlStreamMessageMapper messageMapper,
+                                      VlStreamDeviceTenantService tenantService) {
         this.deviceMapper = deviceMapper;
         this.streamMapper = streamMapper;
         this.messageMapper = messageMapper;
+        this.tenantService = tenantService;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -53,13 +67,19 @@ public class VlStreamDeviceStateService {
             return VlStreamProtocol.reply(message, 400, "location必须为null或包含有效WGS84经纬度的对象：longitude为-180至180，latitude为-90至90，均为数值");
         }
 
+        VlStreamDevice device = deviceMapper.selectByDeviceIdForUpdate(deviceId);
+        String tenantId;
+        try {
+            tenantId = tenantService.resolveReportedTenant(message, device);
+        } catch (ServiceException exception) {
+            return VlStreamProtocol.reply(message, exception.getCode(), exception.getMessage());
+        }
         Date receivedAt = new Date();
         Date reportedAt = parseDate(message.getString("sentAt"), receivedAt);
         if (messageMapper.insertIgnore(deviceId, messageId, reportedAt, receivedAt) == 0) {
             return VlStreamProtocol.reply(message, 200, "重复消息已确认");
         }
 
-        VlStreamDevice device = deviceMapper.selectByDeviceId(deviceId);
         if (device != null && device.getLastReportedAt() != null && reportedAt.before(device.getLastReportedAt())) {
             return VlStreamProtocol.reply(message, 200, "过期状态快照已忽略");
         }
@@ -68,6 +88,7 @@ public class VlStreamDeviceStateService {
             device.setDeviceId(deviceId);
             device.setCreateTime(receivedAt);
         }
+        device.setTenantId(tenantId);
         device.setDeviceName(payload.getString("deviceName"));
         device.setDeviceSerial(payload.getString("deviceSerial"));
         device.setDeviceModel(payload.getString("deviceModel"));

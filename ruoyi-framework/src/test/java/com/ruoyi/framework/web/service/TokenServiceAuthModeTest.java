@@ -199,4 +199,19 @@ public class TokenServiceAuthModeTest
                 .signWith(SignatureAlgorithm.HS512, TOKEN_SECRET)
                 .compact();
     }
+
+    @Test
+    public void federatedIdentityPreservesVerifiedTenantInLoginContext()
+    {
+        PlatformLoginUser verified = new PlatformLoginUser();
+        verified.setUserId("platform-user");
+        verified.setUserName("tenant-user");
+        verified.setTenantId("tenant-a");
+        LoginUser user = ReflectionTestUtils.invokeMethod(tokenService, "createVlstreamLoginUser",
+                verified, "test-token", "test-cache-key");
+
+        assertTrue(user.isFederated());
+        assertEquals("tenant-a", user.getTenantId());
+        verify(redisCache).setCacheObject(eq("test-cache-key"), eq(user), eq(30), eq(TimeUnit.MINUTES));
+    }
 }

@@ -3,6 +3,7 @@
 <mapper namespace="com.ruoyi.vlstream.mapper.VlStreamDeviceMapper">
     <resultMap id="DeviceResult" type="com.ruoyi.vlstream.domain.VlStreamDevice">
         <id property="id" column="id"/>
+        <result property="tenantId" column="tenant_id"/>
         <result property="deviceId" column="device_id"/><result property="deviceName" column="device_name"/>
         <result property="deviceSerial" column="device_serial"/><result property="deviceModel" column="device_model"/><result property="firmwareVersion" column="firmware_version"/>
         <result property="faceVersion" column="face_version"/><result property="ipAddr" column="ip_addr"/>
@@ -18,15 +19,17 @@
         <result property="latitude" column="latitude"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
-    <sql id="columns">id,device_id,device_name,device_serial,device_model,firmware_version,face_version,ip_addr,mac,online,
+    <sql id="columns">id,tenant_id,device_id,device_name,device_serial,device_model,firmware_version,face_version,ip_addr,mac,online,
         online_reason,heartbeat_index,last_message_id,last_reported_at,last_heartbeat_time,last_online_time,capabilities_json,models_json,longitude,latitude,telemetry_json,
         service_status_json,create_time,update_time</sql>
     <select id="selectById" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where id=#{id}</select>
     <select id="selectByDeviceId" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where device_id=#{deviceId}</select>
+    <select id="selectByDeviceIdForUpdate" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where device_id=#{deviceId} for update</select>
     <select id="selectList" resultMap="DeviceResult">
         select <include refid="columns"/> from wvp_vlstream_device
         <where>
-            <if test="online != null">online=#{online}</if>
+            (tenant_id=#{tenantId} OR (tenant_id IS NULL AND #{tenantId}=#{legacyTenantId}))
+            <if test="online != null">AND online=#{online}</if>
             <if test="keyword != null and keyword != ''">
                 and (device_name like concat('%',#{keyword},'%') or device_id like concat('%',#{keyword},'%') or device_serial like concat('%',#{keyword},'%'))
             </if>
@@ -48,13 +51,13 @@
         order by last_heartbeat_time desc
     </select>
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into wvp_vlstream_device(device_id,device_name,device_serial,device_model,firmware_version,face_version,ip_addr,mac,online,
+        insert into wvp_vlstream_device(tenant_id,device_id,device_name,device_serial,device_model,firmware_version,face_version,ip_addr,mac,online,
           online_reason,heartbeat_index,last_message_id,last_reported_at,last_heartbeat_time,last_online_time,capabilities_json,models_json,longitude,latitude,telemetry_json,service_status_json,create_time,update_time)
-        values(#{deviceId},#{deviceName},#{deviceSerial},#{deviceModel},#{firmwareVersion},#{faceVersion},#{ipAddr},#{mac},#{online},
+        values(#{tenantId},#{deviceId},#{deviceName},#{deviceSerial},#{deviceModel},#{firmwareVersion},#{faceVersion},#{ipAddr},#{mac},#{online},
           #{onlineReason},#{heartbeatIndex},#{lastMessageId},#{lastReportedAt},#{lastHeartbeatTime},#{lastOnlineTime},#{capabilitiesJson},#{modelsJson},#{longitude},#{latitude},#{telemetryJson},#{serviceStatusJson},#{createTime},#{updateTime})
     </insert>
     <update id="update">
-        update wvp_vlstream_device set device_name=#{deviceName},device_serial=#{deviceSerial},device_model=#{deviceModel},firmware_version=#{firmwareVersion},
+        update wvp_vlstream_device set tenant_id=COALESCE(tenant_id,#{tenantId}),device_name=#{deviceName},device_serial=#{deviceSerial},device_model=#{deviceModel},firmware_version=#{firmwareVersion},
           face_version=#{faceVersion},ip_addr=#{ipAddr},mac=#{mac},online=#{online},online_reason=#{onlineReason},
           heartbeat_index=#{heartbeatIndex},last_message_id=#{lastMessageId},last_reported_at=#{lastReportedAt},
           last_heartbeat_time=#{lastHeartbeatTime},last_online_time=#{lastOnlineTime},capabilities_json=#{capabilitiesJson},models_json=#{modelsJson},longitude=#{longitude},latitude=#{latitude},telemetry_json=#{telemetryJson},service_status_json=#{serviceStatusJson},update_time=#{updateTime}

@@ -41,6 +41,7 @@
         union all
         select 'VLSTREAM', cast(id as char), trim(device_id)
         from wvp_vlstream_device where device_id is not null and trim(device_id) != ''
+        and (tenant_id=#{tenantId} or (tenant_id is null and #{tenantId}=#{defaultTenantId}))
         union all
         select 'CUSTOM', cast(id as char), trim(device_code)
         from wvp_custom_device where device_code is not null and trim(device_code) != ''
@@ -79,6 +80,10 @@
     <select id="selectRelations" resultMap="RelationResult">
         select category_id, category_type, protocol_type, device_key, create_by
         from wvp_device_category_relation where protocol_type=#{protocolType} and category_type=#{categoryType}
+        <if test="protocolType == 'VLSTREAM'">
+            and device_key in (select cast(id as char) from wvp_vlstream_device
+                where tenant_id=#{tenantId} or (tenant_id is null and #{tenantId}=#{defaultTenantId}))
+        </if>
     </select>
     <select id="selectLogicalRelations" resultMap="RelationResult">
         select r.category_id, r.category_type, r.protocol_type,
@@ -123,7 +128,8 @@
             <when test="protocolType == 'ONVIF'">select count(1) from onvif_device</when>
             <when test="protocolType == 'GB28181'">select count(1) from wvp_device</when>
             <when test="protocolType == 'DAHUA'">select count(1) from dahua_device</when>
-            <when test="protocolType == 'VLSTREAM'">select count(1) from wvp_vlstream_device</when>
+            <when test="protocolType == 'VLSTREAM'">select count(1) from wvp_vlstream_device
+                where tenant_id=#{tenantId} or (tenant_id is null and #{tenantId}=#{defaultTenantId})</when>
             <when test="protocolType == 'CUSTOM'">select count(1) from wvp_custom_device</when>
             <otherwise>select 0</otherwise>
         </choose>
@@ -131,5 +137,9 @@
     <select id="countLogicalDevices" resultType="int">
         select count(distinct d.logical_device_id)
         from (<include refid="logicalDevices"/>) d
+    </select>
+    <select id="countVisibleVlStreamDevice" resultType="int">
+        select count(1) from wvp_vlstream_device where cast(id as char)=#{deviceKey}
+        and (tenant_id=#{tenantId} or (tenant_id is null and #{tenantId}=#{defaultTenantId}))
     </select>
 </mapper>

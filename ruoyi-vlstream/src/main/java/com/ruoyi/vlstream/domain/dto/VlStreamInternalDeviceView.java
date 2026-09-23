@@ -8,6 +8,7 @@ public class VlStreamInternalDeviceView {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
     private String deviceId;
+    private String tenantId;
     private String deviceName;
     private String deviceSerial;
     private String deviceModel;
@@ -18,6 +19,8 @@ public class VlStreamInternalDeviceView {
     public void setId(Long id) { this.id = id; }
     public String getDeviceId() { return deviceId; }
     public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
     public String getDeviceName() { return deviceName; }
     public void setDeviceName(String deviceName) { this.deviceName = deviceName; }
     public String getDeviceSerial() { return deviceSerial; }

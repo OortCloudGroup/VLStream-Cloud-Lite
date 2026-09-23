@@ -166,6 +166,7 @@ public class TokenService
         sysUser.setRoles(sysRoleMapper.selectRoleList(sysRole));
 
         LoginUser loginUser = new LoginUser(sysUser.getUserId(), sysUser.getDeptId(), sysUser, permissionService.getMenuPermission(sysUser));
+        loginUser.setTenantId(platformLoginUser.getTenantId());
         loginUser.setToken(accessToken);
         cacheLoginUser(userKey, loginUser);
         return loginUser;
@@ -216,6 +217,7 @@ public class TokenService
 
         LoginUser loginUser = new LoginUser(userId, deptId, sysUser, new HashSet<>(VLSTREAM_PROTOCOL_PERMISSIONS));
         loginUser.setFederated(true);
+        loginUser.setTenantId(platformUser.getTenantId());
         loginUser.setToken(accessToken);
         cacheLoginUser(userKey, loginUser);
         return loginUser;

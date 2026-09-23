@@ -10,6 +10,7 @@ import java.util.List;
 public interface VlStreamDeviceMapper {
     VlStreamDevice selectById(Long id);
     VlStreamDevice selectByDeviceId(String deviceId);
+    VlStreamDevice selectByDeviceIdForUpdate(String deviceId);
     List<VlStreamDevice> selectList(VlStreamDevice query);
     int insert(VlStreamDevice device);
     int update(VlStreamDevice device);

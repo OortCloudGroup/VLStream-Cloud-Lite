@@ -78,6 +78,9 @@ public class LoginUser implements UserDetails
      */
     private boolean federated;
 
+    /** Tenant identity verified by the upstream platform; never copied from a client header. */
+    private String tenantId;
+
     public LoginUser()
     {
     }
@@ -273,6 +276,16 @@ public class LoginUser implements UserDetails
     public void setFederated(boolean federated)
     {
         this.federated = federated;
+    }
+
+    public String getTenantId()
+    {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId)
+    {
+        this.tenantId = tenantId;
     }
 
     @Override

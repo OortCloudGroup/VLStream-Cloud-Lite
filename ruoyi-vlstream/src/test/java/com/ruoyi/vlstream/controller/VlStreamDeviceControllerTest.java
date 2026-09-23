@@ -6,6 +6,7 @@ import com.ruoyi.vlstream.domain.VlStreamDeviceStream;
 import com.ruoyi.vlstream.mapper.VlStreamDeviceMapper;
 import com.ruoyi.vlstream.mapper.VlStreamDeviceStreamMapper;
 import com.ruoyi.vlstream.service.VlStreamFirmwareDeploymentService;
+import com.ruoyi.vlstream.service.VlStreamDeviceTenantService;
 import com.ruoyi.wvp.media.service.IMediaServerService;
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ public class VlStreamDeviceControllerTest {
         stream.setZlmProxyKey("test-proxy-secret");
         when(mapper.selectAvailableByDeviceId(10L)).thenReturn(java.util.Collections.singletonList(stream));
         VlStreamDeviceController controller = new VlStreamDeviceController(mock(VlStreamDeviceMapper.class), mapper,
-                mock(IMediaServerService.class), mock(VlStreamFirmwareDeploymentService.class));
+                mock(IMediaServerService.class), mock(VlStreamFirmwareDeploymentService.class), mock(VlStreamDeviceTenantService.class));
         java.util.List<?> rows = (java.util.List<?>) controller.streams(10L).get(AjaxResult.DATA_TAG);
         Map<?, ?> row = (Map<?, ?>) rows.get(0);
         assertEquals(stream.getSourceUrl(), row.get("sourceUrl"));
@@ -54,8 +55,10 @@ public class VlStreamDeviceControllerTest {
         stream.setAvailable(true);
         when(deviceMapper.selectById(10L)).thenReturn(device);
         when(streamMapper.selectById(20L)).thenReturn(stream);
+        VlStreamDeviceTenantService tenants = mock(VlStreamDeviceTenantService.class);
+        when(tenants.requireDevice(10L)).thenReturn(device);
         VlStreamDeviceController controller = new VlStreamDeviceController(deviceMapper, streamMapper,
-                mediaServerService, mock(VlStreamFirmwareDeploymentService.class));
+                mediaServerService, mock(VlStreamFirmwareDeploymentService.class), tenants);
         VlStreamDeviceController.PreviewRequest request = new VlStreamDeviceController.PreviewRequest();
         request.setStreamId(20L);
 

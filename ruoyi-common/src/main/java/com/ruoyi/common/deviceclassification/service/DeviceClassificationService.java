@@ -8,6 +8,8 @@ import com.ruoyi.common.deviceclassification.mapper.DeviceClassificationMapper;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.VlStreamTenantContext;
+import org.springframework.beans.factory.annotation.Value;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +33,8 @@ public class DeviceClassificationService {
     private static final Set<String> PROTOCOLS = new HashSet<>(Arrays.asList("ISUP", "EHOME", "RTSP", "ONVIF", "GB28181", "DAHUA", "VLSTREAM", "CUSTOM"));
 
     private final DeviceClassificationMapper mapper;
+    @Value("${vlstream.device.default-tenant-id:000000}")
+    private String defaultTenantId = "000000";
 
     public DeviceClassificationService(DeviceClassificationMapper mapper) {
         this.mapper = mapper;
@@ -39,10 +43,11 @@ public class DeviceClassificationService {
     public Map<String, Object> tree(String categoryType, String protocolType) {
         String type = normalizeType(categoryType);
         String protocol = normalizeTreeProtocol(protocolType);
+        String tenantId = VlStreamTenantContext.currentTenant(defaultTenantId);
         List<DeviceCategory> categories = mapper.selectCategoriesByType(type);
         List<DeviceCategoryRelation> relations = ALL_PROTOCOLS.equals(protocol)
-            ? mapper.selectLogicalRelations(type)
-            : mapper.selectRelations(protocol, type);
+            ? mapper.selectLogicalRelations(type, tenantId, defaultTenantId)
+            : mapper.selectRelations(protocol, type, tenantId, defaultTenantId);
 
         Map<Long, Set<String>> directDevices = new HashMap<>();
         Set<String> classifiedDevices = new HashSet<>();
@@ -69,8 +74,8 @@ public class DeviceClassificationService {
         for (DeviceCategoryTreeNode root : roots) collectDevices(root, directDevices);
 
         int total = ALL_PROTOCOLS.equals(protocol)
-            ? mapper.countLogicalDevices()
-            : mapper.countProtocolDevices(protocol);
+            ? mapper.countLogicalDevices(tenantId, defaultTenantId)
+            : mapper.countProtocolDevices(protocol, tenantId, defaultTenantId);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("tree", roots);
         result.put("totalCount", total);
@@ -82,7 +87,8 @@ public class DeviceClassificationService {
         String type = normalizeType(categoryType);
         DeviceCategory category = requiredCategory(categoryId);
         if (!type.equals(category.getCategoryType())) throw new ServiceException("分类类型不匹配");
-        return mapper.selectLogicalDeviceIds(type, categoryId);
+        return mapper.selectLogicalDeviceIds(type, categoryId,
+            VlStreamTenantContext.currentTenant(defaultTenantId), defaultTenantId);
     }
 
     private Set<String> collectDevices(DeviceCategoryTreeNode node, Map<Long, Set<String>> directDevices) {
@@ -145,6 +151,7 @@ public class DeviceClassificationService {
     public DeviceClassificationAssignment getAssignment(String protocolType, String deviceKey) {
         String protocol = normalizeProtocol(protocolType);
         if (StringUtils.isBlank(deviceKey)) throw new ServiceException("设备标识不能为空");
+        requireVlStreamOwnership(protocol, deviceKey);
         DeviceClassificationAssignment result = new DeviceClassificationAssignment();
         result.setProtocolType(protocol);
         result.setDeviceKeys(Collections.singletonList(deviceKey));
@@ -170,6 +177,7 @@ public class DeviceClassificationService {
         for (String rawKey : assignment.getDeviceKeys()) {
             if (StringUtils.isBlank(rawKey)) continue;
             String deviceKey = rawKey.trim();
+            requireVlStreamOwnership(protocol, deviceKey);
             replaceType(protocol, deviceKey, REGION, assignment.getRegionId() == null ? Collections.emptyList() : Collections.singletonList(assignment.getRegionId()), username);
             replaceType(protocol, deviceKey, GROUP, assignment.getGroupId() == null ? Collections.emptyList() : Collections.singletonList(assignment.getGroupId()), username);
             replaceType(protocol, deviceKey, TAG, tagIds, username);
@@ -186,6 +194,13 @@ public class DeviceClassificationService {
             relation.setCategoryId(categoryId);
             relation.setCreateBy(username);
             mapper.insertRelation(relation);
+        }
+    }
+
+    private void requireVlStreamOwnership(String protocol, String deviceKey) {
+        if ("VLSTREAM".equals(protocol) && mapper.countVisibleVlStreamDevice(deviceKey,
+                VlStreamTenantContext.currentTenant(defaultTenantId), defaultTenantId) != 1) {
+            throw new ServiceException("设备不存在或不属于当前租户", 403);
         }
     }
 

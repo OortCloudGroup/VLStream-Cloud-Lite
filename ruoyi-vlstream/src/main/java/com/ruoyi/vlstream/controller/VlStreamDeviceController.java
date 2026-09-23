@@ -9,6 +9,7 @@ import com.ruoyi.vlstream.mapper.VlStreamDeviceMapper;
 import com.ruoyi.vlstream.mapper.VlStreamDeviceStreamMapper;
 import com.ruoyi.vlstream.domain.dto.FirmwareDeployRequest;
 import com.ruoyi.vlstream.service.VlStreamFirmwareDeploymentService;
+import com.ruoyi.vlstream.service.VlStreamDeviceTenantService;
 import com.ruoyi.vlstream.util.VlStreamPlaybackUtils;
 import com.ruoyi.wvp.common.StreamInfo;
 import com.ruoyi.wvp.media.bean.MediaServer;
@@ -31,20 +32,24 @@ public class VlStreamDeviceController extends BaseController {
     private final VlStreamDeviceStreamMapper streamMapper;
     private final IMediaServerService mediaServerService;
     private final VlStreamFirmwareDeploymentService firmwareDeploymentService;
+    private final VlStreamDeviceTenantService tenantService;
 
     public VlStreamDeviceController(VlStreamDeviceMapper deviceMapper,
                                     VlStreamDeviceStreamMapper streamMapper,
                                     IMediaServerService mediaServerService,
-                                    VlStreamFirmwareDeploymentService firmwareDeploymentService) {
+                                    VlStreamFirmwareDeploymentService firmwareDeploymentService,
+                                    VlStreamDeviceTenantService tenantService) {
         this.deviceMapper = deviceMapper;
         this.streamMapper = streamMapper;
         this.mediaServerService = mediaServerService;
         this.firmwareDeploymentService = firmwareDeploymentService;
+        this.tenantService = tenantService;
     }
 
     @PreAuthorize("@ss.hasPermi('vlstream:device:list')")
     @GetMapping("/list")
     public TableDataInfo list(VlStreamDevice query) {
+        tenantService.scopeQuery(query);
         startPage();
         return getDataTable(deviceMapper.selectList(query));
     }
@@ -52,6 +57,7 @@ public class VlStreamDeviceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('vlstream:device:list')")
     @GetMapping("/{deviceRowId}/streams")
     public AjaxResult streams(@PathVariable Long deviceRowId) {
+        tenantService.requireDevice(deviceRowId);
         // 仅设备列表权限保护的流详情接口提供设备上报地址，不改变实体其他接口的脱敏行为。
         List<Map<String, Object>> streams = new ArrayList<>();
         for (VlStreamDeviceStream stream : streamMapper.selectAvailableByDeviceId(deviceRowId)) {
@@ -76,25 +82,28 @@ public class VlStreamDeviceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('vlstream:device:list')")
     @GetMapping("/{deviceRowId}/detail")
     public AjaxResult detail(@PathVariable Long deviceRowId) {
+        tenantService.requireDevice(deviceRowId);
         return success(firmwareDeploymentService.detail(deviceRowId));
     }
 
     @PreAuthorize("@ss.hasPermi('vlstream:firmware:deploy')")
     @PostMapping("/{deviceRowId}/firmware-upgrades")
     public AjaxResult deployFirmware(@PathVariable Long deviceRowId, @RequestBody FirmwareDeployRequest request) {
+        tenantService.requireDevice(deviceRowId);
         return success(firmwareDeploymentService.deploy(deviceRowId, request == null ? null : request.getFirmwareId()));
     }
 
     @PreAuthorize("@ss.hasPermi('vlstream:firmware:deploy')")
     @PostMapping("/{deviceRowId}/firmware-upgrades/{requestId}/cancel")
     public AjaxResult cancelFirmware(@PathVariable Long deviceRowId, @PathVariable String requestId) {
+        tenantService.requireDevice(deviceRowId);
         return success(firmwareDeploymentService.cancel(deviceRowId, requestId));
     }
 
     @PreAuthorize("@ss.hasPermi('vlstream:device:play')")
     @PostMapping("/{deviceRowId}/preview")
     public AjaxResult preview(@PathVariable Long deviceRowId, @RequestBody PreviewRequest request) {
-        VlStreamDevice device = deviceMapper.selectById(deviceRowId);
+        VlStreamDevice device = tenantService.requireDevice(deviceRowId);
         VlStreamDeviceStream stream = request == null ? null : streamMapper.selectById(request.getStreamId());
         if (device == null || stream == null || !deviceRowId.equals(stream.getDeviceRowId())
                 || !Boolean.TRUE.equals(stream.getAvailable())) return error("设备或视频流不存在");
