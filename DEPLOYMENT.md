@@ -22,7 +22,7 @@ The default Compose file starts five independent services: MySQL, Redis, EMQX
 service image. The WVP image
 also contains the compiled browser UI, so no separate frontend service is
 needed. The backend image is
-`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.5`.
+`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.7`.
 
 Use an existing MySQL, Redis, ZLMediaKit, and MQTT Broker installation with:
 
@@ -81,6 +81,29 @@ require the host MQTT port for container-to-container traffic. Set
 expose `MQTT_PORT` to an untrusted network without configuring EMQX
 authentication and authorization.
 
+## VLStream device tenant ownership
+
+Flyway automatically applies `V1_2_9__vlstream_device_tenant.sql` during the
+backend upgrade. It adds nullable device ownership without inferring historical
+tenant assignments. Authorization scope comes from the authenticated server
+identity, not a tenant value supplied by a request.
+
+Devices that omit a tenant continue to use `VLSTREAM_DEVICE_DEFAULT_TENANT_ID`
+(default `000000`). Keep this value aligned with the VLStream platform's default
+device tenant. If a device must start in a non-default tenant, configure the
+tenant before its first registration; a later heartbeat cannot move an existing
+device between tenants.
+
+For explicit first-time tenant binding, set an independent random
+`VLSTREAM_DEVICE_TENANT_BINDING_SECRET` of at least 32 bytes in WVP and in the
+trusted provisioning environment. The release archive includes
+`tools/create-device-tenant-binding.mjs`; run it only in that trusted environment
+to create the device-specific proof. Keep the signing secret out of device
+configuration. This proof does not replace per-device MQTT credentials, topic
+ACLs, or production TLS. See
+[`docs/VLSTREAM_TENANT_BINDING.md`](./docs/VLSTREAM_TENANT_BINDING.md) for the
+complete procedure and validation boundary.
+
 ## Operations, data, and upgrades
 
 View status and logs:
@@ -108,7 +131,7 @@ migrations must never be edited, deleted, or renamed.
 
 ## Protocols and native SDKs
 
-GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.5 base deployment.
+GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.7 base deployment.
 ISUP and Dahua integrations are optional/experimental: their native SDK shared
 libraries, dependency completeness, and redistribution terms have not been
 verified for this public Linux image. They are not enabled by the default

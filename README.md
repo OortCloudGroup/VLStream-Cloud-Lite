@@ -344,7 +344,7 @@ GB28181 注册成功只说明 SIP `REGISTER` 及相关鉴权链路已经建立�
 
 ### 发布包
 
-仓库的 GitHub Actions 在推送 `v*` 标签时执行后端测试、构建 `linux/amd64` 镜像，并生成带 SHA-256 校验文件的 ZIP 发布包。发布包包含 Compose 文件、环境模板、初始化 SQL、升级说明和 ZLMediaKit 构建文件。
+仓库的 GitHub Actions 在推送 `v*` 标签时执行后端测试、构建 `linux/amd64` 镜像，并生成带 SHA-256 校验文件的 ZIP 发布包。发布包包含 Compose 文件、环境模板、初始化 SQL、升级说明、ZLMediaKit 构建文件、可靠性与 EHome 文档，以及 VLStream 租户绑定指南和初始化工具。
 
 默认镜像地址为：
 
@@ -377,6 +377,7 @@ docker compose up -d
 | [`ruoyi-ui-vue3/README.md`](./ruoyi-ui-vue3/README.md) | 主管理前端说明 |
 | [`ruoyi-ui-large/README.md`](./ruoyi-ui-large/README.md) | 数据大屏前端说明 |
 | [`deploy/release/sql/upgrade/README.md`](./deploy/release/sql/upgrade/README.md) | Release 包升级目录说明 |
+| [`docs/VLSTREAM_TENANT_BINDING.md`](./docs/VLSTREAM_TENANT_BINDING.md) | VLStream 设备默认租户、初始化绑定凭据与权限边界 |
 | [`RELEASE_NOTES.md`](./RELEASE_NOTES.md) | 当前发布内容和默认部署边界 |
 | [`sql/`](./sql/) | 数据库快照、功能 SQL 和历史迁移脚本 |
 | API 文档 | 启动后访问 `doc.html`；机器接口可访问 `v3/api-docs` |
