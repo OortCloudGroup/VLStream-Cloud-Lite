@@ -72,6 +72,10 @@ The packaged ZLMediaKit image is configured with the same `ZLM_SECRET` passed
 to WVP. `ZLM_PUBLIC_HOST` must be the DNS name or public IP devices and browsers
 can reach, not necessarily the Docker service name.
 
+Keep `ZLM_SECRET` at or below 50 characters: WVP persists it in the
+`wvp_media_server.secret` column, which is limited to 50 characters. Use the
+same strong random value in both services.
+
 The default package uses `emqx/emqx:5.4`, matching the tested EMQX 5.4.1
 runtime. `VLSTREAM_MQTT_ENABLED` defaults to `true` in both Compose files so
 WVP connects through the internal service name `mqtt` by default and does not
