@@ -1711,7 +1711,7 @@ INSERT INTO `sys_menu` VALUES (2132, '修改设备视频加密密码', 2118, 14,
 INSERT INTO `sys_menu` VALUES (2133, '获取设备版本信息', 2118, 15, '', NULL, NULL, '', 1, 0, 'F', '0', '0', 'yingshi:ys:deviceVersionInfo', '#', 'admin', '2025-08-03 15:37:35', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (2134, '设备升级固件', 2118, 16, '', NULL, NULL, '', 1, 0, 'F', '0', '0', 'yingshi:ys:deviceUpgrade', '#', 'admin', '2025-08-03 15:37:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (2135, '获取设备升级状态', 2118, 17, '', NULL, NULL, '', 1, 0, 'F', '0', '0', 'yingshi:ys:deviceUpgradeStatus', '#', 'admin', '2025-08-03 15:38:03', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (2136, '视图库', 0, 6, 'gat1400', NULL, NULL, '', 1, 0, 'M', '0', '0', '', '1400', 'admin', '2025-08-04 16:15:09', 'admin', '2025-09-22 13:09:16', '');
+INSERT INTO `sys_menu` VALUES (2136, '视图库', 0, 6, 'gat1400', NULL, NULL, '', 1, 0, 'M', '0', '1', '', '1400', 'admin', '2025-08-04 16:15:09', 'admin', '2025-09-22 13:09:16', '');
 INSERT INTO `sys_menu` VALUES (2138, '设备撤/布防', 2118, 18, '', NULL, NULL, '', 1, 0, 'F', '0', '0', 'yingshi:ys:deviceDefenceSet', '#', 'admin', '2025-08-05 13:39:06', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (2139, '设备布撤防时间计划', 2118, 19, '', NULL, NULL, '', 1, 0, 'F', '0', '0', 'yingshi:ys:deviceDefencePlan', '#', 'admin', '2025-08-05 13:39:33', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (2140, '乐橙协议', 0, 7, 'lecheng', NULL, NULL, '', 1, 0, 'M', '0', '0', NULL, 'clipboard', 'admin', '2025-08-06 12:32:09', '', NULL, '');
@@ -1721,17 +1721,17 @@ INSERT INTO `sys_menu` VALUES (2143, '查询', 2141, 2, '', NULL, NULL, '', 1, 0
 INSERT INTO `sys_menu` VALUES (2144, '新增', 2141, 3, '', NULL, NULL, '', 1, 0, 'F', '0', '0', 'lecheng:lcConfig:add', '#', 'admin', '2025-08-06 13:09:04', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (2145, '修改', 2141, 4, '', NULL, NULL, '', 1, 0, 'F', '0', '0', 'lecheng:lcConfig:edit', '#', 'admin', '2025-08-06 13:09:19', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (2146, '删除', 2141, 5, '', NULL, NULL, '', 1, 0, 'F', '0', '0', 'lecheng:lcConfig:remove', '#', 'admin', '2025-08-06 13:09:31', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (2147, '节点配置', 2136, 1, 'nodeConf', 'gat1400/nodeConf/index', NULL, 'nodeConf', 1, 0, 'C', '0', '0', '', '1400node', 'admin', '2025-08-06 15:35:21', 'admin', '2025-08-28 13:33:10', '');
-INSERT INTO `sys_menu` VALUES (2148, '视图库管理', 2136, 2, 'serverManage', 'gat1400/serverManage/index', NULL, 'serverManage', 1, 0, 'C', '0', '0', '', '1400server', 'admin', '2025-08-06 16:48:35', 'admin', '2025-08-28 13:41:39', '');
+INSERT INTO `sys_menu` VALUES (2147, '节点配置', 2136, 1, 'nodeConf', 'gat1400/nodeConf/index', NULL, 'nodeConf', 1, 0, 'C', '0', '1', '', '1400node', 'admin', '2025-08-06 15:35:21', 'admin', '2025-08-28 13:33:10', '');
+INSERT INTO `sys_menu` VALUES (2148, '视图库管理', 2136, 2, 'serverManage', 'gat1400/serverManage/index', NULL, 'serverManage', 1, 0, 'C', '0', '1', '', '1400server', 'admin', '2025-08-06 16:48:35', 'admin', '2025-08-28 13:41:39', '');
 INSERT INTO `sys_menu` VALUES (2149, '设备管理', 2140, 2, 'lcDevice', 'lecheng/lcDevice/index', NULL, 'lcDevice', 1, 0, 'C', '0', '0', 'lecheng:lc:listDeviceDetailsByPage', 'checkbox', 'admin', '2025-08-08 13:10:56', 'admin', '2025-08-08 13:11:06', '');
-INSERT INTO `sys_menu` VALUES (2150, '卡口管理', 2136, 3, 'tollgateManage', 'gat1400/tollgateManage/index', NULL, '', 1, 0, 'C', '0', '0', '', '1400tollgate', 'admin', '2025-08-08 14:05:53', 'admin', '2025-08-28 13:40:36', '');
-INSERT INTO `sys_menu` VALUES (2151, '车道管理', 2136, 4, 'laneManage', 'gat1400/laneManage/index', NULL, '', 1, 0, 'C', '0', '0', '', '1400lane', 'admin', '2025-08-12 11:32:13', 'admin', '2025-08-28 13:40:46', '');
-INSERT INTO `sys_menu` VALUES (2152, 'APE设备管理', 2136, 5, 'deviceManage', 'gat1400/deviceManage/index', NULL, '', 1, 0, 'C', '0', '0', '', '1400device', 'admin', '2025-08-12 11:41:43', 'admin', '2025-08-28 13:40:24', '');
-INSERT INTO `sys_menu` VALUES (2156, '下级订阅', 2136, 20, 'subscribe', 'gat1400/subscribe/index', NULL, '', 1, 0, 'C', '0', '0', '', '1400subscribe', 'admin', '2025-08-20 12:46:37', 'admin', '2025-08-28 13:40:58', '');
-INSERT INTO `sys_menu` VALUES (2157, '上级推送', 2136, 25, 'publish', 'gat1400/publish/index', NULL, '', 1, 0, 'C', '0', '0', '', '1400publish', 'admin', '2025-08-20 12:47:20', 'admin', '2025-08-28 13:41:06', '');
+INSERT INTO `sys_menu` VALUES (2150, '卡口管理', 2136, 3, 'tollgateManage', 'gat1400/tollgateManage/index', NULL, '', 1, 0, 'C', '0', '1', '', '1400tollgate', 'admin', '2025-08-08 14:05:53', 'admin', '2025-08-28 13:40:36', '');
+INSERT INTO `sys_menu` VALUES (2151, '车道管理', 2136, 4, 'laneManage', 'gat1400/laneManage/index', NULL, '', 1, 0, 'C', '0', '1', '', '1400lane', 'admin', '2025-08-12 11:32:13', 'admin', '2025-08-28 13:40:46', '');
+INSERT INTO `sys_menu` VALUES (2152, 'APE设备管理', 2136, 5, 'deviceManage', 'gat1400/deviceManage/index', NULL, '', 1, 0, 'C', '0', '1', '', '1400device', 'admin', '2025-08-12 11:41:43', 'admin', '2025-08-28 13:40:24', '');
+INSERT INTO `sys_menu` VALUES (2156, '下级订阅', 2136, 20, 'subscribe', 'gat1400/subscribe/index', NULL, '', 1, 0, 'C', '0', '1', '', '1400subscribe', 'admin', '2025-08-20 12:46:37', 'admin', '2025-08-28 13:40:58', '');
+INSERT INTO `sys_menu` VALUES (2157, '上级推送', 2136, 25, 'publish', 'gat1400/publish/index', NULL, '', 1, 0, 'C', '0', '1', '', '1400publish', 'admin', '2025-08-20 12:47:20', 'admin', '2025-08-28 13:41:06', '');
 INSERT INTO `sys_menu` VALUES (2158, '收藏管理', 2015, 13, 'favorites', 'wvp/favorites/index', NULL, '', 1, 0, 'C', '0', '0', 'wvp:favorites:list', 'color', 'admin', '2025-08-21 13:56:18', 'admin', '2025-09-20 17:33:52', '');
 INSERT INTO `sys_menu` VALUES (2159, '标记管理', 2015, 14, 'mark', 'wvp/mark/index', NULL, '', 1, 0, 'C', '0', '0', 'wvp:mark:list', 'cloudRecord', 'admin', '2025-08-22 13:26:11', 'admin', '2025-09-20 17:34:14', '');
-INSERT INTO `sys_menu` VALUES (2160, '采集列表', 2136, 14, 'gatherList', 'gat1400/gatherManage/index', NULL, '', 1, 0, 'C', '1', '0', '', 'bug', 'admin', '2025-08-27 13:21:50', 'admin', '2025-08-27 13:53:04', '');
+INSERT INTO `sys_menu` VALUES (2160, '采集列表', 2136, 14, 'gatherList', 'gat1400/gatherManage/index', NULL, '', 1, 0, 'C', '1', '1', '', 'bug', 'admin', '2025-08-27 13:21:50', 'admin', '2025-08-27 13:53:04', '');
 
 -- ----------------------------
 -- Table structure for sys_notice
