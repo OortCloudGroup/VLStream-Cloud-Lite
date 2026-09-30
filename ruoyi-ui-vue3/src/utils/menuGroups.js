@@ -33,7 +33,6 @@ const DEVICE_PROTOCOLS = [
   { key: '/rtsp', title: "RTSP协议", titles: ['rtsp协议', 'RTSP协议', 'RTSP'], icon: 'rtsp' },
   { key: '/isup', title: "ISUP协议", titles: ['海康协议', 'ISUP协议', 'ISUP'], icon: 'isup' },
   { key: '/ehome', title: "EHome协议", titles: ['EHome协议', 'EHome'], icon: 'ehome' },
-  { key: '/dahua', title: "大华协议", titles: ['大华协议'], icon: 'dahua' },
   { key: '/yingshi', title: "萤石协议", titles: ['萤石协议', '萤石'], icon: 'device' },
   { key: '/lecheng', title: "乐橙协议", titles: ['乐橙协议', '乐橙'], icon: 'device' },
   { key: '/custom', title: "自定义协议", titles: ['自定义协议'], icon: 'device' }

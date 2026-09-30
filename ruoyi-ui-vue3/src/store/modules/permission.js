@@ -93,6 +93,10 @@ const usePermissionStore = defineStore(
 // 遍历后台传来的路由字符串，转换为组件对象
 function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
   return asyncRouterMap.filter(route => {
+    // 大华设备接入入口已下线，统一排除路由、侧栏、顶栏及菜单搜索来源。
+    if (/(^|\/)dahua(\/|$)/i.test(route.path || '') || /^\/?dahua(\/|$)/i.test(route.component || '')) {
+      return false
+    }
     if (type && route.children) {
       route.children = filterChildren(route.children)
     }
@@ -110,6 +114,7 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
     }
     if (route.children != null && route.children && route.children.length) {
       route.children = filterAsyncRouter(route.children, route, type)
+      if (!route.children.length) return false
     } else {
       delete route['children']
       delete route['redirect']

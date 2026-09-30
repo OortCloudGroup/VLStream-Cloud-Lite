@@ -5,7 +5,6 @@
       <el-tab-pane label="ONVIF" name="ONVIF"></el-tab-pane>
       <el-tab-pane label="RTSP" name="RTSP"></el-tab-pane>
       <el-tab-pane label="ISUP" name="ISUP"></el-tab-pane>
-      <el-tab-pane :label="$tp('大华')" name="DAHUA"></el-tab-pane>
     </el-tabs>
 
     <div class="workbench-layout">
