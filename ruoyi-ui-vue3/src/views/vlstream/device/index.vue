@@ -57,7 +57,7 @@
           <el-table-column :label="$tp('操作')" width="150" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="openDetail(row)">{{ $tp("详情") }}</el-button>
-              <el-button link type="primary" :disabled="!mediaAvailable" @click="openPreview(row)">{{ $tp("播放") }}</el-button>
+              <el-button link type="primary" :disabled="row.online !== true" @click="openPreview(row)">{{ $tp("播放") }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -150,6 +150,8 @@
 </template>
 
 <script setup>
+import { monitorDevicePreview } from '@/utils/devicePreviewGuard'
+import { translatePhrase } from '@/i18n'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import CameraRtcPlayer from '@/components/CameraRtcPlayer.vue'
@@ -262,6 +264,7 @@ async function openDetail(device) {
 }
 
 async function openPreview(device) {
+  if (device.online !== true) return ElMessage.warning('设备离线，不允许播放')
   currentDevice.value = device
   try {
     streams.value = (await listStreams(device.id))?.data || []
@@ -278,12 +281,31 @@ async function openPreview(device) {
   }
 }
 
+let previewGeneration = 0
+let stopPreviewMonitor = () => {}
+watch(previewVisible, visible => { if (!visible) releasePreview() })
+
 async function startPreview(streamId) {
   releasePreview()
   if (!streamId || !currentDevice.value) return
+  const generation = previewGeneration
+  const id = currentDevice.value.id
   previewLoading.value = true
   try {
+    const device = (await getDeviceDetail(id))?.data?.device
+    if (generation !== previewGeneration || !previewVisible.value) return
+    if (device?.online !== true) {
+      currentDevice.value.online = false
+      previewVisible.value = false
+      return ElMessage.warning('设备离线，不允许播放')
+    }
+    stopPreviewMonitor = monitorDevicePreview(async () => (await getDeviceDetail(id))?.data?.device, () => {
+      releasePreview()
+      previewVisible.value = false
+      ElMessage.warning('设备离线或状态无法确认，已停止播放')
+    })
     const stream = (await requestPreview(currentDevice.value.id, streamId))?.data || {}
+    if (generation !== previewGeneration || !previewVisible.value) return
     if (stream.playMode === 'cameraRTC' && stream.url) {
       cameraRtcConfig.value = parseCameraRtcConfig(stream.url)
       return
@@ -298,6 +320,9 @@ async function startPreview(streamId) {
 }
 
 function releasePreview() {
+  previewGeneration += 1
+  stopPreviewMonitor()
+  previewLoading.value = false
   cameraRtcConfig.value = null
   webrtcUrl.value = ''
 }

@@ -104,6 +104,9 @@ public class VlStreamDeviceController extends BaseController {
     @PostMapping("/{deviceRowId}/preview")
     public AjaxResult preview(@PathVariable Long deviceRowId, @RequestBody PreviewRequest request) {
         VlStreamDevice device = tenantService.requireDevice(deviceRowId);
+        if (device == null || !Boolean.TRUE.equals(device.getOnline())) {
+            return error("设备离线，不允许播放");
+        }
         VlStreamDeviceStream stream = request == null ? null : streamMapper.selectById(request.getStreamId());
         if (device == null || stream == null || !deviceRowId.equals(stream.getDeviceRowId())
                 || !Boolean.TRUE.equals(stream.getAvailable())) return error("设备或视频流不存在");

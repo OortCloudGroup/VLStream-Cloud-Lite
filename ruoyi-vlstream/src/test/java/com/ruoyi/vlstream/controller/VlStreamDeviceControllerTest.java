@@ -47,6 +47,7 @@ public class VlStreamDeviceControllerTest {
         IMediaServerService mediaServerService = mock(IMediaServerService.class);
         VlStreamDevice device = new VlStreamDevice();
         device.setId(10L);
+        device.setOnline(true);
         VlStreamDeviceStream stream = new VlStreamDeviceStream();
         stream.setId(20L);
         stream.setDeviceRowId(10L);
@@ -69,5 +70,26 @@ public class VlStreamDeviceControllerTest {
         assertEquals("cameraRTC", data.get("playMode"));
         assertEquals(stream.getSourceUrl(), data.get("url"));
         verify(mediaServerService, never()).getDefaultMediaServer();
+    }
+
+    @Test
+    public void rejectsOfflineAndUnknownStatusBeforeLookingUpStream() {
+        for (Boolean online : new Boolean[] {false, null}) {
+            VlStreamDevice device = new VlStreamDevice();
+            device.setOnline(online);
+            VlStreamDeviceTenantService tenants = mock(VlStreamDeviceTenantService.class);
+            when(tenants.requireDevice(10L)).thenReturn(device);
+            VlStreamDeviceStreamMapper streams = mock(VlStreamDeviceStreamMapper.class);
+            IMediaServerService media = mock(IMediaServerService.class);
+            VlStreamDeviceController controller = new VlStreamDeviceController(mock(VlStreamDeviceMapper.class),
+                    streams, media, mock(VlStreamFirmwareDeploymentService.class), tenants);
+            VlStreamDeviceController.PreviewRequest request = new VlStreamDeviceController.PreviewRequest();
+            request.setStreamId(20L);
+            AjaxResult result = controller.preview(10L, request);
+            assertEquals(500, result.get(AjaxResult.CODE_TAG));
+            assertEquals("设备离线，不允许播放", result.get(AjaxResult.MSG_TAG));
+            verify(streams, never()).selectById(20L);
+            verify(media, never()).getDefaultMediaServer();
+        }
     }
 }
