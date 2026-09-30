@@ -22,7 +22,7 @@ The default Compose file starts five independent services: MySQL, Redis, EMQX
 service image. The WVP image
 also contains the compiled browser UI, so no separate frontend service is
 needed. The backend image is
-`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.5`.
+`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.8`.
 
 Use an existing MySQL, Redis, ZLMediaKit, and MQTT Broker installation with:
 
@@ -72,6 +72,10 @@ The packaged ZLMediaKit image is configured with the same `ZLM_SECRET` passed
 to WVP. `ZLM_PUBLIC_HOST` must be the DNS name or public IP devices and browsers
 can reach, not necessarily the Docker service name.
 
+Keep `ZLM_SECRET` at or below 50 characters: WVP persists it in the
+`wvp_media_server.secret` column, which is limited to 50 characters. Use the
+same strong random value in both services.
+
 The default package uses `emqx/emqx:5.4`, matching the tested EMQX 5.4.1
 runtime. `VLSTREAM_MQTT_ENABLED` defaults to `true` in both Compose files so
 WVP connects through the internal service name `mqtt` by default and does not
@@ -80,6 +84,24 @@ require the host MQTT port for container-to-container traffic. Set
 `VLSTREAM_WVP_MQTT_CLIENT_ID` when the broker requires authentication. Do not
 expose `MQTT_PORT` to an untrusted network without configuring EMQX
 authentication and authorization.
+
+## VLStream device tenant ownership
+
+Flyway automatically applies `V1_2_9__vlstream_device_tenant.sql` during a
+backend upgrade. Device authorization scope comes from the authenticated server
+identity; a tenant value in a request cannot widen that scope. Devices that omit
+a tenant use `VLSTREAM_DEVICE_DEFAULT_TENANT_ID` (default `000000`). Keep it
+aligned with the VLStream platform's default device tenant.
+
+For explicit first-time tenant binding, set the same default tenant in both
+systems and configure an independent random `VLSTREAM_DEVICE_TENANT_BINDING_SECRET`
+of at least 32 bytes in WVP and the trusted provisioning environment. The
+release archive includes `tools/create-device-tenant-binding.mjs` to create a
+device-specific proof. Provision a non-default tenant before a device's first
+registration; a later heartbeat cannot move an existing device between tenants.
+This proof does not replace per-device MQTT credentials, topic ACLs, or TLS. See
+[`docs/VLSTREAM_TENANT_BINDING.md`](./docs/VLSTREAM_TENANT_BINDING.md) for the
+complete procedure and scope.
 
 ## Operations, data, and upgrades
 
@@ -108,7 +130,7 @@ migrations must never be edited, deleted, or renamed.
 
 ## Protocols and native SDKs
 
-GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.5 base deployment.
+GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.8 base deployment.
 ISUP and Dahua integrations are optional/experimental: their native SDK shared
 libraries, dependency completeness, and redistribution terms have not been
 verified for this public Linux image. They are not enabled by the default

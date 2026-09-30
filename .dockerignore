@@ -8,3 +8,4 @@ codex/
 codex/**
 *.log
 sql/ry_wvp_init.sql
+sql/ry-wvp.sql

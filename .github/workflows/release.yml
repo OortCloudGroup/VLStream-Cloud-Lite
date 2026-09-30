@@ -43,7 +43,12 @@ jobs:
         run: |
           package="VLStream-wvp-lite-${{ github.ref_name }}"
           mkdir -p "dist/$package/sql/init" "dist/$package/sql/upgrade" "dist/$package/zlm"
-          cp compose.yaml compose.external.yaml compose.ehome.yaml .env.example Dockerfile .dockerignore README.md DEPLOYMENT.md RELEASE_NOTES.md "dist/$package/"
+          cp compose.yaml compose.external.yaml compose.ehome.yaml .env.example Dockerfile .dockerignore README.md DEPLOYMENT.md RELEASE_NOTES.md RELIABILITY.md "dist/$package/"
+          mkdir -p "dist/$package/deploy/reliability" "dist/$package/docs" "dist/$package/tools"
+          cp -a deploy/reliability/. "dist/$package/deploy/reliability/"
+          cp docs/ehome-integration.md docs/ehome-sdk-manifest.json docs/VLSTREAM_TENANT_BINDING.md "dist/$package/docs/"
+          cp docs/licenses/ruoyi-qs-nvr-MIT.txt "dist/$package/docs/"
+          cp tools/create-device-tenant-binding.mjs "dist/$package/tools/"
           cp deploy/release/sql/init/10-ry-wvp.sql "dist/$package/sql/init/"
           cp -a deploy/release/sql/upgrade/. "dist/$package/sql/upgrade/"
           cp deploy/release/zlm/Dockerfile deploy/release/zlm/config.ini deploy/release/zlm/entrypoint-release.sh "dist/$package/zlm/"
