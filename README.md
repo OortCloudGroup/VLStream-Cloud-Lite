@@ -337,7 +337,7 @@ GB28181 注册成功只说明 SIP `REGISTER` 及相关鉴权链路已经建立�
 
 - Docker 新部署使用 [`deploy/release/sql/init/10-ry-wvp.sql`](./deploy/release/sql/init/10-ry-wvp.sql) 初始化空 MySQL 数据卷。
 - 已有数据库的版本升级由 Flyway 管理，迁移文件位于 [`ruoyi-admin/src/main/resources/db/migration/`](./ruoyi-admin/src/main/resources/db/migration/)。已发布迁移文件不得改名、删除或修改。
-- `sql/ry-wvp.sql` 是历史数据库快照，不随 Release 源码归档、容器构建上下文或一键部署包分发；新部署使用脱敏的 [`deploy/release/sql/init/10-ry-wvp.sql`](./deploy/release/sql/init/10-ry-wvp.sql)，已有数据库使用不可变 Flyway 迁移。`sql/2026-08-13-device-classification.sql`、`sql/2026-08-13-vlstream.sql` 和 `sql/2026-08-17-custom-protocol.sql` 是对应功能的源码/手工初始化脚本。
+- 主线的历史数据库快照 `sql/ry-wvp.sql` 不纳入本版本；新部署使用脱敏的 [`deploy/release/sql/init/10-ry-wvp.sql`](./deploy/release/sql/init/10-ry-wvp.sql)，已有数据库使用不可变 Flyway 迁移。`sql/2026-08-13-device-classification.sql`、`sql/2026-08-13-vlstream.sql` 和 `sql/2026-08-17-custom-protocol.sql` 是对应功能的源码/手工初始化脚本。
 - 生产升级前先备份 MySQL，并阅读 [`DEPLOYMENT.md`](./DEPLOYMENT.md)；不要通过删除 Docker 数据卷来完成升级。
 
 ## 🐳 部署与升级
