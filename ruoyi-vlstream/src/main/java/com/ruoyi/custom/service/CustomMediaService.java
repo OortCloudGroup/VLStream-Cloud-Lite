@@ -32,16 +32,33 @@ public class CustomMediaService {
         MediaServer mediaServer = requireMediaServer();
         String app = "custom";
         String stream = "device_" + deviceId;
-        StreamInfo existing = mediaServerService.getStreamInfoByAppAndStream(mediaServer, app, stream, null, null);
-        if (existing != null) return new StreamContent(existing);
+        // Generating StreamInfo only formats URLs; it does not prove the stream exists in ZLM.
+        if (mediaServerService.isStreamReady(mediaServer, app, stream)) {
+            StreamInfo existing = mediaServerService.getStreamInfoByAppAndStream(mediaServer, app, stream, null, null);
+            if (existing != null) return new StreamContent(existing);
+        }
         WVPResult<String> result = mediaServerService.addStreamProxy(mediaServer, app, stream,
                 device.getStreamUrl(), true, false, "0", 15);
         if (result == null || result.getCode() != 0) {
             throw new ServiceException(result == null ? "ZLM拉流失败" : result.getMsg());
         }
-        StreamInfo info = mediaServerService.getStreamInfoByAppAndStream(mediaServer, app, stream, null, null);
-        if (info == null) throw new ServiceException("ZLM已接受拉流请求，但尚未生成播放地址");
-        return new StreamContent(info);
+        try {
+            long deadline = System.currentTimeMillis() + 10_000;
+            while (!mediaServerService.isStreamReady(mediaServer, app, stream)) {
+                if (System.currentTimeMillis() >= deadline) throw new ServiceException("ZLM未收到可播放媒体，请检查摄像机出流");
+                try { Thread.sleep(250); }
+                catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new ServiceException("创建预览已取消");
+                }
+            }
+            StreamInfo info = mediaServerService.getStreamInfoByAppAndStream(mediaServer, app, stream, null, null);
+            if (info == null) throw new ServiceException("ZLM未返回可用播放地址");
+            return new StreamContent(info);
+        } catch (RuntimeException error) {
+            if (result.getData() != null) mediaServerService.delStreamProxy(mediaServer, result.getData());
+            throw error;
+        }
     }
 
     @Transactional

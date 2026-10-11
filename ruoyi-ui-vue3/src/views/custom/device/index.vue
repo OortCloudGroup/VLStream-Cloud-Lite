@@ -1,7 +1,7 @@
 <template>
   <DeviceClassificationLayout protocol-type="CUSTOM" :selected-device-keys="classificationDeviceKeys"
     @filter-change="handleClassificationFilter" @assigned="getList">
-    <div class="app-container">
+    <div class="app-container device-management-page">
       <div class="toolbar-with-search">
         <div class="toolbar-left">
           <button type="button" class="exportBtn newBtn flexRowAC" @click="handleAdd" v-hasPermi="['custom:device:add']">
@@ -25,7 +25,8 @@
         </div>
       </div>
 
-      <table-self
+      <el-alert v-if="serviceError" :title="serviceError" type="error" :closable="false" show-icon class="mb16" />
+      <table-self scrollbar-always-on
         class="new_table"
         header-cell-class-name="header_tenant_cell"
         stripe
@@ -60,7 +61,7 @@
       </table-self>
       <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum" v-model:limit="queryParams.pageSize" @pagination="getList"/>
 
-      <el-dialog v-model="formOpen" :title="$tp(formTitle)" width="42%" append-to-body>
+      <el-dialog class="locale-dialog locale-dialog--medium" v-model="formOpen" :title="$tp(formTitle)" append-to-body>
         <el-form ref="deviceFormRef" :model="form" :rules="rules" label-width="100px">
           <el-row :gutter="16">
             <el-col :span="12"><el-form-item :label="$tp('设备名称')" prop="deviceName"><el-input v-model="form.deviceName"/></el-form-item></el-col>
@@ -82,14 +83,14 @@
         </template>
       </el-dialog>
 
-      <el-dialog v-model="previewOpen" :title="$tp(previewTitle)" width="55%" append-to-body destroy-on-close @closed="cleanupPreviewPlayer">
+      <el-dialog class="locale-dialog locale-dialog--wide" v-model="previewOpen" :title="$tp(previewTitle)" append-to-body destroy-on-close @closed="cleanupPreviewPlayer">
         <div v-loading="previewLoading" class="player-box">
           <rtc-player v-if="rtcUrl" :video-url="rtcUrl" :hasaudio="true"/>
           <div v-else ref="oplayerContainer" class="oplayer-container"/>
         </div>
       </el-dialog>
 
-      <el-dialog v-model="recordOpen" :title="$tp(`${recordDevice.deviceName || ''} - 录像管理`)" width="36%" append-to-body>
+      <el-dialog class="locale-dialog locale-dialog--medium" v-model="recordOpen" :title="$tp(`${recordDevice.deviceName || ''} - 录像管理`)" append-to-body>
         <el-alert :title="$tp('录像由 WVP 的 ZLM 媒体服务器真实执行；计划跨午夜时按开始日归属。')" type="info" :closable="false" class="mb16"/>
         <el-form :model="recordPlan" label-width="100px">
           <el-form-item :label="$tp('当前状态')"><el-tag :type="recording ? 'danger' : 'info'">{{ recording ? $tp('录像中') : $tp('未录像') }}</el-tag><el-button v-if="!recording" link type="primary" :disabled="!mediaAvailable" @click="startRecord">{{ $tp("立即开始") }}</el-button><el-button v-else link type="danger" @click="stopRecord">{{ $tp("立即停止") }}</el-button></el-form-item>
@@ -118,6 +119,7 @@ import { createOPlayerOptions, ensureOPlayer, getCustomStreamType } from '@/util
 
 const { proxy } = getCurrentInstance()
 const loading=ref(false), showSearch=ref(true), deviceList=ref([]), total=ref(0), ids=ref([]), single=ref(true), multiple=ref(true)
+const serviceError = ref('')
 const classificationDeviceKeys=ref([]), mediaAvailable=ref(false), formOpen=ref(false), submitting=ref(false), previewOpen=ref(false), previewLoading=ref(false), rtcUrl=ref('')
 const oplayerContainer=ref(null), oplayerInstance=shallowRef(null)
 const recordOpen=ref(false), recording=ref(false), selectedDays=ref(['1','2','3','4','5','6','7']), timeRange=ref(['00:00','23:59'])
@@ -136,7 +138,23 @@ const rules={deviceName:[{required:true,get message() { return translatePhrase("
 const deviceTypes=['球机','云台','摄像头','枪机','半球','其他']
 const weekOptions=[['1','周一'],['2','周二'],['3','周三'],['4','周四'],['5','周五'],['6','周六'],['7','周日']].map(([value,label])=>({value,label}))
 
-async function getList(){loading.value=true;try{const [list,media]=await Promise.all([listCustomDevices(queryParams),getCustomMediaStatus()]);deviceList.value=list.rows||[];total.value=list.total||0;mediaAvailable.value=Boolean(media.data?.available)}finally{loading.value=false}}
+async function getList() {
+  loading.value = true
+  serviceError.value = ''
+  try {
+    const list = await listCustomDevices(queryParams)
+    deviceList.value = list.rows || []
+    total.value = list.total || 0
+  } catch (error) {
+    deviceList.value = []
+    total.value = 0
+    serviceError.value = error?.response?.data?.msg || error?.message || translatePhrase('WVP 服务不可用，无法加载自定义协议设备')
+  } finally { loading.value = false }
+}
+async function loadMediaStatus() {
+  try { mediaAvailable.value = Boolean((await getCustomMediaStatus())?.data?.available) }
+  catch { mediaAvailable.value = false }
+}
 function handleQuery(){queryParams.pageNum=1;getList()}
 function resetQuery(){queryParams.deviceName='';queryParams.deviceCode='';queryParams.status=undefined;handleQuery()}
 function searchResetFn(val){queryParams.pageNum=1;queryParams.deviceName=val.deviceName||'';queryParams.deviceCode=val.deviceCode||'';queryParams.status=val.status||undefined;getList()}
@@ -187,7 +205,7 @@ async function stopRecord(){await stopCustomRecord(recordDevice.value.id);record
 async function saveRecordPlanForm(){if(!timeRange.value?.length)return proxy.$modal.msgWarning(translatePhrase("请选择录像时段"));Object.assign(recordPlan,{weekDays:selectedDays.value.join(','),startTime:timeRange.value[0],endTime:timeRange.value[1]});await saveCustomRecordPlan(recordDevice.value.id,recordPlan);proxy.$modal.msgSuccess(translatePhrase("录像计划已保存"));recordOpen.value=false}
 function statusType(status){return status==='ONLINE'?'success':status==='OFFLINE'?'info':'warning'}
 function statusText(status){return status==='ONLINE'?translatePhrase("在线"):status==='OFFLINE'?translatePhrase("离线"):translatePhrase("未知")}
-onMounted(getList)
+onMounted(() => { getList(); loadMediaStatus() })
 </script>
 
 <style scoped>
