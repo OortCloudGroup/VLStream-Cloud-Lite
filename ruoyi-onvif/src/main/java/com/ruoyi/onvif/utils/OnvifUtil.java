@@ -316,19 +316,7 @@ public class OnvifUtil {
      * @return
      */
     public static FetchMainAndSubStreamUris getOnvifDeviceInfo(FetchMainAndSubStreamUrisBo bo) {
-        // 先获取基本信息
-        FetchMainAndSubStreamUris mercury = getMercury(bo);
-        // 再获取视频流token
-        List<String> profileTokens = getProfileToken(bo);
-        if (!profileTokens.isEmpty()) {
-            // 根据token获取播放地址
-            for (String token : profileTokens) {
-                String urlByToken = getProfilesUrlByToken(bo, token);
-                String replace = urlByToken.replace("rtsp://", "rtsp://" + bo.getUsername() + ":" + bo.getPassword() + "@");
-                mercury.addStreamUri(token, replace);
-            }
-        }
-        return mercury;
+        return new OnvifDeviceProbe().read(bo, false);
     }
 
     /**
@@ -337,28 +325,7 @@ public class OnvifUtil {
      * @return
      */
     public static String getProfilesUrlByToken(FetchMainAndSubStreamUrisBo bo, String profileToken) {
-        byte[] nonceBytes = RandomUtil.randomBytes(16);
-        String nonce = Base64.encode(nonceBytes);
-        String created = Instant.now().toString();
-        String passwordDigest = calculatePasswordDigest(nonceBytes, created, bo.getPassword());
-        String soapRequest = GetProfilesUrl(bo.getUsername(), nonce, created, passwordDigest, profileToken);
-        String url = "http://" + bo.getIp() + "/onvif/media_service";
-        HttpResponse response = HttpRequest.post(url)
-                .header("Content-Type", "application/soap+xml; charset=utf-8")
-                .body(soapRequest)
-                .execute();
-        if (response.getStatus() == 200) {
-            try {
-                return parseSoapResponseProfilesUrlByToken(response.body());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else if (response.getStatus() == 500) {
-            throw new RuntimeException("该命名空间设备不支持");
-        } else if (response.getStatus() == 401) {
-            throw new RuntimeException("鉴权失败");
-        }
-        throw new RuntimeException("获取视频流地址失败");
+        return new OnvifDeviceProbe().stream(bo, profileToken);
     }
 
     // 获取视频流地址 -- 解析
@@ -382,29 +349,7 @@ public class OnvifUtil {
      * @return
      */
     public static List<String> getProfileToken(FetchMainAndSubStreamUrisBo bo) {
-        byte[] nonceBytes = RandomUtil.randomBytes(16);
-        String nonce = Base64.encode(nonceBytes);
-        String created = Instant.now().toString();
-        String passwordDigest = calculatePasswordDigest(nonceBytes, created, bo.getPassword());
-        String soapRequest = GetProfiles(bo.getUsername(), nonce, created, passwordDigest);
-        String url = "http://" + bo.getIp() + "/onvif/media_service";
-        HttpResponse response = HttpRequest.post(url)
-                .header("Content-Type", "application/soap+xml; charset=utf-8")
-                .body(soapRequest)
-                .execute();
-        if (response.getStatus() == 200) {
-            try {
-                return parseSoapResponseProfileToken(response.body());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else if (response.getStatus() == 500) {
-            throw new RuntimeException("该命名空间设备不支持");
-        } else if (response.getStatus() == 401) {
-            throw new RuntimeException("鉴权失败");
-        }
-        throw new RuntimeException("获取流token失败");
-
+        return new OnvifDeviceProbe().profiles(bo);
     }
 
     // 获取流信息token -- 解析
@@ -759,53 +704,7 @@ public class OnvifUtil {
      * @param onvifPZT
      */
     public static void onvifPZTStart(OnvifDevice onvifDevice, OnvifPZT onvifPZT) {
-        byte[] nonceBytes = RandomUtil.randomBytes(16);
-        String nonce = Base64.encode(nonceBytes);
-        String created = Instant.now().toString();
-        String passwordDigest = calculatePasswordDigest(nonceBytes, created, onvifDevice.getPassword());
-
-        double x = 0.0;
-        double y = 0.0;
-
-        if ("upper".equals(onvifPZT.getDirection())) {
-            x = 0.0;
-            y = onvifPZT.getControSpeed();
-        } else if ("below".equals(onvifPZT.getDirection())) {
-            x = 0.0;
-            y = -onvifPZT.getControSpeed();
-        } else if ("left".equals(onvifPZT.getDirection())) {
-            x = onvifPZT.getControSpeed();
-            y = 0.0;
-        } else if ("right".equals(onvifPZT.getDirection())) {
-            x = -onvifPZT.getControSpeed();
-            y = 0.0;
-        }
-        String soapRequest = GenerateContinuousMoveRequest(
-                onvifDevice.getUserName(),
-                nonce,
-                created,
-                passwordDigest,
-                onvifDevice.getChannel(),
-                x,
-                y);
-        String url = "http://" + onvifDevice.getIp() + "/onvif/media_service";
-        HttpResponse response = HttpRequest.post(url)
-                .header("Content-Type", "application/soap+xml; charset=utf-8")
-                .body(soapRequest)
-                .execute();
-        String body = response.body();
-        JSONObject jsonObject = XmlToJsonUtils.xmlToJson(body);
-        JSONObject bodyJson = jsonObject.getJSONObject("Body");
-        JSONObject fault = bodyJson.getJSONObject("Fault");
-        JSONObject reason = fault.getJSONObject("Reason");
-        String reasonText = reason.getString("Text");
-        if (response.getStatus() == 200) {
-            return;
-        } else if (response.getStatus() == 500) {
-            throw new RuntimeException("该命名空间设备不支持");
-        } else {
-            throw new RuntimeException(reasonText);
-        }
+        OnvifPtzClient.getInstance().start(onvifDevice, onvifPZT);
     }
 
     /**
@@ -815,28 +714,6 @@ public class OnvifUtil {
      * @param onvifPZT
      */
     public static void onvifPZTEnd(OnvifDevice onvifDevice, OnvifPZT onvifPZT) {
-        byte[] nonceBytes = RandomUtil.randomBytes(16);
-        String nonce = Base64.encode(nonceBytes);
-        String created = Instant.now().toString();
-        String passwordDigest = calculatePasswordDigest(nonceBytes, created, onvifDevice.getPassword());
-        String soapRequest = GenerateStopRequest(onvifDevice.getUserName(), nonce, created, passwordDigest, onvifDevice.getChannel());
-        String url = "http://" + onvifDevice.getIp() + "/onvif/media_service";
-        HttpResponse response = HttpRequest.post(url)
-                .header("Content-Type", "application/soap+xml; charset=utf-8")
-                .body(soapRequest)
-                .execute();
-        String body = response.body();
-        JSONObject jsonObject = XmlToJsonUtils.xmlToJson(body);
-        JSONObject bodyJson = jsonObject.getJSONObject("Body");
-        JSONObject fault = bodyJson.getJSONObject("Fault");
-        JSONObject reason = fault.getJSONObject("Reason");
-        String reasonText = reason.getString("Text");
-        if (response.getStatus() == 200) {
-            return;
-        } else if (response.getStatus() == 500) {
-            throw new RuntimeException("该命名空间设备不支持");
-        } else {
-            throw new RuntimeException(reasonText);
-        }
+        OnvifPtzClient.getInstance().stop(onvifDevice);
     }
 }

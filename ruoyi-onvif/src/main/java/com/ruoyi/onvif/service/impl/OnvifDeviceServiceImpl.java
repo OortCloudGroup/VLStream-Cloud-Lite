@@ -25,6 +25,8 @@ import com.ruoyi.onvif.domain.bo.FetchMainAndSubStreamUrisBo;
 import com.ruoyi.onvif.domain.bo.WSDeviceBo;
 import com.ruoyi.onvif.domain.dto.WSDiscoveryDeviceDTO;
 import com.ruoyi.onvif.service.IOnvifService;
+import com.ruoyi.onvif.utils.OnvifDeviceProbe;
+import com.ruoyi.common.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.onvif.mapper.OnvifDeviceMapper;
@@ -195,78 +197,20 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
      */
     @Override
     public OnvifDevice addOnvif(WSDeviceBo bo) {
+        if (bo == null || !("1".equals(bo.getAuth()) || "2".equals(bo.getAuth()))) {
+            throw new ServiceException("请选择认证方式");
+        }
+        FetchMainAndSubStreamUrisBo query = new FetchMainAndSubStreamUrisBo();
+        query.setIp(bo.getIp());
+        query.setUsername(bo.getUsername());
+        query.setPassword(bo.getPassword());
+        FetchMainAndSubStreamUris info = new OnvifDeviceProbe().read(query, "2".equals(bo.getAuth()));
         OnvifDevice device = new OnvifDevice();
-        Map<String, String> streamUris = new ConcurrentHashMap<>();
-        CountDownLatch latch = new CountDownLatch(2);
-        if ("1".equals(bo.getAuth())) {
-            FetchMainAndSubStreamUrisBo fetchMainAndSubStreamUrisBo = new FetchMainAndSubStreamUrisBo();
-            fetchMainAndSubStreamUrisBo.setIp(bo.getIp());
-            fetchMainAndSubStreamUrisBo.setUsername(bo.getUsername());
-            fetchMainAndSubStreamUrisBo.setPassword(bo.getPassword());
-            FetchMainAndSubStreamUris onvifDeviceInfo = service.getOnvifDeviceInfo(fetchMainAndSubStreamUrisBo);
-            device.setIp(bo.getIp());
-            device.setFirm(onvifDeviceInfo.getFirm());
-            device.setFirmwareVersion(onvifDeviceInfo.getFirmwareVersion());
-            device.setModel(onvifDeviceInfo.getModel());
-            device.setStreamUris(onvifDeviceInfo.getStreamUris());
-            return device;
-        } else {
-            OnvifManager onvifManager = new OnvifManager();
-            be.teletask.onvif.models.OnvifDevice device2 =
-                    new be.teletask.onvif.models.OnvifDevice(bo.getIp(), bo.getUsername(), bo.getPassword());
-            onvifManager.getMediaProfiles(device2, new OnvifMediaProfilesListener() {
-                @Override
-                public void onMediaProfilesReceived(be.teletask.onvif.models.OnvifDevice dev,
-                                                    List<OnvifMediaProfile> mediaProfiles) {
-                    if (mediaProfiles.isEmpty()) {
-                        latch.countDown();
-                        return;
-                    }
-                    int[] remaining = {mediaProfiles.size()};
-
-                    for (OnvifMediaProfile profile : mediaProfiles) {
-                        onvifManager.getMediaStreamURI(device2, profile, new OnvifMediaStreamURIListener() {
-                            @Override
-                            public void onMediaStreamURIReceived(be.teletask.onvif.models.OnvifDevice dev2,
-                                                                 OnvifMediaProfile prof, String uri) {
-                                streamUris.put(prof.getToken(), uri);
-                                synchronized (remaining) {
-                                    remaining[0]--;
-                                    if (remaining[0] <= 0) {
-                                        latch.countDown();
-                                    }
-                                }
-                            }
-                        });
-                    }
-                }
-            });
-            onvifManager.getDeviceInformation(device2, new OnvifDeviceInformationListener() {
-                @Override
-                public void onDeviceInformationReceived(be.teletask.onvif.models.OnvifDevice dev,
-                                                        OnvifDeviceInformation info) {
-                    try {
-                        device.setIp(bo.getIp());
-                        device.setFirm(info.getManufacturer());
-                        device.setModel(info.getModel());
-                        device.setFirmwareVersion(info.getFirmwareVersion());
-                    } finally {
-                        latch.countDown();
-                    }
-                }
-            });
-        }
-
-        try {
-            boolean completed = latch.await(10, TimeUnit.SECONDS);
-            if (!completed) {
-                throw new RuntimeException("ONVIF 获取信息超时（10秒）");
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("等待中断: " + e.getMessage());
-        }
-        device.setStreamUris(streamUris);
+        device.setIp(bo.getIp());
+        device.setFirm(info.getFirm());
+        device.setModel(info.getModel());
+        device.setFirmwareVersion(info.getFirmwareVersion());
+        device.setStreamUris(info.getStreamUris());
         return device;
     }
 

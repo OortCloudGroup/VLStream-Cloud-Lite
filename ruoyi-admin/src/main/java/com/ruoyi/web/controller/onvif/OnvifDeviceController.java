@@ -10,6 +10,7 @@ import com.ruoyi.common.deviceclassification.service.DeviceClassificationService
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.onvif.domain.OnvifDevice;
 import com.ruoyi.onvif.service.IOnvifDeviceService;
+import com.ruoyi.onvif.service.OnvifSubnetDiscovery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,9 @@ public class OnvifDeviceController extends BaseController {
     private IOnvifDeviceService onvifDeviceService;
 
     @Autowired
+    private OnvifSubnetDiscovery subnetDiscovery;
+
+    @Autowired
     private DeviceClassificationService classificationService;
 
     /**
@@ -41,8 +45,9 @@ public class OnvifDeviceController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('onvif:device:WSDiscovery')")
     @GetMapping("/WSDiscovery")
-    public AjaxResult WSDiscovery() throws Exception {
-        return success(onvifDeviceService.WSDiscovery());
+    public AjaxResult WSDiscovery(@RequestParam(value = "subnet", required = false) String subnet) throws Exception {
+        return success(subnet == null || subnet.trim().isEmpty()
+                ? onvifDeviceService.WSDiscovery() : subnetDiscovery.discover(subnet));
     }
 
     /**
