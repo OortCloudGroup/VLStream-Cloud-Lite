@@ -8,6 +8,7 @@
 
 <script>
 import {ZLMRTCClient} from './js/ZLMRTCClient';
+import { resolveZlmPlaybackUrl } from '@/utils/zlmPlaybackUrl';
 
 let webrtcPlayer = null;
 export default {
@@ -41,7 +42,7 @@ export default {
       webrtcPlayer = new ZLMRTCClient.Endpoint({
         element: document.getElementById('webRtcPlayerBox'),// video 标签
         debug: true,// 是否打印日志
-        zlmsdpUrl: url,//流地址
+        zlmsdpUrl: resolveZlmPlaybackUrl(url),//流地址
         simulecast: false,
         useCamera: false,
         audioEnable: true,

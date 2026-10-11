@@ -1,3 +1,4 @@
+import { addZlmLanCandidate } from '@/utils/zlmPlaybackUrl';
 var ZLMRTCClient = (function (exports) {
     'use strict';
 
@@ -7910,7 +7911,7 @@ var ZLMRTCClient = (function (exports) {
                             return;
                         }
                         let anwser = {};
-                        anwser.sdp = ret.sdp;
+                        anwser.sdp = addZlmLanCandidate(ret.sdp);
                         anwser.type = 'answer';
                         log(this.TAG, 'answer:', ret.sdp);
                         this.pc.setRemoteDescription(anwser).then(() => {
@@ -8015,7 +8016,7 @@ var ZLMRTCClient = (function (exports) {
                                 return;
                             }
                             let anwser = {};
-                            anwser.sdp = ret.sdp;
+                            anwser.sdp = addZlmLanCandidate(ret.sdp);
                             anwser.type = 'answer';
                             log(this.TAG, 'answer:', ret.sdp);
                             this.pc.setRemoteDescription(anwser).then(() => {

@@ -54,6 +54,32 @@ public class RtspDeviceController extends BaseController {
     @Autowired
     private DeviceClassificationService classificationService;
 
+    @Autowired
+    private com.ruoyi.wvp.media.service.RtspPreviewSessionService previewSessions;
+
+    @PreAuthorize("@ss.hasPermi('rtsp:RtspDevice:view')")
+    @PostMapping("/{id}/preview")
+    public AjaxResult preview(@PathVariable Long id) {
+        RtspDevice device = rtspDeviceService.selectRtspDeviceById(id);
+        if (device == null) return error("设备不存在");
+        if (!"1".equals(device.getPlayType())) return error("此接口仅用于RTSP本地预览");
+        return success(previewSessions.start(id, getUserId(), device.getUrl()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('rtsp:RtspDevice:view')")
+    @PutMapping("/{id}/preview/{sessionId}")
+    public AjaxResult renewPreview(@PathVariable Long id, @PathVariable String sessionId) {
+        previewSessions.renew(id, getUserId(), sessionId);
+        return success();
+    }
+
+    @PreAuthorize("@ss.hasPermi('rtsp:RtspDevice:view')")
+    @DeleteMapping("/{id}/preview/{sessionId}")
+    public AjaxResult stopPreview(@PathVariable Long id, @PathVariable String sessionId) {
+        previewSessions.stop(id, getUserId(), sessionId);
+        return success();
+    }
+
     /**
      * 历史播放
      * @param bo

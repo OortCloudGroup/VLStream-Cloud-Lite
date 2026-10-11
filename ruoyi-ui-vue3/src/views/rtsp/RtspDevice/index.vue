@@ -1,6 +1,6 @@
 <template>
   <DeviceClassificationLayout protocol-type="RTSP" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
-  <div class="app-container">
+  <div class="app-container device-management-page">
     <div class="toolbar-with-search">
       <div class="toolbar-left">
         <button type="button" class="exportBtn newBtn flexRowAC" @click="handleAdd" v-hasPermi="['rtsp:RtspDevice:add']">
@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <table-self
+    <table-self scrollbar-always-on
       class="new_table"
       header-cell-class-name="header_tenant_cell"
       stripe
@@ -100,7 +100,7 @@
     />
 
     <!-- 添加或修改rtsp设备对话框 -->
-    <el-dialog :title="$tp(title)" v-model="open" width="32%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--medium" :title="$tp(title)" v-model="open" append-to-body>
       <el-form ref="RtspDeviceRef" :model="form" :rules="rules" label-width="120px">
         <el-form-item :label="$tp('所属部门')" prop="deptId">
           <el-tree-select v-model="form.deptId" :data="enabledDeptOptions"
@@ -161,9 +161,10 @@
     </el-dialog>
 
     <!-- 播放弹窗 对话框 -->
-    <el-dialog :title="$tp(title)" v-model="showPaly" width="55%">
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp(title)" v-model="showPaly">
       <div>
-        <Hikvision :rtsp="rtspURL" v-if="showPaly && (playType === '1' || playType === '3') "/>
+        <RtspDevicePlayer :device-id="previewDeviceId" v-if="showPaly && playType === '1'" />
+        <Hikvision :rtsp="rtspURL" v-if="showPaly && playType === '3'" />
 
         <el-row :gutter="10" style="margin-top: 20px" v-if="showPaly && (playType === '1' || playType === '3') ">
           <el-col :span="4"><span style="width: 100px; line-height: 40px; text-align: right;">{{ $tp("播放地址：") }}</span></el-col>
@@ -240,7 +241,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="$tp('选择时间')" v-model="showAlarmClock" width="32%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--medium" :title="$tp('选择时间')" v-model="showAlarmClock" append-to-body>
       <el-form :model="alarmClockOptions" :rules="rulesAlarm" ref="alarmClockFormRef" label-width="100px">
         <el-form-item :label="$tp('开始时间')" prop="startTime">
           <el-date-picker
@@ -268,7 +269,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog :title="$tp('选择ai模式')" v-model="showAI" width="32%">
+    <el-dialog class="locale-dialog locale-dialog--medium" :title="$tp('选择ai模式')" v-model="showAI">
       <div>
         <el-button type="primary" style="width: 100%;" @click="handlDetection('detection')">{{ $tp("目标检测") }}</el-button>
       </div>
@@ -277,7 +278,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="$tp('目标检测算法')" v-model="showAIPaly" width="55%" @close="closeAI">
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('目标检测算法')" v-model="showAIPaly" @close="closeAI">
       <div style="width: 800px; height: 600px;">
         <el-row>
           <el-col :span="24">
@@ -289,7 +290,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="$tp('修改地址')" v-model="showMap" width="50%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('修改地址')" v-model="showMap" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
 
@@ -309,6 +310,7 @@ import {
   updateRtspDevice
 } from "@/api/rtsp/RtspDevice";
 import Hikvision from "@/components/Hikvision/index.vue";
+import RtspDevicePlayer from "@/components/RtspDevicePlayer.vue";
 import CusPlayer from "@/components/flv/CusPlayer.vue";
 import {ElLoading, ElMessage} from "element-plus";
 import {deptTreeSelect} from "@/api/system/user";
@@ -343,6 +345,7 @@ const total = ref(0);
 const title = ref("");
 const rtspURL = ref("");
 const showPaly = ref(false);
+const previewDeviceId = ref(null);
 const showAIPaly = ref(false);
 const showAI = ref(false);
 const showMap = ref(false);
@@ -597,6 +600,7 @@ const handleView = async (row) => {
     wsUrl.value = ans.data.ws_flv;
     showPaly.value = true;
   } else if (row.playType === '1') {
+    previewDeviceId.value = row.id;
     rtspURL.value = row.url;
     title.value = row.name;
     showPaly.value = true;

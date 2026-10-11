@@ -63,11 +63,23 @@ public class RtspDevice extends BaseEntity {
     @Excel(name = "通道号")
     private String channel;
 
+    /** 播放类型（1=本地，2=推流，3=EasyNTS） */
+    @Excel(name = "播放类型")
+    private String playType;
+
     /**
      * 直播流播放地址
      */
     @Excel(name = "直播流播放地址")
     private String url;
+
+    /** 流id */
+    @Excel(name = "流id")
+    private String streamId;
+
+    /** EasyNTS播放地址 */
+    @Excel(name = "EasyNTS播放地址")
+    private String easyNTSUrl;
 
     /**
      * 设备厂商
