@@ -131,6 +131,125 @@ public class VlStreamDeviceStateServiceTest {
     }
 
     @Test
+    public void rejectsFutureSnapshotWithoutWritingStateStreamsOrDeduplication() {
+        VlStreamDeviceMapper devices = mock(VlStreamDeviceMapper.class);
+        VlStreamDeviceStreamMapper streams = mock(VlStreamDeviceStreamMapper.class);
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        VlStreamDevice device = new VlStreamDevice();
+        device.setId(1L);
+        device.setOnline(false);
+        java.util.Date originalReportedAt = new java.util.Date(1L);
+        device.setLastReportedAt(originalReportedAt);
+        when(devices.selectByDeviceIdForUpdate("future-clock")).thenReturn(device);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(devices, streams, messages);
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"future-clock\",\"messageId\":\"future-1\","
+                + "\"payload\":{\"online\":true,\"deviceName\":\"future overwrite\",\"streams\":[{"
+                + "\"channelId\":\"CH-1\",\"protocol\":\"http\",\"url\":\"http://example.test/videocall/future-clock\"}]}}");
+        message.put("sentAt", java.time.Instant.now().plusSeconds(600).toString());
+
+        JSONObject response = service.handle(message).getJSONObject("payload");
+
+        assertEquals(400, response.getIntValue("code"));
+        org.junit.Assert.assertTrue(response.getString("msg").contains("sentAt"));
+        org.junit.Assert.assertTrue(response.getString("msg").contains("时钟"));
+        org.mockito.Mockito.verifyNoInteractions(messages, streams);
+        org.mockito.Mockito.verify(devices, org.mockito.Mockito.never()).insert(any());
+        org.mockito.Mockito.verify(devices, org.mockito.Mockito.never()).update(any());
+        assertEquals(originalReportedAt, device.getLastReportedAt());
+        assertEquals(Boolean.FALSE, device.getOnline());
+        org.junit.Assert.assertNull(device.getDeviceName());
+        org.junit.Assert.assertNull(device.getLastHeartbeatTime());
+    }
+
+    @Test
+    public void acceptsSmallFutureClockSkewWithinFiveMinutes() {
+        VlStreamDeviceMapper devices = mock(VlStreamDeviceMapper.class);
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        when(messages.insertIgnore(any(), any(), any(), any())).thenReturn(1);
+        VlStreamDevice device = new VlStreamDevice();
+        device.setId(1L);
+        when(devices.selectByDeviceIdForUpdate("small-skew")).thenReturn(device);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(
+                devices, mock(VlStreamDeviceStreamMapper.class), messages);
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"small-skew\",\"messageId\":\"skew-1\",\"payload\":{\"online\":true}}");
+        java.time.Instant reportedAt = java.time.Instant.now().plusSeconds(240);
+        message.put("sentAt", reportedAt.toString());
+
+        JSONObject response = service.handle(message).getJSONObject("payload");
+
+        assertEquals(200, response.getIntValue("code"));
+        assertEquals("状态已接收", response.getString("msg"));
+        assertEquals(java.util.Date.from(reportedAt), device.getLastReportedAt());
+        verify(devices).update(device);
+        org.junit.Assert.assertNotNull(device.getLastHeartbeatTime());
+    }
+
+    @Test
+    public void acceptsCorrectedClockRetryWithSameMessageId() {
+        VlStreamDeviceMapper devices = mock(VlStreamDeviceMapper.class);
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        VlStreamDevice device = new VlStreamDevice();
+        device.setId(1L);
+        when(devices.selectByDeviceIdForUpdate("clock-retry")).thenReturn(device);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(
+                devices, mock(VlStreamDeviceStreamMapper.class), messages);
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"clock-retry\",\"messageId\":\"retry-1\",\"payload\":{\"online\":true}}");
+        message.put("sentAt", java.time.Instant.now().plusSeconds(600).toString());
+        assertEquals(400, service.handle(message).getJSONObject("payload").getIntValue("code"));
+        org.mockito.Mockito.verifyNoInteractions(messages);
+
+        when(messages.insertIgnore(eq("clock-retry"), eq("retry-1"), any(), any())).thenReturn(1);
+        message.put("sentAt", java.time.Instant.now().toString());
+        JSONObject response = service.handle(message).getJSONObject("payload");
+
+        assertEquals(200, response.getIntValue("code"));
+        assertEquals("状态已接收", response.getString("msg"));
+        verify(messages).insertIgnore(eq("clock-retry"), eq("retry-1"), any(), any());
+        verify(devices).update(device);
+    }
+
+    @Test
+    public void acceptsRealHeartbeatAfterHistoricalFutureBaselineIsCleared() {
+        VlStreamDeviceMapper devices = mock(VlStreamDeviceMapper.class);
+        VlStreamDeviceStreamMapper streams = mock(VlStreamDeviceStreamMapper.class);
+        VlStreamMessageMapper messages = mock(VlStreamMessageMapper.class);
+        when(messages.insertIgnore(any(), any(), any(), any())).thenReturn(1);
+        String deviceId = "AETY-00-L8RV-81AA-00005000";
+        VlStreamDevice device = new VlStreamDevice();
+        device.setId(1L);
+        device.setOnline(false);
+        device.setLastReportedAt(java.util.Date.from(java.time.Instant.parse("2088-10-10T00:02:36Z")));
+        when(devices.selectByDeviceIdForUpdate(deviceId)).thenReturn(device);
+        VlStreamDeviceStateService service = new VlStreamDeviceStateService(devices, streams, messages);
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"" + deviceId + "\",\"messageId\":\"before-baseline-repair\","
+                + "\"payload\":{\"online\":true,\"heartbeatIndex\":47,\"deviceName\":\"OORT AI_BOX\","
+                + "\"streams\":[{\"channelId\":\"CH-1\",\"streamType\":\"main\",\"protocol\":\"http\","
+                + "\"url\":\"http://example.test/videocall/" + deviceId + "\",\"default\":true,\"available\":true}]}}");
+        java.time.Instant reportedAt = java.time.Instant.now().minusSeconds(1);
+        message.put("sentAt", reportedAt.toString());
+
+        assertEquals("过期状态快照已忽略", service.handle(message).getJSONObject("payload").getString("msg"));
+        org.mockito.Mockito.verifyNoInteractions(streams);
+        org.mockito.Mockito.verify(devices, org.mockito.Mockito.never()).update(any());
+        // The corrective migration clears only the confirmed historical future baseline.
+        device.setLastReportedAt(null);
+        message.put("messageId", "next-real-heartbeat");
+        JSONObject response = service.handle(message).getJSONObject("payload");
+
+        assertEquals(200, response.getIntValue("code"));
+        assertEquals("状态已接收", response.getString("msg"));
+        assertEquals(java.util.Date.from(reportedAt), device.getLastReportedAt());
+        assertEquals(Boolean.TRUE, device.getOnline());
+        assertEquals(Long.valueOf(47), device.getHeartbeatIndex());
+        org.junit.Assert.assertNotNull(device.getLastHeartbeatTime());
+        verify(devices).update(device);
+        ArgumentCaptor<VlStreamDeviceStream> stream = ArgumentCaptor.forClass(VlStreamDeviceStream.class);
+        verify(streams).insert(stream.capture());
+        assertEquals("CH-1", stream.getValue().getChannelId());
+        assertEquals("http://example.test/videocall/" + deviceId, stream.getValue().getSourceUrl());
+    }
+
+    @Test
     public void persistsReportedHttpCameraRtcStream() {
         VlStreamDeviceMapper deviceMapper = mock(VlStreamDeviceMapper.class);
         VlStreamDeviceStreamMapper streamMapper = mock(VlStreamDeviceStreamMapper.class);

@@ -26,6 +26,7 @@ import java.util.Set;
 
 @Service
 public class VlStreamDeviceStateService {
+    private static final long MAX_FUTURE_CLOCK_SKEW_MILLIS = 5 * 60 * 1000L;
     private final VlStreamDeviceMapper deviceMapper;
     private final VlStreamDeviceStreamMapper streamMapper;
     private final VlStreamMessageMapper messageMapper;
@@ -76,6 +77,11 @@ public class VlStreamDeviceStateService {
         }
         Date receivedAt = new Date();
         Date reportedAt = parseDate(message.getString("sentAt"), receivedAt);
+        // Do not let a bad device clock become a permanent snapshot watermark.
+        // Validate before message deduplication so a corrected retry can be accepted.
+        if (reportedAt.getTime() > receivedAt.getTime() + MAX_FUTURE_CLOCK_SKEW_MILLIS) {
+            return VlStreamProtocol.reply(message, 400, "sentAt超出平台时间5分钟，请校准设备时钟");
+        }
         if (messageMapper.insertIgnore(deviceId, messageId, reportedAt, receivedAt) == 0) {
             return VlStreamProtocol.reply(message, 200, "重复消息已确认");
         }
