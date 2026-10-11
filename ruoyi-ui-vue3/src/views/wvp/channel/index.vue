@@ -20,7 +20,7 @@
         </div>
       </div>
 
-      <table-self
+      <table-self scrollbar-always-on
         class="new_table"
         header-cell-class-name="header_tenant_cell"
         stripe
@@ -176,7 +176,7 @@
       />
     </div>
 
-    <el-dialog :title="$tp('编辑通道')" v-model="open" width="65%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('编辑通道')" v-model="open" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
         <el-row>
           <el-col :span="12">
@@ -507,7 +507,7 @@
 
     <ChooseGroup ref="chooseGroupRef" @onSubmit="gbParentOnSubmit"></ChooseGroup>
 
-    <el-dialog :title="$tp('播放视频')" v-model="openPlay" width="65%" append-to-body @close="initData">
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('播放视频')" v-model="openPlay" append-to-body @close="initData">
       <el-tabs v-model="activeName" type="card" :stretch="true">
         <el-tab-pane :label="$tp('flv播放')" name="flv">
           <el-row>

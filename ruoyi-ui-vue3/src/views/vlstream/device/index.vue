@@ -29,7 +29,7 @@
 
         <el-alert v-if="serviceError" :title="$tp(serviceError)" type="error" :closable="false" show-icon class="service-alert" />
 
-        <el-table v-loading="loading" :data="devices" stripe @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" :data="devices" stripe scrollbar-always-on @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="42" fixed="left" />
           <el-table-column type="index" :label="$tp('序号')" width="56" fixed="left" />
           <el-table-column :label="$tp('在线状态')" width="100" fixed="left" align="center">
@@ -76,8 +76,8 @@
 
       <el-dialog
         v-model="previewVisible"
-        :title="$tp(`${currentDevice?.deviceName || currentDevice?.deviceId || ''} 实时预览`)"
-        width="900px"
+        :title="previewDialogTitle"
+        class="locale-dialog locale-dialog--wide"
         destroy-on-close
         @closed="releasePreview"
       >
@@ -103,15 +103,21 @@
         </div>
       </el-dialog>
 
-      <el-dialog v-model="detailVisible" :title="$tp('设备详情')" width="820px" destroy-on-close>
+      <el-dialog v-model="detailVisible" :title="$tp('设备详情')" class="locale-dialog locale-dialog--wide" destroy-on-close>
         <div v-loading="detailLoading">
-          <el-descriptions v-if="detailDevice" :column="2" border>
+          <el-descriptions v-if="detailDevice" :column="descriptionColumns" border>
             <el-descriptions-item :label="$tp('设备名称')">{{ detailDevice.deviceName || '-' }}</el-descriptions-item>
             <el-descriptions-item :label="$tp('设备 ID')">{{ detailDevice.deviceId || '-' }}</el-descriptions-item>
             <el-descriptions-item :label="$tp('设备型号')">{{ detailDevice.deviceModel || '-' }}</el-descriptions-item>
             <el-descriptions-item :label="$tp('在线状态')">{{ detailDevice.online ? $tp('在线') : $tp('离线') }}</el-descriptions-item>
             <el-descriptions-item :label="$tp('IP 地址')">{{ detailDevice.ipAddr || '-' }}</el-descriptions-item>
-            <el-descriptions-item :label="$tp('RootFS 版本')">{{ detailDevice.firmwareVersion || '-' }}</el-descriptions-item>
+            <el-descriptions-item :label="$tp('RootFS 版本')">
+              <div class="firmware-version-actions">
+                <span>{{ detailDevice.firmwareVersion || '-' }}</span>
+                <el-button v-if="firmwareDetail?.availableUpgrades?.length || firmwareDetail?.latestTask"
+                  link type="primary" @click="firmwareVisible = true">{{ $tp('固件升级') }}</el-button>
+              </div>
+            </el-descriptions-item>
             <el-descriptions-item :label="$tp('开机时间')">{{ deviceBootTimeText(detailDevice) }}</el-descriptions-item>
             <el-descriptions-item :label="$tp('在线时长')">{{ deviceOnlineDurationText(detailDevice, detailClock) }}</el-descriptions-item>
             <el-descriptions-item :label="$tp('最后心跳')" :span="2">{{ formatDeviceTime(detailDevice.lastHeartbeatTime) }}</el-descriptions-item>
@@ -120,7 +126,7 @@
           </el-descriptions>
 
           <div class="model-heading"><h4>{{ $tp("设备运行模型") }}</h4></div>
-          <el-table
+          <el-table scrollbar-always-on
             :data="reportedModels"
             border
             :empty-text="detailDevice?.modelsJson == null ? $tp('设备尚未上报模型信息') : $tp('设备上报的模型列表为空')"
@@ -134,7 +140,7 @@
           <p class="snapshot-note">{{ $tp("模型和能力为设备最近一次上报的信息，离线时保留供查看。") }}</p>
 
           <h4>{{ $tp("视频源") }}</h4>
-          <el-table :data="detailStreams" border :empty-text="$tp('设备没有上报视频源')">
+          <el-table :data="detailStreams" border scrollbar-always-on :empty-text="$tp('设备没有上报视频源')">
             <el-table-column prop="channelId" :label="$tp('通道')" min-width="120" />
             <el-table-column prop="streamType" :label="$tp('码流类型')" width="110" />
             <el-table-column prop="protocol" :label="$tp('协议')" width="90" />
@@ -145,6 +151,40 @@
           </el-table>
         </div>
       </el-dialog>
+
+      <el-dialog v-model="firmwareVisible" :title="$tp('固件升级')" class="locale-dialog locale-dialog--wide" destroy-on-close>
+        <el-alert v-if="firmwareDetail?.upgradeBlockedReason" :title="$tp(firmwareDetail.upgradeBlockedReason)"
+          type="info" :closable="false" show-icon />
+        <h4>{{ $tp('可用固件升级') }}</h4>
+        <el-table :data="firmwareDetail?.availableUpgrades || []" border scrollbar-always-on :empty-text="$tp('没有更高版本的兼容固件')">
+          <el-table-column :label="$tp('目标')" width="90"><template #default>RootFS</template></el-table-column>
+          <el-table-column prop="currentVersion" :label="$tp('当前版本')" width="120" />
+          <el-table-column prop="latestVersion" :label="$tp('最新版本')" width="120" />
+          <el-table-column prop="fileName" :label="$tp('固件包')" min-width="220" show-overflow-tooltip />
+          <el-table-column :label="$tp('操作')" width="130" align="center">
+            <template #default="{ row }">
+              <el-button v-hasPermi="['vlstream:firmware:deploy']" type="primary" size="small"
+                :loading="firmwareBusy" :disabled="!firmwareDetail?.canUpgrade || firmwareBusy"
+                @click="deployFirmware(row)">{{ $tp('固件升级') }}</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <template v-if="firmwareDetail?.latestTask">
+          <h4>{{ $tp('最近 OTA 任务') }}</h4>
+          <el-descriptions :column="descriptionColumns" border>
+            <el-descriptions-item :label="$tp('目标')">RootFS</el-descriptions-item>
+            <el-descriptions-item :label="$tp('状态')">
+              {{ taskStatusText(firmwareDetail.latestTask.deployStatus) }}
+              <el-button v-if="isActiveTask(firmwareDetail.latestTask.deployStatus)" v-hasPermi="['vlstream:firmware:deploy']"
+                link type="danger" :loading="firmwareBusy" :disabled="firmwareBusy" @click="cancelLatestTask">{{ $tp('终止任务') }}</el-button>
+            </el-descriptions-item>
+            <el-descriptions-item :label="$tp('版本')"><span dir="ltr">{{ firmwareDetail.latestTask.currentVersion }} → {{ firmwareDetail.latestTask.targetVersion }}</span></el-descriptions-item>
+            <el-descriptions-item :label="$tp('任务 ID')">{{ firmwareDetail.latestTask.requestId }}</el-descriptions-item>
+            <el-descriptions-item v-if="firmwareDetail.latestTask.failureReason" :label="$tp('说明')" :span="2">{{ firmwareDetail.latestTask.failureReason }}</el-descriptions-item>
+          </el-descriptions>
+          <el-button class="firmware-refresh" :loading="detailLoading" @click="reloadFirmwareDetail">{{ $tp('刷新') }}</el-button>
+        </template>
+      </el-dialog>
     </div>
   </DeviceClassificationLayout>
 </template>
@@ -153,7 +193,8 @@
 import { monitorDevicePreview } from '@/utils/devicePreviewGuard'
 import { translatePhrase } from '@/i18n'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useWindowSize } from '@vueuse/core'
 import CameraRtcPlayer from '@/components/CameraRtcPlayer.vue'
 import DeviceClassificationLayout from '@/components/DeviceClassificationLayout/index.vue'
 import RtcPlayer from '@/components/rtcPlayer/index.vue'
@@ -166,9 +207,11 @@ import {
   modelStatusText,
   parseSnapshot
 } from '@/utils/deviceStateDisplay'
-import { getDeviceDetail, getMediaStatus, listDevices, listStreams, startPreview as requestPreview } from '@/api/vlstream/device'
+import { cancelDeviceFirmwareTask, deployDeviceFirmware, getDeviceDetail, getMediaStatus, listDevices, listStreams, startPreview as requestPreview } from '@/api/vlstream/device'
 
 const loading = ref(false)
+const { width: viewportWidth } = useWindowSize()
+const descriptionColumns = computed(() => viewportWidth.value < 768 ? 1 : 2)
 const devices = ref([])
 const hasDeviceSerial = computed(() => devices.value.some(device => String(device.deviceSerial ?? '').trim().length > 0))
 const total = ref(0)
@@ -178,6 +221,11 @@ const classificationDeviceKeys = ref([])
 const previewVisible = ref(false)
 const previewLoading = ref(false)
 const currentDevice = ref(null)
+const previewDialogTitle = computed(() => {
+  const name = currentDevice.value?.deviceName || currentDevice.value?.deviceId
+  const title = translatePhrase('实时预览')
+  return name ? `${name} - ${title}` : title
+})
 const streams = ref([])
 const selectedStreamId = ref(null)
 const webrtcUrl = ref('')
@@ -186,6 +234,10 @@ const detailVisible = ref(false)
 const detailLoading = ref(false)
 const detailStreams = ref([])
 const detailDevice = ref(null)
+const firmwareDetail = ref(null)
+const firmwareVisible = ref(false)
+const firmwareBusy = ref(false)
+let detailGeneration = 0
 const detailClock = ref(Date.now())
 const query = reactive({ pageNum: 1, pageSize: 10, keyword: '', online: undefined })
 let detailClockTimer
@@ -194,7 +246,13 @@ const reportedModels = computed(() => parseSnapshot(detailDevice.value?.modelsJs
 
 watch(detailVisible, visible => {
   clearInterval(detailClockTimer)
-  if (visible) detailClockTimer = setInterval(() => { detailClock.value = Date.now() }, 1000)
+  if (visible) {
+    detailClock.value = Date.now()
+    detailClockTimer = setInterval(() => { detailClock.value = Date.now() }, 1000)
+  } else {
+    detailGeneration++
+    firmwareVisible.value = false
+  }
 })
 
 function errorMessage(error, fallback) {
@@ -205,18 +263,21 @@ async function loadDevices() {
   loading.value = true
   serviceError.value = ''
   try {
-    const [result, media] = await Promise.all([listDevices(query), getMediaStatus()])
+    const result = await listDevices(query)
     devices.value = result?.rows || []
     total.value = Number(result?.total || 0)
-    mediaAvailable.value = Boolean(media?.data?.available)
   } catch (error) {
     devices.value = []
     total.value = 0
-    mediaAvailable.value = false
     serviceError.value = errorMessage(error, 'WVP 服务不可用，无法加载 VLStream 设备')
   } finally {
     loading.value = false
   }
+}
+
+async function loadMediaStatus() {
+  try { mediaAvailable.value = Boolean((await getMediaStatus())?.data?.available) }
+  catch { mediaAvailable.value = false }
 }
 
 function search() {
@@ -247,24 +308,97 @@ function handleClassificationFilter(filter) {
 }
 
 async function openDetail(device) {
+  const generation = ++detailGeneration
   currentDevice.value = device
   detailDevice.value = device
+  firmwareDetail.value = null
+  firmwareVisible.value = false
   detailStreams.value = []
   detailVisible.value = true
   detailLoading.value = true
   try {
     const [streamsResult, detailResult] = await Promise.all([listStreams(device.id), getDeviceDetail(device.id)])
+    if (generation !== detailGeneration) return
     detailStreams.value = streamsResult?.data || []
     detailDevice.value = detailResult?.data?.device || device
+    firmwareDetail.value = detailResult?.data || null
   } catch (error) {
+    if (generation !== detailGeneration) return
     ElMessage.error(errorMessage(error, translatePhrase("加载设备详情失败")))
   } finally {
-    detailLoading.value = false
+    if (generation === detailGeneration) detailLoading.value = false
   }
 }
 
+async function reloadFirmwareDetail() {
+  const generation = detailGeneration
+  const id = detailDevice.value?.id
+  if (!id) return
+  detailLoading.value = true
+  try {
+    const result = await getDeviceDetail(id)
+    if (generation !== detailGeneration) return
+    firmwareDetail.value = result?.data || null
+    detailDevice.value = result?.data?.device || detailDevice.value
+  } catch (error) {
+    if (generation === detailGeneration) ElMessage.error(errorMessage(error, translatePhrase('加载设备详情失败')))
+  } finally { if (generation === detailGeneration) detailLoading.value = false }
+}
+
+async function deployFirmware(candidate) {
+  if (firmwareBusy.value || !firmwareDetail.value?.canUpgrade) return
+  const generation = detailGeneration
+  const id = detailDevice.value?.id
+  try {
+    await ElMessageBox.confirm(translatePhrase('确认将设备升级到 RootFS {version}？升级过程中设备将重启。', { version: candidate.latestVersion }), translatePhrase('固件升级确认'), {
+      type: 'warning', confirmButtonText: translatePhrase('确定'), cancelButtonText: translatePhrase('取消')
+    })
+  } catch { return }
+  if (generation !== detailGeneration || firmwareBusy.value || !firmwareDetail.value?.canUpgrade) return
+  firmwareBusy.value = true
+  try {
+    await deployDeviceFirmware(id, candidate.firmwareId)
+    ElMessage.success(translatePhrase('OTA 固件升级指令已下发'))
+    if (generation === detailGeneration) await reloadFirmwareDetail()
+  } catch (error) {
+    ElMessage.error(errorMessage(error, translatePhrase('固件升级指令下发失败')))
+  } finally { firmwareBusy.value = false }
+}
+
+async function cancelLatestTask() {
+  const task = firmwareDetail.value?.latestTask
+  if (!task || firmwareBusy.value || !isActiveTask(task.deployStatus)) return
+  const generation = detailGeneration
+  const id = detailDevice.value?.id
+  try {
+    await ElMessageBox.confirm(translatePhrase('终止只会解除 WVP 平台任务锁，不会向设备发送取消指令。请确认设备已经停止升级后再继续。'), translatePhrase('终止 OTA 任务'), {
+      type: 'warning', confirmButtonText: translatePhrase('确定'), cancelButtonText: translatePhrase('取消')
+    })
+  } catch { return }
+  if (generation !== detailGeneration || firmwareBusy.value) return
+  firmwareBusy.value = true
+  try {
+    await cancelDeviceFirmwareTask(id, task.requestId)
+    ElMessage.success(translatePhrase('平台 OTA 任务已终止'))
+    if (generation === detailGeneration) await reloadFirmwareDetail()
+  } catch (error) { ElMessage.error(errorMessage(error, translatePhrase('终止 OTA 任务失败'))) }
+  finally { firmwareBusy.value = false }
+}
+
+function isActiveTask(status) {
+  return ['CREATED', 'PUBLISHED', 'ACCEPTED', 'DOWNLOADING', 'VERIFYING', 'INSTALLING', 'REBOOTING'].includes(status)
+}
+
+function taskStatusText(status) {
+  return translatePhrase(({
+    CREATED: '待发布', PUBLISHED: '已下发', ACCEPTED: '设备已接收', DOWNLOADING: '下载中',
+    VERIFYING: '校验中', INSTALLING: '安装中', REBOOTING: '重启中', SUCCESS: '升级成功',
+    FAILED: '升级失败', CANCELLED: '已终止', TIMED_OUT: '已超时'
+  })[status] || status || '-')
+}
+
 async function openPreview(device) {
-  if (device.online !== true) return ElMessage.warning('设备离线，不允许播放')
+  if (device.online !== true) return ElMessage.warning(translatePhrase('设备离线，不允许播放'))
   currentDevice.value = device
   try {
     streams.value = (await listStreams(device.id))?.data || []
@@ -297,12 +431,12 @@ async function startPreview(streamId) {
     if (device?.online !== true) {
       currentDevice.value.online = false
       previewVisible.value = false
-      return ElMessage.warning('设备离线，不允许播放')
+      return ElMessage.warning(translatePhrase('设备离线，不允许播放'))
     }
     stopPreviewMonitor = monitorDevicePreview(async () => (await getDeviceDetail(id))?.data?.device, () => {
       releasePreview()
       previewVisible.value = false
-      ElMessage.warning('设备离线或状态无法确认，已停止播放')
+      ElMessage.warning(translatePhrase('设备离线或状态无法确认，已停止播放'))
     })
     const stream = (await requestPreview(currentDevice.value.id, streamId))?.data || {}
     if (generation !== previewGeneration || !previewVisible.value) return
@@ -338,8 +472,9 @@ function parseCameraRtcConfig(streamUrl) {
   return { cameraId: decodeURIComponent(cameraId), socketUrl: `${socketProtocol}//${location.host}/bus/camera-rtc` }
 }
 
-onMounted(loadDevices)
+onMounted(() => { loadDevices(); loadMediaStatus() })
 onBeforeUnmount(() => {
+  detailGeneration++
   clearInterval(detailClockTimer)
   releasePreview()
 })
@@ -362,6 +497,8 @@ onBeforeUnmount(() => {
 .player :deep(#webRtcPlayerBox), .player :deep(#rtcPlayer) { width: 100%; max-height: 520px; }
 .model-heading { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; }
 .snapshot-note { color: #909399; font-size: 12px; }
+.firmware-version-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.firmware-refresh { margin-top: 14px; }
 h4 { margin: 18px 0 10px; }
 @media (max-width: 1200px) { .header { align-items: flex-start; flex-direction: column; } }
 </style>

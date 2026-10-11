@@ -9,6 +9,7 @@ import i18n, { translatePhrase } from '@/i18n'
 
 import '@/assets/styles/index.scss' // global css
 import '@/assets/styles/i18n.scss'
+import '@/assets/styles/device-management.scss'
 import '@/assets/css/iconfont.css' // global css
 
 import App from './App'

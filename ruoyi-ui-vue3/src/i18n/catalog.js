@@ -1,3 +1,5 @@
+import gbPlatform from './gbPlatform.js'
+
 const localeOrder = ['zh-CN', 'en-US', 'es-MX', 'ar', 'de-DE', 'fr-FR', 'ja-JP', 'pt-BR', 'ru-RU', 'ko-KR', 'id-ID', 'tr-TR']
 
 const namedMessages = {
@@ -165,6 +167,13 @@ for (const [title, values] of Object.entries(menuRows)) {
     namedMessages[locale].menu ||= {}
     namedMessages[locale].menu[title] = values[index]
   })
+}
+
+for (const locale of localeOrder) {
+  namedMessages[locale].gbPlatform = {
+    ...gbPlatform.en,
+    ...(gbPlatform[locale.split('-')[0]] || {})
+  }
 }
 
 export default namedMessages

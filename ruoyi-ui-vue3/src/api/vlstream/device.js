@@ -23,3 +23,11 @@ export function startPreview(deviceRowId, streamId) {
 export function getMediaStatus() {
   return request({ url: '/vlstream/device/media/status', method: 'get' })
 }
+
+export function deployDeviceFirmware(deviceRowId, firmwareId) {
+  return request({ url: `/vlstream/device/${deviceRowId}/firmware-upgrades`, method: 'post', data: { firmwareId } })
+}
+
+export function cancelDeviceFirmwareTask(deviceRowId, requestId) {
+  return request({ url: `/vlstream/device/${deviceRowId}/firmware-upgrades/${requestId}/cancel`, method: 'post' })
+}

@@ -1,6 +1,6 @@
 <template>
   <DeviceClassificationLayout protocol-type="GB28181" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
-  <div class="app-container">
+  <div class="app-container device-management-page">
     <div class="toolbar-with-search">
       <div class="toolbar-left">
         <button type="button" class="exportBtn newBtn flexRowAC" @click="showInfo" v-hasPermi="['wvp:server:configInfo']">
@@ -27,7 +27,7 @@
       </div>
     </div>
 
-    <table-self
+    <table-self scrollbar-always-on
       class="new_table"
       header-cell-class-name="header_tenant_cell"
       stripe
@@ -167,7 +167,7 @@
     />
 
     <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="$tp(title)" v-model="open" width="32%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--medium" :title="$tp(title)" v-model="open" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item :label="$tp('设备编号')" prop="deviceId">
           <el-input v-model="form.deviceId" disabled></el-input>
@@ -219,13 +219,12 @@
       </template>
     </el-dialog>
 
-    <el-dialog
+    <el-dialog class="locale-dialog locale-dialog--wide"
         :title="$tp('国标服务信息')"
-        width="65%"
         v-model="showDialog"
         append-to-body
     >
-      <template #header><div class="gb-dialog-heading"><span>{{ $tp("国标服务信息") }}</span><el-button link type="primary" @click="showHelp = true">{{ $tp("帮助说明") }}</el-button></div></template>
+      <template #header><div class="gb-dialog-heading"><span>{{ $tp("国标服务信息") }}</span><el-button link type="primary" @click="showHelp = true"><el-icon class="gb-help-icon"><QuestionFilled /></el-icon>{{ $tp("帮助说明") }}</el-button></div></template>
       <div id="shared" style="margin-top: 1rem;">
         <el-descriptions v-if="configInfoData.sip" :span="2" border>
           <el-descriptions-item :label="$tp('编号')">{{ configInfoData.sip.id }}</el-descriptions-item>
@@ -239,9 +238,8 @@
       </div>
     </el-dialog>
 
-    <el-dialog
+    <el-dialog class="locale-dialog locale-dialog--medium"
         :title="$tp('刷新设备')"
-        width="20%"
         v-model="showProgress"
         append-to-body
     >
@@ -255,7 +253,7 @@
 
 
     <GbHelpDialog v-model="showHelp" mode="service" />
-    <el-dialog :title="$tp('修改地址')" v-model="showMap" width="50%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('修改地址')" v-model="showMap" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
   </div>
@@ -287,7 +285,7 @@ import {configDownloadApi} from "../../../api/wvp/config.js";
 import {deptTreeSelect} from "@/api/system/user";
 import DeviceClassificationLayout from '@/components/DeviceClassificationLayout/index.vue'
 import { clacPXToVW } from "@/utils/index";
-import { ArrowDown, Delete, InfoFilled } from '@element-plus/icons-vue'
+import { ArrowDown, Delete, InfoFilled, QuestionFilled } from '@element-plus/icons-vue'
 
 const {proxy} = getCurrentInstance();
 

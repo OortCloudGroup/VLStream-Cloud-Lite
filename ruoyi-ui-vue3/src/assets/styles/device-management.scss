@@ -1,0 +1,69 @@
+// Shared layout for the supported device protocol pages and their dialogs.
+.classification-layout {
+  .toolbar-with-search,
+  .searchHeight_out,
+  .toolbar-left,
+  .protocol-page .filters {
+    flex-wrap: wrap;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .toolbar-with-search { align-items: center; }
+  .searchHeight_out { max-width: 100%; }
+  .el-table .el-scrollbar__bar.is-horizontal { height: 8px; }
+  .el-table .el-scrollbar__thumb { background: var(--el-text-color-secondary); }
+  .new_table th .cell { line-height: 1.35; }
+}
+
+.el-dialog.locale-dialog--medium,
+.el-dialog.classification-dialog {
+  width: min(92vw, 680px);
+}
+
+.el-dialog.locale-dialog--wide { width: min(94vw, 1080px); }
+.locale-dialog .el-dialog__header { padding-inline-end: 48px; }
+.locale-dialog .el-dialog__body { max-height: calc(90vh - 130px); overflow: auto; }
+.locale-dialog .el-descriptions__label,
+.locale-dialog .el-descriptions__content { line-height: 1.4; overflow-wrap: anywhere; white-space: normal; }
+.locale-dialog .el-table { max-width: 100%; }
+
+html:not([lang="zh-CN"]) .locale-dialog {
+  .el-form-item { align-items: flex-start; }
+  .el-form-item__label {
+    width: 180px !important;
+    min-width: 180px;
+    max-width: 180px;
+    flex: 0 0 180px;
+    height: auto;
+    min-height: 32px;
+    padding-inline-end: 12px;
+    line-height: 1.3;
+    white-space: normal;
+  }
+  .el-form-item__content { min-width: 0; }
+  .el-descriptions__label { min-width: 150px; }
+}
+
+html[dir="rtl"] .locale-dialog .el-dialog__headerbtn {
+  right: auto;
+  left: 0;
+}
+
+@media (max-width: 768px) {
+  .locale-dialog .el-descriptions__body { overflow-x: auto; }
+  .locale-dialog .el-descriptions__table { table-layout: auto; min-width: 280px; }
+  .locale-dialog .el-descriptions__label { min-width: 100px !important; width: 100px; }
+  .locale-dialog .el-col-12 { width: 100%; max-width: 100%; flex: 0 0 100%; }
+  .classification-layout .protocol-page { padding: 10px; }
+  .classification-layout .protocol-page .filters { width: 100%; }
+  .classification-layout .protocol-page .filters .el-input { flex: 1 1 200px; }
+  .classification-layout .protocol-page .filters .el-select { flex: 1 1 120px; }
+  html:not([lang="zh-CN"]) .locale-dialog .el-form-item__label {
+    width: 100% !important;
+    min-width: 0;
+    max-width: 100%;
+    flex-basis: auto;
+    padding-bottom: 6px;
+  }
+}

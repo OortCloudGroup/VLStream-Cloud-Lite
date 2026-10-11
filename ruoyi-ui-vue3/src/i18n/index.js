@@ -15,6 +15,7 @@ import id from 'element-plus/es/locale/lang/id'
 import tr from 'element-plus/es/locale/lang/tr'
 import messages from './catalog'
 import phraseMessages from './phrases.generated'
+import deviceManagementPhrases from './deviceManagementPhrases'
 
 export const DEFAULT_LOCALE = 'zh-CN'
 export const LOCALE_COOKIE = 'language'
@@ -110,7 +111,11 @@ export function translatePhrase(source, params) {
   if (source === undefined || source === null || source === '') return source || ''
   const key = phraseKey(String(source))
   const catalog = phraseMessages[currentLocale.value] || phraseMessages['en-US'] || {}
-  let translated = catalog[key] || phraseMessages['en-US']?.[key] || String(source)
+  const fallback = currentLocale.value === DEFAULT_LOCALE ? String(source) : deviceManagementPhrases[String(source)]
+  let translated = catalog[key] || phraseMessages['en-US']?.[key] || fallback || String(source)
+  if (currentLocale.value !== DEFAULT_LOCALE && translated === String(source)) {
+    translated = deviceManagementPhrases[String(source)] || translated
+  }
   for (const [name, value] of Object.entries(params || {})) {
     translated = translated.replace(new RegExp(`\\{${name}\\}`, 'g'), String(value ?? ''))
   }

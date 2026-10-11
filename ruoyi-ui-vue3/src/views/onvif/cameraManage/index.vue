@@ -1,6 +1,6 @@
 <template>
   <DeviceClassificationLayout protocol-type="ONVIF" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
-  <div class="app-container">
+  <div class="app-container device-management-page">
     <el-alert :title="$tp('ONVIF协议 16的设备可以使用Digest/WS,2.20版本使用WS')" type="success" style="margin-bottom: 10px;" :closable="false" />
     <div class="toolbar-with-search">
       <div class="toolbar-left">
@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <table-self
+    <table-self scrollbar-always-on
       class="new_table"
       header-cell-class-name="header_tenant_cell"
       stripe
@@ -95,8 +95,9 @@
     />
 
     <!-- 修改onvif 设备对话框 -->
-    <el-dialog :title="$tp(title)" v-model="open" width="65%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp(title)" v-model="open" append-to-body>
       <el-form ref="deviceRef" :model="form" :rules="rules" label-width="120px">
+        <el-alert :title="$tp('设备未上报的描述可按标签手动补充，也可留空；填写只保存平台资料，不改变设备能力。')" type="info" :closable="false" style="margin-bottom: 12px" />
 
         <el-row :gutter="20">
           <el-col :span="12">
@@ -135,7 +136,7 @@
 
           <el-col :span="12">
             <el-form-item :label="$tp('固件版本')" prop="firmwareVersion">
-              <el-input v-model="form.firmwareVersion" :placeholder="$tp('请输入固件版本')" disabled/>
+              <el-input v-model="form.firmwareVersion" :placeholder="$tp('请输入固件版本')" maxlength="100"/>
             </el-form-item>
           </el-col>
 
@@ -144,12 +145,12 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item :label="$tp('设备厂商')" prop="firm">
-              <el-input v-model="form.firm" :placeholder="$tp('请输入设备厂商')" disabled/>
+              <el-input v-model="form.firm" :placeholder="$tp('请输入设备厂商')" maxlength="30"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$tp('设备型号')" prop="model">
-              <el-input v-model="form.model" :placeholder="$tp('请输入设备型号')" disabled/>
+              <el-input v-model="form.model" :placeholder="$tp('请输入设备型号')" maxlength="20"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -227,14 +228,14 @@
     </el-dialog>
 
     <!-- 查看直播流地址 对话框 -->
-    <el-dialog :title="$tp(title)" v-model="showUrl" width="50%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp(title)" v-model="showUrl" append-to-body>
       <div v-for="(item,index) in urls" :key="index" style="margin-bottom: 10px;">
         <el-text type="primary" style="cursor: pointer;" @click="copyToClipboard(item)">{{ item }}</el-text>
       </div>
     </el-dialog>
 
     <!-- 播放弹窗 对话框 -->
-    <el-dialog :title="$tp(title)" v-model="showPaly" width="55%" @opened="openedPaly" @close="closePaly">
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp(title)" v-model="showPaly" @opened="openedPaly" @close="closePaly">
       <div style="background: #000000">
         <Hikvision :rtsp="rtspUrl" v-if="showPaly && (playType === '1' || playType === '3') "/>
       </div>
@@ -262,6 +263,13 @@
           </el-tab-pane>
         </el-tabs>
 
+        <el-alert v-if="ptzCapabilityNotice" class="ptz-capability-status"
+                  :title="$tp(ptzCapabilityNotice)" :type="ptzCapability.status === 'checking' ? 'info' : 'warning'"
+                  :closable="false" show-icon>
+          <el-button v-if="ptzCapability.status !== 'checking'" size="small" @click="checkPtzCapabilities">
+            {{ $tp('重新检查云台能力') }}
+          </el-button>
+        </el-alert>
         <el-tabs v-model="tabActiveName" type="card" :stretch="true" style="margin-top: 10px;">
 
           <el-tab-pane :label="$tp('WS控制台')" name="control">
@@ -272,28 +280,32 @@
                   <div style="display: grid; grid-template-columns: 100px auto;">
                     <!-- 方向控制 -->
                     <div class="control-wrapper">
-                      <div class="control-btn control-top" @mousedown="onvifPtzCtrlStartFun('upper')"
+                      <div class="control-btn control-top" :class="{ 'is-disabled': !canPtzMove }"
+                           :aria-disabled="!canPtzMove" @mousedown="onvifPtzCtrlStartFun('upper')"
                            @mouseup="onvifPtzCtrlEndFun()">
                         <el-icon class="icon">
                           <CaretTop/>
                         </el-icon>
                         <div class="control-inner-btn control-inner"></div>
                       </div>
-                      <div class="control-btn control-left" @mousedown="onvifPtzCtrlStartFun('left')"
+                      <div class="control-btn control-left" :class="{ 'is-disabled': !canPtzMove }"
+                           :aria-disabled="!canPtzMove" @mousedown="onvifPtzCtrlStartFun('left')"
                            @mouseup="onvifPtzCtrlEndFun()">
                         <el-icon class="icon">
                           <CaretLeft/>
                         </el-icon>
                         <div class="control-inner-btn control-inner"></div>
                       </div>
-                      <div class="control-btn control-bottom" @mousedown="onvifPtzCtrlStartFun('below')"
+                      <div class="control-btn control-bottom" :class="{ 'is-disabled': !canPtzMove }"
+                           :aria-disabled="!canPtzMove" @mousedown="onvifPtzCtrlStartFun('below')"
                            @mouseup="onvifPtzCtrlEndFun()">
                         <el-icon class="icon">
                           <CaretBottom/>
                         </el-icon>
                         <div class="control-inner-btn control-inner"></div>
                       </div>
-                      <div class="control-btn control-right" @mousedown="onvifPtzCtrlStartFun('right')"
+                      <div class="control-btn control-right" :class="{ 'is-disabled': !canPtzMove }"
+                           :aria-disabled="!canPtzMove" @mousedown="onvifPtzCtrlStartFun('right')"
                            @mouseup="onvifPtzCtrlEndFun()">
                         <el-icon class="icon">
                           <CaretRight/>
@@ -305,21 +317,22 @@
                       </div>
                       <!-- 速度控制 -->
                       <div class="contro-speed" style="position: absolute; left: 4px; top: 112px; width: 100px;">
-                        <el-slider v-model="controSpeed" :step="0.1" :min="0.1" :max="1"></el-slider>
+                        <el-slider v-model="controSpeed" :disabled="!canPtzMove" :step="0.1" :min="0.1" :max="1"></el-slider>
                       </div>
                     </div>
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane :label="$tp('预置点')" name="presets">
+              <el-tab-pane :label="$tp('预置点')" name="presets" :disabled="!canPtzPreset">
                 <div style="display: flex; align-items: center;">
-                  <el-input style="width: 300px; margin-right: 10px;" v-model="presetName"
+                  <el-input style="width: 300px; margin-right: 10px;" v-model="presetName" :disabled="!canPtzPreset"
                             :placeholder="$tp('请输入预置点名称')"/>
-                  <el-button type="primary" @click="presetAdd">{{ $tp("添 加") }}</el-button>
+                  <el-button type="primary" @click="presetAdd" :disabled="!canPtzPreset">{{ $tp("添 加") }}</el-button>
                 </div>
                 <div style="margin-top: 10px;">
-                  <el-tag v-loading="showPresets" closable @close="closePresets(item)" @click="gotoPresets(item)"
-                          style="margin-right: 10px; cursor: pointer;" v-for="item in optionsPresetsToken"
+                  <el-tag v-loading="showPresets" :closable="canPtzPreset" :aria-disabled="!canPtzPreset"
+                          :class="{ 'is-disabled': !canPtzPreset }" @close="closePresets(item)" @click="gotoPresets(item)"
+                          :style="{ marginRight: '10px', cursor: canPtzPreset ? 'pointer' : 'not-allowed' }" v-for="item in optionsPresetsToken"
                           :key="item.token">{{ item.name }}
                   </el-tag>
                 </div>
@@ -334,28 +347,32 @@
               <div style="display: grid; grid-template-columns: 100px auto;">
                 <!-- 方向控制 -->
                 <div class="control-wrapper">
-                  <div class="control-btn control-top" @mousedown="onvifPtzCtrlStartFun('upper')"
+                  <div class="control-btn control-top" :class="{ 'is-disabled': !canPtzMove }"
+                       :aria-disabled="!canPtzMove" @mousedown="onvifPtzCtrlStartFun('upper')"
                        @mouseup="onvifPtzCtrlEndFun()">
                     <el-icon class="icon">
                       <CaretTop/>
                     </el-icon>
                     <div class="control-inner-btn control-inner"></div>
                   </div>
-                  <div class="control-btn control-left" @mousedown="onvifPtzCtrlStartFun('left')"
+                  <div class="control-btn control-left" :class="{ 'is-disabled': !canPtzMove }"
+                       :aria-disabled="!canPtzMove" @mousedown="onvifPtzCtrlStartFun('left')"
                        @mouseup="onvifPtzCtrlEndFun()">
                     <el-icon class="icon">
                       <CaretLeft/>
                     </el-icon>
                     <div class="control-inner-btn control-inner"></div>
                   </div>
-                  <div class="control-btn control-bottom" @mousedown="onvifPtzCtrlStartFun('below')"
+                  <div class="control-btn control-bottom" :class="{ 'is-disabled': !canPtzMove }"
+                       :aria-disabled="!canPtzMove" @mousedown="onvifPtzCtrlStartFun('below')"
                        @mouseup="onvifPtzCtrlEndFun()">
                     <el-icon class="icon">
                       <CaretBottom/>
                     </el-icon>
                     <div class="control-inner-btn control-inner"></div>
                   </div>
-                  <div class="control-btn control-right" @mousedown="onvifPtzCtrlStartFun('right')"
+                  <div class="control-btn control-right" :class="{ 'is-disabled': !canPtzMove }"
+                       :aria-disabled="!canPtzMove" @mousedown="onvifPtzCtrlStartFun('right')"
                        @mouseup="onvifPtzCtrlEndFun()">
                     <el-icon class="icon">
                       <CaretRight/>
@@ -367,7 +384,7 @@
                   </div>
                   <!-- 速度控制 -->
                   <div class="contro-speed" style="position: absolute; left: 4px; top: 112px; width: 100px;">
-                    <el-slider v-model="controSpeed" :step="0.1" :min="0.1" :max="1"></el-slider>
+                    <el-slider v-model="controSpeed" :disabled="!canPtzMove" :step="0.1" :min="0.1" :max="1"></el-slider>
                   </div>
                 </div>
               </div>
@@ -377,7 +394,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="$tp(title)" v-model="openAdd" width="50%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp(title)" v-model="openAdd" append-to-body>
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form ref="probeRef" :model="probeForm" :rules="rules" label-width="120px">
@@ -406,14 +423,15 @@
         </el-col>
         <el-col :span="12">
           <el-form ref="resultRef" :model="resultForm" :rules="rulesResult" label-width="120px">
+            <el-alert :title="$tp('设备未上报的描述可按标签手动补充，也可留空；填写只保存平台资料，不改变设备能力。')" type="info" :closable="false" style="margin-bottom: 12px" />
             <el-form-item :label="$tp('厂商')" prop="firm">
-              <el-input v-model="resultForm.firm" :placeholder="$tp('请输入厂商')" disabled/>
+              <el-input v-model="resultForm.firm" :placeholder="$tp('设备未上报')" maxlength="30"/>
             </el-form-item>
             <el-form-item :label="$tp('型号')" prop="model">
-              <el-input v-model="resultForm.model" :placeholder="$tp('请输入型号')" disabled/>
+              <el-input v-model="resultForm.model" :placeholder="$tp('设备未上报')" maxlength="20"/>
             </el-form-item>
             <el-form-item :label="$tp('固件版本')" prop="firmwareVersion">
-              <el-input v-model="resultForm.firmwareVersion" :placeholder="$tp('请输入固件版本')" disabled/>
+              <el-input v-model="resultForm.firmwareVersion" :placeholder="$tp('请输入固件版本')" maxlength="100"/>
             </el-form-item>
             <el-form-item :label="$tp('通道')" prop="channel">
               <el-select
@@ -476,17 +494,37 @@
       </el-row>
     </el-dialog>
 
-    <el-dialog :title="$tp('修改地址')" v-model="showMap" width="50%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('修改地址')" v-model="showMap" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
 
     <!--发现设备-->
-    <el-dialog title="WSDiscovery" v-model="showWS" width="65%" append-to-body>
+    <el-dialog :title="$tp('发现设备')" v-model="showDiscoveryOptions" width="min(560px, 94vw)" append-to-body>
+      <el-form label-position="top">
+        <el-form-item :label="$tp('发现方式')">
+          <el-radio-group v-model="discoveryMode">
+            <el-radio label="subnet" value="subnet">{{ $tp('指定网段') }}</el-radio>
+            <el-radio label="multicast" value="multicast">{{ $tp('本地组播') }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="discoveryMode === 'subnet'" :label="$tp('扫描网段')">
+          <el-input v-model="discoverySubnet" placeholder="192.168.1.0/24" />
+          <div style="margin-top: 8px; line-height: 1.6">{{ $tp('支持内网 IPv4 网段 /24～/32，每次最多探测 256 个地址。') }}</div>
+        </el-form-item>
+        <el-alert :title="$tp(discoveryMode === 'subnet' ? '通过服务器向指定网段发送 ONVIF 探测，约需 6 秒；设备须开启 ONVIF。发现结果不会自动添加。' : '组播仅用于服务器本地网络，跨网段或容器环境建议选择指定网段。')" type="info" :closable="false" />
+      </el-form>
+      <template #footer>
+        <el-button @click="showDiscoveryOptions = false">{{ $tp('取消') }}</el-button>
+        <el-button type="primary" :loading="discoveryLoading" @click="startWSDiscovery">{{ $tp('开始发现') }}</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog class="locale-dialog locale-dialog--wide" title="WSDiscovery" v-model="showWS" append-to-body>
       <el-steps :active="stepsName" finish-status="success" align-center>
         <el-step :title="$tp('设备认证')" />
         <el-step :title="$tp('添加设备')" />
       </el-steps>
-      <el-table :data="listWS" border v-if="stepsName === 0">
+      <el-table scrollbar-always-on :data="listWS" border v-if="stepsName === 0">
         <el-table-column label="ip" align="center" prop="ip" show-overflow-tooltip/>
         <el-table-column :label="$tp('访问地址')" align="center" prop="hostName" show-overflow-tooltip />
         <el-table-column :label="$tp('用户名')" align="center">
@@ -510,7 +548,7 @@
         <el-table-column :label="$tp('操作')" align="center" class-name="small-padding fixed-width" fixed="right" width="180">
           <template #default="scope">
             <div style="display:flex; align-items: center;justify-content: center">
-              <el-button link type="primary" icon="Check" @click="handleAuth(scope.row)"
+              <el-button link type="primary" icon="Check" @click="handleAuth(scope.row)" :loading="authenticatingDevice"
                          v-hasPermi="['onvif:device:auth']">{{ $tp("认证") }}
               </el-button>
             </div>
@@ -519,6 +557,7 @@
       </el-table>
 
       <div v-if="stepsName === 1">
+        <el-alert :title="$tp('设备未上报的描述可按标签手动补充，也可留空；填写只保存平台资料，不改变设备能力。')" type="info" :closable="false" style="margin-bottom: 12px" />
         <el-row :gutter="20">
           <el-col :span="24">
             <el-form ref="resultRef" :model="resultForm" :rules="rulesResult2" label-width="120px">
@@ -544,13 +583,13 @@
                 </el-col>
                 <el-col :span="12">
                   <el-form-item :label="$tp('厂商')" prop="firm">
-                    <el-input v-model="resultForm.firm" :placeholder="$tp('请输入厂商')" disabled/>
+                    <el-input v-model="resultForm.firm" :placeholder="$tp('设备未上报')" maxlength="30"/>
                   </el-form-item>
                   <el-form-item :label="$tp('型号')" prop="model">
-                    <el-input v-model="resultForm.model" :placeholder="$tp('请输入型号')" disabled/>
+                    <el-input v-model="resultForm.model" :placeholder="$tp('设备未上报')" maxlength="20"/>
                   </el-form-item>
                   <el-form-item :label="$tp('固件版本')" prop="firmwareVersion">
-                    <el-input v-model="resultForm.firmwareVersion" :placeholder="$tp('请输入固件版本')" disabled/>
+                    <el-input v-model="resultForm.firmwareVersion" :placeholder="$tp('请输入固件版本')" maxlength="100"/>
                   </el-form-item>
                   <el-form-item :label="$tp('通道')" prop="channel">
                     <el-select
@@ -615,6 +654,10 @@
 </template>
 
 <script setup name="CameraManage">
+import { prepareOnvifAuthentication } from '@/utils/onvifAuthentication'
+import { onBeforeUnmount } from 'vue'
+import { createPtzHoldController } from '@/utils/onvifPtzHold'
+import { createPtzCapabilitiesController, canUsePtzMovement, canUsePtzPresets } from '@/utils/onvifPtzCapabilities'
 import {checkPermi} from "@/utils/permission";
 import {
   addDevice, addOnvif,
@@ -624,12 +667,13 @@ import {
   getDevice,
   getGotoPreset,
   getPresetList,
+  getPtzCapabilities,
   listDevice,
   removePreset,
   updateDevice, WSDiscovery
 } from "@/api/onvif/device";
 import Hikvision from "@/components/Hikvision/index.vue";
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {probe} from "../../../api/onvif/addCamera.js";
 import {deptTreeSelect} from "@/api/system/user";
 import MapGaoDe from "@/components/MapGaoDe/index.vue";
@@ -733,9 +777,6 @@ const data = reactive({
   },
   probeForm: {},
   rulesResult: {
-    firm: [{required: true, get message() { return translatePhrase("设备厂商不能为空") }, trigger: "blur"}],
-    model: [{required: true, get message() { return translatePhrase("设备型号不能为空") }, trigger: "blur"}],
-    firmwareVersion: [{required: true, get message() { return translatePhrase("固件版本不能为空") }, trigger: "blur"}],
     url: [{required: true, get message() { return translatePhrase("直播流地址不能为空") }, trigger: "blur"}],
     streamId: [
       {required: true, get message() { return translatePhrase("流id不能为空") }, trigger: "blur"}
@@ -747,13 +788,10 @@ const data = reactive({
   },
   rulesResult2: {
     ip: [{required: true, get message() { return translatePhrase("ip不能为空") }, trigger: "blur"}],
-    userName: [{required: true, get message() { return translatePhrase("用户名不能为空") }, trigger: "blur"}],
+    username: [{required: true, get message() { return translatePhrase("用户名不能为空") }, trigger: "blur"}],
     password: [{required: true, get message() { return translatePhrase("密码不能为空") }, trigger: "blur"}],
     deptId: [{required: true, get message() { return translatePhrase("请选择所属部门") }, trigger: 'blur'}],
     name: [{required: true, get message() { return translatePhrase("名称不能为空") }, trigger: 'blur'}],
-    firm: [{required: true, get message() { return translatePhrase("设备厂商不能为空") }, trigger: "blur"}],
-    model: [{required: true, get message() { return translatePhrase("设备型号不能为空") }, trigger: "blur"}],
-    firmwareVersion: [{required: true, get message() { return translatePhrase("固件版本不能为空") }, trigger: "blur"}],
     url: [{required: true, get message() { return translatePhrase("直播流地址不能为空") }, trigger: "blur"}],
     streamId: [
       {required: true, get message() { return translatePhrase("流id不能为空") }, trigger: "blur"}
@@ -776,27 +814,76 @@ const showMap = ref(false);
 const channelList = ref([])
 const controSpeed = ref(0.1);
 const onvifDeviceId = ref(null);
+const selectedOnvifDevice = ref(null);
+const ptzCapability = ref({ status: 'unknown', reason: '', continuousPanTilt: false, presets: false, profileToken: '' });
+const ptzCapabilities = createPtzCapabilitiesController({
+  request: getPtzCapabilities,
+  onChange: state => {
+    ptzCapability.value = state;
+    token.value = state.profileToken || selectedOnvifDevice.value?.channel || null;
+  }
+});
+const canPtzMove = computed(() => showPaly.value && canUsePtzMovement(ptzCapability.value));
+const canPtzPreset = computed(() => showPaly.value && canUsePtzPresets(ptzCapability.value));
+const ptzCapabilityNotice = computed(() => {
+  const state = ptzCapability.value;
+  if (state.status === 'checking' || state.status === 'unknown' || state.status === 'unsupported') return state.reason;
+  if (!state.continuousPanTilt) return state.reason || '当前通道不支持方向控制';
+  if (!state.presets) return state.reason || '当前通道不支持预置点';
+  return '';
+});
+let presetRequestRevision = 0;
+
+function checkPtzCapabilities() {
+  ptzHold.stop();
+  presetRequestRevision += 1;
+  optionsPresetsToken.value = [];
+  showPresets.value = false;
+  playTabsName.value = 'absolute';
+  return ptzCapabilities.check();
+}
+
 const listWS = ref([]);
+const authenticatingDevice = ref(false);
+const showDiscoveryOptions = ref(false);
+const discoveryMode = ref('subnet');
+const discoverySubnet = ref('192.168.1.0/24');
+const discoveryLoading = ref(false);
 
 const next = () => {
   if (stepsName.value++ > 2) stepsName.value = 0
 }
 
-function handleWSDiscovery(){
+function handleWSDiscovery() {
+  showDiscoveryOptions.value = true;
+}
+
+async function startWSDiscovery() {
+  if (discoveryLoading.value) return;
+  const subnet = discoverySubnet.value.trim();
+  if (discoveryMode.value === 'subnet' && !subnet) {
+    proxy.$modal.msgError(proxy.$tp('请输入扫描网段'));
+    return;
+  }
   stepsName.value = 0;
+  discoveryLoading.value = true;
   const loadingService = ElLoading.service({
     lock: true,
     fullscreen: true,
-    text: '正在发送指令...',
-    spinner: 'el-icon-loading',
+    text: proxy.$tp('正在发现 ONVIF 设备...'),
     background: 'rgba(0, 0, 0, 0.7)',
   });
-  WSDiscovery().then(res => {
+  try {
+    const res = await WSDiscovery(discoveryMode.value === 'subnet' ? { subnet } : {});
     listWS.value = res.data;
+    showDiscoveryOptions.value = false;
     showWS.value = true;
-  }).finally(() => {
+  } catch (error) {
+    // The request interceptor displays the server's error; keep options for correction/retry.
+  } finally {
+    discoveryLoading.value = false;
     loadingService.close();
-  })
+  }
 }
 
 const videoError = (e) => {
@@ -954,63 +1041,60 @@ const submitResultForm2 = () => {
   });
 }
 
-const presetAdd = async () => {
-  const params = {
-    ip: streamInfo.value.ip,
-    username: streamInfo.value.userName,
-    password: streamInfo.value.password,
-    profileToken: token.value,
-    presetToken: presetName.value,
-  }
-  await addPreset(params).then(() => {
-    getAllPreset();
-    proxy.$modal.msgSuccess(translatePhrase("操作成功"));
-  })
+function presetContext() {
+  if (!canPtzPreset.value || !selectedOnvifDevice.value) return null;
+  const device = selectedOnvifDevice.value;
+  return {
+    session: ptzCapabilities.session(),
+    params: { ip: device.ip, username: device.userName, password: device.password, profileToken: token.value }
+  };
 }
 
-const gotoPresets = async (row) => {
-  const params = {
-    ip: streamInfo.value.ip,
-    username: streamInfo.value.userName,
-    password: streamInfo.value.password,
-    profileToken: token.value,
-    presetToken: row.token,
-  }
-  await getGotoPreset(params);
+const presetAdd = async () => {
+  const context = presetContext();
+  if (!context) return;
+  await addPreset({ ...context.params, presetToken: presetName.value });
+  if (!ptzCapabilities.isCurrent(context.session)) return;
+  await getAllPreset();
   proxy.$modal.msgSuccess(translatePhrase("操作成功"));
 }
 
-const closePresets = async (row) => {
-  const params = {
-    ip: streamInfo.value.ip,
-    username: streamInfo.value.userName,
-    password: streamInfo.value.password,
-    profileToken: token.value,
-    presetToken: row.token,
-  }
-  await removePreset(params).then(() => {
-    getAllPreset();
-    proxy.$modal.msgSuccess(translatePhrase("操作成功"));
-  });
+const gotoPresets = async row => {
+  const context = presetContext();
+  if (!context) return;
+  await getGotoPreset({ ...context.params, presetToken: row.token });
+  if (ptzCapabilities.isCurrent(context.session)) proxy.$modal.msgSuccess(translatePhrase("操作成功"));
 }
-const handleplayTabsClick = (tab, event) => {
-  if (tab.props.label === "预置点") {
-    presetName.value = "";
+
+const closePresets = async row => {
+  const context = presetContext();
+  if (!context) return;
+  await removePreset({ ...context.params, presetToken: row.token });
+  if (!ptzCapabilities.isCurrent(context.session)) return;
+  await getAllPreset();
+  proxy.$modal.msgSuccess(translatePhrase("操作成功"));
+}
+
+const handleplayTabsClick = tab => {
+  if (tab.props.name === 'presets' && canPtzPreset.value) {
+    presetName.value = '';
     getAllPreset();
   }
 }
 
 const getAllPreset = async () => {
+  const context = presetContext();
+  if (!context) return;
+  const revision = ++presetRequestRevision;
   showPresets.value = true;
-  const params = {
-    ip: streamInfo.value.ip,
-    username: streamInfo.value.userName,
-    password: streamInfo.value.password,
-    profileToken: token.value,
+  try {
+    const res = await getPresetList(context.params);
+    if (ptzCapabilities.isCurrent(context.session) && revision === presetRequestRevision && canPtzPreset.value) {
+      optionsPresetsToken.value = res.data;
+    }
+  } finally {
+    if (ptzCapabilities.isCurrent(context.session) && revision === presetRequestRevision) showPresets.value = false;
   }
-  const res = await getPresetList(params);
-  optionsPresetsToken.value = res.data;
-  showPresets.value = false;
 }
 
 const togglePasswordVisibility = (id) => {
@@ -1019,16 +1103,28 @@ const togglePasswordVisibility = (id) => {
 
 
 function closePaly() {
+  ptzHold.stop();
+  ptzCapabilities.close();
+  presetRequestRevision += 1;
+  selectedOnvifDevice.value = null;
+  optionsPresetsToken.value = [];
+  showPresets.value = false;
+  onvifDeviceId.value = null;
   token.value = null;
   showPaly.value = false;
 }
 
 async function handleView(row) {
-  playType.value = row.playType;
+  ptzHold.stop();
+  selectedOnvifDevice.value = { ...row };
   onvifDeviceId.value = row.id;
+  const session = ptzCapabilities.open(row);
+  checkPtzCapabilities();
+  playType.value = row.playType;
   if (row.playType === '2') {
     tabActiveName.value = 'media'
     const ans = await startPlay(row.streamId);
+    if (!ptzCapabilities.isCurrent(session)) return;
     streamInfo.value = ans.data;
     flvUrl.value = ans.data.flv;
     rtcUrl.value = ans.data.rtc;
@@ -1100,7 +1196,7 @@ function reset() {
     id: null,
     deptId: null,
     ip: null,
-    userName: null,
+    username: null,
     password: null,
     playType: '1',
     url: null,
@@ -1146,36 +1242,33 @@ function handleSelectionChange(selection) {
 }
 
 
-function handleAuth(row) {
-  if (!row.password || row.password.trim() === '') {
-    proxy.$modal.msgError(translatePhrase("请输入用户名"));
-    return
+async function handleAuth(row) {
+  if (authenticatingDevice.value) return;
+  if (!row.username || !row.username.trim()) {
+    proxy.$modal.msgError("请输入用户名");
+    return;
   }
-  if (!row.password || row.password.trim() === '') {
-    proxy.$modal.msgError(translatePhrase("请输入密码"));
-    return
+  if (!row.password || !row.password.trim()) {
+    proxy.$modal.msgError("请输入密码");
+    return;
   }
   if (!row.auth || !['1', '2'].includes(row.auth)) {
-    proxy.$modal.msgError(translatePhrase("请选择认证方式"));
-    return
+    proxy.$modal.msgError("请选择认证方式");
+    return;
   }
-  addOnvif(row).then(res => {
+  authenticatingDevice.value = true;
+  try {
+    const res = await addOnvif(row);
+    const authenticated = prepareOnvifAuthentication(res.data, row);
+    if (!showWS.value) return;
+    channelList.value = authenticated.options;
+    resultForm.value = authenticated.result;
     stepsName.value = 1;
-    const keys = [];
-    const rtspUrls = [];
-    Object.entries(res.data.streamUris).map(([key, value]) => {
-      keys.push({
-        label: key,
-        value: key,
-      });
-      rtspUrls.push(value);
-    });
-    channelList.value = keys;
-    resultForm.value = res.data;
-    resultForm.value.ip = res.data.ip;
-    resultForm.value.username = row.username;
-    resultForm.value.password = row.password;
-  })
+  } catch (error) {
+    if (error.name === 'OnvifAuthenticationResultError') proxy.$modal.msgError(error.message);
+  } finally {
+    authenticatingDevice.value = false;
+  }
 }
 function handleAdd(row) {
   title.value = "添加onvif 设备";
@@ -1281,30 +1374,65 @@ function getChannel() {
  *
  * @param direction
  */
+const ptzHold = createPtzHoldController({
+  startRequest: async params => {
+    const session = ptzCapabilities.session();
+    try {
+      return await onvifPZTStart(params);
+    } catch (error) {
+      if (ptzCapabilities.isCurrent(session) && params.id === onvifDeviceId.value) {
+        ptzCapabilities.markUnknown('云台控制失败，无法确认设备兼容性，请重新检查');
+        presetRequestRevision += 1;
+        optionsPresetsToken.value = [];
+        showPresets.value = false;
+      }
+      throw error;
+    }
+  },
+  stopRequest: onvifPZTEnd,
+  onError: () => { /* The WVP request interceptor displays the precise server error. */ }
+});
+
 function onvifPtzCtrlStartFun(direction) {
-  onvifPZTStart({
-    direction: direction,
-    id: onvifDeviceId.value,
-    controSpeed: controSpeed.value,
-  });
+  if (!canPtzMove.value) return;
+  ptzHold.start({ id: onvifDeviceId.value, direction, speed: controSpeed.value });
 }
 
-/**
- * 云台结束
- */
 function onvifPtzCtrlEndFun() {
-  setTimeout(() => {
-    onvifPZTEnd({
-      id: onvifDeviceId.value,
-    });
-  }, 200)
+  ptzHold.stop();
 }
 
-getDeptTree();
+function stopHiddenPtz() {
+  if (document.hidden) ptzHold.stop();
+}
+window.addEventListener('mouseup', onvifPtzCtrlEndFun);
+window.addEventListener('blur', onvifPtzCtrlEndFun);
+document.addEventListener('visibilitychange', stopHiddenPtz);
+onBeforeUnmount(() => {
+  window.removeEventListener('mouseup', onvifPtzCtrlEndFun);
+  window.removeEventListener('blur', onvifPtzCtrlEndFun);
+  document.removeEventListener('visibilitychange', stopHiddenPtz);
+  ptzHold.stop();
+  ptzCapabilities.close();
+});
+
 getList();
 </script>
 
 <style scoped>
+.ptz-capability-status {
+  margin-top: 10px;
+}
+.control-btn.is-disabled,
+.control-btn.is-disabled:hover,
+.control-btn.is-disabled .icon,
+.control-btn.is-disabled .icon:hover,
+.el-tag.is-disabled {
+  cursor: not-allowed;
+  color: #909399;
+  opacity: 0.5;
+}
+
 ::v-deep(.el-icon) {
   height: auto !important;
 }

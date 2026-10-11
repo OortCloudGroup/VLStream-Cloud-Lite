@@ -25,9 +25,9 @@
       :data="platformList"
       current-row-key="id"
     >
-      <el-table-column prop="name" :label="$tp('名称')" align="center" show-overflow-tooltip></el-table-column>
-      <el-table-column prop="serverGBId" :label="$tp('平台编号')" align="center" show-overflow-tooltip></el-table-column>
-      <el-table-column :label="$tp('是否启用')" align="center">
+      <el-table-column prop="name" :label="$t('gbPlatform.name')" align="center" show-overflow-tooltip></el-table-column>
+      <el-table-column prop="serverGBId" :label="$t('gbPlatform.platformId')" align="center" show-overflow-tooltip></el-table-column>
+      <el-table-column :label="$t('gbPlatform.enabled')" align="center">
         <template #default="scope">
           <div slot="reference" class="name-wrapper">
             <el-tag v-if="scope.row.enable">{{ $tp("已启用") }}</el-tag>
@@ -35,7 +35,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column :label="$tp('状态')" align="center">
+      <el-table-column :label="$t('gbPlatform.status')" align="center">
         <template #default="scope">
           <div slot="reference" class="name-wrapper">
             <el-tag v-if="scope.row.status">{{ $tp("在线") }}</el-tag>
@@ -43,17 +43,17 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column :label="$tp('地址')" align="center" show-overflow-tooltip>
+      <el-table-column :label="$t('gbPlatform.networkAddress')" align="center" show-overflow-tooltip>
         <template #default="scope">
           <div slot="reference" class="name-wrapper">
             <el-tag>{{ scope.row.serverIp }}:{{ scope.row.serverPort }}</el-tag>
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="deviceGBId" :label="$tp('设备国标编号')" align="center" show-overflow-tooltip></el-table-column>
-      <el-table-column prop="transport" :label="$tp('信令传输模式')" align="center"></el-table-column>
-      <el-table-column prop="channelCount" :label="$tp('通道数')" align="center"></el-table-column>
-      <el-table-column :label="$tp('订阅信息')" :width="clacPXToVW(120)" align="center">
+      <el-table-column prop="deviceGBId" :label="$t('gbPlatform.deviceGBId')" align="center" show-overflow-tooltip></el-table-column>
+      <el-table-column prop="transport" :label="$t('gbPlatform.transport')" align="center"></el-table-column>
+      <el-table-column prop="channelCount" :label="$t('gbPlatform.channelCount')" align="center"></el-table-column>
+      <el-table-column :label="$t('gbPlatform.subscriptions')" :width="clacPXToVW(120)" align="center">
         <template #default="scope">
           <i v-if="scope.row.alarmSubscribe" style="font-size: 20px" :title="$tp('报警订阅')"
              class="iconfont icon-gbaojings subscribe-on "></i>
@@ -103,17 +103,22 @@
         @pagination="getList"
     />
 
-    <el-dialog :title="$tp(title)" v-model="open" width="65%" append-to-body>
-      <template #header><div class="gb-dialog-heading"><span>{{ title }}</span><el-button link type="primary" @click="showHelp = true"><el-icon class="gb-help-icon"><QuestionFilled /></el-icon>{{ $tp("帮助说明与示例") }}</el-button></div></template>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="130px">
+    <el-dialog :title="platformTitle" v-model="open" width="min(92vw, 1040px)" class="gb-platform-dialog" append-to-body>
+      <template #header="{ titleId, titleClass }">
+        <div class="gb-dialog-heading">
+          <span :id="titleId" :class="titleClass">{{ platformTitle }}</span>
+          <el-button link type="primary" @click="showHelp = true"><el-icon class="gb-help-icon"><QuestionFilled /></el-icon>{{ $t('gbPlatform.help') }}</el-button>
+        </div>
+      </template>
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="gb-platform-form">
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('名称')" prop="name">
+            <el-form-item :label="$t('gbPlatform.name')" prop="name">
               <el-input v-model="form.name" :placeholder="platformExample.name"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('SIP服务国标编码')" prop="serverGBId">
+            <el-form-item :label="$t('gbPlatform.serverGBId')" prop="serverGBId">
               <el-input v-model="form.serverGBId" :placeholder="platformExample.serverGBId" clearable @input="serverGBIdChange"></el-input>
             </el-form-item>
           </el-col>
@@ -121,12 +126,12 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('SIP服务国标域')" prop="serverGBDomain">
+            <el-form-item :label="$t('gbPlatform.serverGBDomain')" prop="serverGBDomain">
               <el-input v-model="form.serverGBDomain" :placeholder="platformExample.serverGBDomain" clearable></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('SIP服务IP')" prop="serverIp">
+            <el-form-item :label="$t('gbPlatform.serverIp')" prop="serverIp">
               <el-input v-model="form.serverIp" :placeholder="platformExample.serverIp" clearable></el-input>
             </el-form-item>
           </el-col>
@@ -134,12 +139,12 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('SIP服务端口')" prop="serverPort">
+            <el-form-item :label="$t('gbPlatform.serverPort')" prop="serverPort">
               <el-input v-model="form.serverPort" :placeholder="platformExample.serverPort" clearable type="number"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('设备国标编号')" prop="deviceGBId">
+            <el-form-item :label="$t('gbPlatform.deviceGBId')" prop="deviceGBId">
               <el-input v-model="form.deviceGBId" :placeholder="platformExample.deviceGBId" clearable @input="deviceGBIdChange"></el-input>
             </el-form-item>
           </el-col>
@@ -147,8 +152,8 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('本地IP')" prop="deviceIp">
-              <el-select v-model="form.deviceIp" :placeholder="$tp('选择与上级相通的网卡，如 192.0.2.10')" style="width: 100%">
+            <el-form-item :label="$t('gbPlatform.deviceIp')" prop="deviceIp">
+              <el-select v-model="form.deviceIp" :placeholder="$t('gbPlatform.ipHint')" style="width: 100%">
                 <el-option
                     v-for="ip in deviceIps"
                     :key="ip"
@@ -159,7 +164,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('本地端口')" prop="devicePort">
+            <el-form-item :label="$t('gbPlatform.devicePort')" prop="devicePort">
               <el-input v-model="form.devicePort" :disabled="true" type="number"></el-input>
             </el-form-item>
           </el-col>
@@ -167,25 +172,25 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('SIP认证用户名')" prop="username">
-              <el-input v-model="form.username" :placeholder="$tp('填写上级分配的认证用户名')"></el-input>
+            <el-form-item :label="$t('gbPlatform.username')" prop="username">
+              <el-input v-model="form.username" :placeholder="$t('gbPlatform.usernameHint')"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('SIP认证密码')" prop="password">
-              <el-input v-model="form.password" :placeholder="$tp('填写上级约定的 SIP 密码')" show-password></el-input>
+            <el-form-item :label="$t('gbPlatform.password')" prop="password">
+              <el-input v-model="form.password" :placeholder="$t('gbPlatform.passwordHint')" show-password></el-input>
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('注册周期(秒)')" prop="expires">
+            <el-form-item :label="$t('gbPlatform.expires')" prop="expires">
               <el-input v-model="form.expires" :placeholder="platformExample.expires"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('心跳周期(秒)')" prop="keepTimeout">
+            <el-form-item :label="$t('gbPlatform.keepTimeout')" prop="keepTimeout">
               <el-input v-model="form.keepTimeout" :placeholder="platformExample.keepTimeout"></el-input>
             </el-form-item>
           </el-col>
@@ -193,16 +198,16 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('SDP发流IP')" prop="sendStreamIp">
+            <el-form-item :label="$t('gbPlatform.sendStreamIp')" prop="sendStreamIp">
               <el-input v-model="form.sendStreamIp" :placeholder="platformExample.sendStreamIp"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('信令传输')" prop="transport">
+            <el-form-item :label="$t('gbPlatform.transport')" prop="transport">
               <el-select
                   v-model="form.transport"
                   style="width: 100%"
-                  :placeholder="$tp('例如：UDP（与上级一致）')"
+                  :placeholder="$t('gbPlatform.transportHint')"
               >
                 <el-option label="UDP" value="UDP"></el-option>
                 <el-option label="TCP" value="TCP"></el-option>
@@ -213,19 +218,19 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('保密属性')">
-              <el-select v-model="form.secrecy" style="width: 100%" :placeholder="$tp('请选择保密属性')">
-                <el-option :label="$tp('不涉密')" :value="0"></el-option>
-                <el-option :label="$tp('涉密')" :value="1"></el-option>
+            <el-form-item :label="$t('gbPlatform.secrecy')">
+              <el-select v-model="form.secrecy" style="width: 100%" :placeholder="$t('gbPlatform.secrecyHint')">
+                <el-option :label="$t('gbPlatform.public')" :value="0"></el-option>
+                <el-option :label="$t('gbPlatform.secret')" :value="1"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('目录分组')" prop="catalogGroup">
+            <el-form-item :label="$t('gbPlatform.catalogGroup')" prop="catalogGroup">
               <el-select
                   v-model="form.catalogGroup"
                   style="width: 100%"
-                  :placeholder="$tp('请选择目录分组')"
+                  :placeholder="$t('gbPlatform.groupHint')"
               >
                 <el-option label="1" value="1"></el-option>
                 <el-option label="2" value="2"></el-option>
@@ -238,11 +243,11 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('字符集')" prop="characterSet">
+            <el-form-item :label="$t('gbPlatform.characterSet')" prop="characterSet">
               <el-select
                   v-model="form.characterSet"
                   style="width: 100%"
-                  :placeholder="$tp('例如：GB2312（与上级一致）')"
+                  :placeholder="$t('gbPlatform.charsetHint')"
               >
                 <el-option label="GB2312" value="GB2312"></el-option>
                 <el-option label="UTF-8" value="UTF-8"></el-option>
@@ -250,7 +255,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('行政区划')" prop="civilCode">
+            <el-form-item :label="$t('gbPlatform.civilCode')" prop="civilCode">
               <el-input v-model="form.civilCode" clearable></el-input>
             </el-form-item>
           </el-col>
@@ -258,12 +263,12 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('平台厂商')" prop="manufacturer">
+            <el-form-item :label="$t('gbPlatform.manufacturer')" prop="manufacturer">
               <el-input v-model="form.manufacturer" clearable></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('平台型号')" prop="model">
+            <el-form-item :label="$t('gbPlatform.model')" prop="model">
               <el-input v-model="form.model" clearable></el-input>
             </el-form-item>
           </el-col>
@@ -271,23 +276,23 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item :label="$tp('平台安装地址')" prop="address">
+            <el-form-item :label="$t('gbPlatform.address')" prop="address">
               <el-input v-model="form.address" clearable></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$tp('其他选项')">
-              <div>
-                <el-checkbox :label="$tp('启用')" v-model="form.enable" @change="checkExpires"></el-checkbox>
-                <el-checkbox :label="$tp('云台控制')" v-model="form.ptz"></el-checkbox>
-                <el-checkbox :label="$tp('RTCP保活')" v-model="form.rtcp" @change="rtcpCheckBoxChange"></el-checkbox>
-                <el-checkbox :label="$tp('消息通道')" v-model="form.asMessageChannel"></el-checkbox>
-                <el-checkbox :label="$tp('主动推送通道')" v-model="form.autoPushChannel"></el-checkbox>
-                <el-checkbox :label="$tp('推送平台信息')" :true-label="1" :false-label="0"
+            <el-form-item :label="$t('gbPlatform.options')">
+              <div class="gb-platform-options">
+                <el-checkbox :label="$t('gbPlatform.enable')" v-model="form.enable" @change="checkExpires"></el-checkbox>
+                <el-checkbox :label="$t('gbPlatform.ptz')" v-model="form.ptz"></el-checkbox>
+                <el-checkbox :label="$t('gbPlatform.rtcp')" v-model="form.rtcp" @change="rtcpCheckBoxChange"></el-checkbox>
+                <el-checkbox :label="$t('gbPlatform.asMessageChannel')" v-model="form.asMessageChannel"></el-checkbox>
+                <el-checkbox :label="$t('gbPlatform.autoPushChannel')" v-model="form.autoPushChannel"></el-checkbox>
+                <el-checkbox :label="$t('gbPlatform.catalogWithPlatform')" :true-label="1" :false-label="0"
                              v-model="form.catalogWithPlatform"></el-checkbox>
-                <el-checkbox :label="$tp('推送分组信息')" :true-label="1" :false-label="0"
+                <el-checkbox :label="$t('gbPlatform.catalogWithGroup')" :true-label="1" :false-label="0"
                              v-model="form.catalogWithGroup"></el-checkbox>
-                <el-checkbox :label="$tp('推送行政区划')" :true-label="1" :false-label="0"
+                <el-checkbox :label="$t('gbPlatform.catalogWithRegion')" :true-label="1" :false-label="0"
                              v-model="form.catalogWithRegion"></el-checkbox>
               </div>
 
@@ -299,8 +304,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">{{ $tp("确 定") }}</el-button>
-          <el-button @click="cancel">{{ $tp("取 消") }}</el-button>
+          <el-button type="primary" @click="submitForm">{{ $t('common.confirm') }}</el-button>
+          <el-button @click="cancel">{{ $t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -311,6 +316,9 @@
 <script setup name="Platform">
 import GbHelpDialog from '@/components/GbHelpDialog.vue'
 import { platformExample } from '@/utils/gbHelp'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
+const platformTitle = computed(() => t(form.value.id != null ? 'gbPlatform.edit' : 'gbPlatform.add'))
 const showHelp = ref(false)
 import {
   addPlatform,
@@ -331,18 +339,17 @@ const platformList = ref([]);
 const loading = ref(false);
 const total = ref(0);
 const searchData = ref([]);
-const title = ref("");
 const open = ref(false);
 const deviceIps = ref([]);
 const defaultPlatform = ref(null);
 
 const deviceGBIdRules = async (rule, value, callback) => {
   if (value === "") {
-    callback(new Error("请输入设备国标编号"));
+    callback(new Error(t('gbPlatform.localIdRequired')));
   } else {
     const exit = await deviceGBIdExit(value);
     if (exit) {
-      callback(new Error("设备国标编号格式错误或已存在"));
+      callback(new Error(t('gbPlatform.localIdInvalid')));
     } else {
       callback();
     }
@@ -365,23 +372,23 @@ const data = reactive({
     query: undefined,
   },
   rules: {
-    name: [{required: true, get message() { return translatePhrase("请输入平台名称") }, trigger: "blur"}],
+    name: [{required: true, get message() { return t('gbPlatform.nameRequired') }, trigger: "blur"}],
     serverGBId: [
-      {required: true, get message() { return translatePhrase("请输入SIP服务国标编码") }, trigger: "blur"},
+      {required: true, get message() { return t('gbPlatform.idRequired') }, trigger: "blur"},
     ],
     serverGBDomain: [
-      {required: true, get message() { return translatePhrase("请输入SIP服务国标域") }, trigger: "blur"},
+      {required: true, get message() { return t('gbPlatform.domainRequired') }, trigger: "blur"},
     ],
-    serverIp: [{required: true, get message() { return translatePhrase("请输入SIP服务IP") }, trigger: "blur"}],
-    serverPort: [{required: true, get message() { return translatePhrase("请输入SIP服务端口") }, trigger: "blur"}],
+    serverIp: [{required: true, get message() { return t('gbPlatform.ipRequired') }, trigger: "blur"}],
+    serverPort: [{required: true, get message() { return t('gbPlatform.portRequired') }, trigger: "blur"}],
     deviceGBId: [{validator: deviceGBIdRules, trigger: "blur"}],
-    username: [{required: false, get message() { return translatePhrase("请输入SIP认证用户名") }, trigger: "blur"}],
-    password: [{required: false, get message() { return translatePhrase("请输入SIP认证密码") }, trigger: "blur"}],
-    expires: [{required: true, get message() { return translatePhrase("请输入注册周期") }, trigger: "blur"}],
-    keepTimeout: [{required: true, get message() { return translatePhrase("请输入心跳周期") }, trigger: "blur"}],
-    transport: [{required: true, get message() { return translatePhrase("请选择信令传输") }, trigger: "blur"}],
-    characterSet: [{required: true, get message() { return translatePhrase("请选择编码字符集") }, trigger: "blur"}],
-    deviceIp: [{required: true, get message() { return translatePhrase("请选择本地IP") }, trigger: "blur"}],
+    username: [{required: false, get message() { return t('gbPlatform.usernameRequired') }, trigger: "blur"}],
+    password: [{required: false, get message() { return t('gbPlatform.passwordRequired') }, trigger: "blur"}],
+    expires: [{required: true, get message() { return t('gbPlatform.expiresRequired') }, trigger: "blur"}],
+    keepTimeout: [{required: true, get message() { return t('gbPlatform.heartbeatRequired') }, trigger: "blur"}],
+    transport: [{required: true, get message() { return t('gbPlatform.transportRequired') }, trigger: "blur"}],
+    characterSet: [{required: true, get message() { return t('gbPlatform.charsetRequired') }, trigger: "blur"}],
+    deviceIp: [{required: true, get message() { return t('gbPlatform.localIpRequired') }, trigger: "blur"}],
   }
 });
 
@@ -411,7 +418,6 @@ function reset() {
 function handleAdd() {
   reset()
   open.value = true;
-  title.value = "新增平台";
 }
 
 function serverGBIdChange() {
@@ -446,7 +452,6 @@ function handleEdit(row) {
   reset()
   form.value = JSON.parse(JSON.stringify(row));
   open.value = true;
-  title.value = "修改平台";
 }
 
 function handleDelete(row) {
@@ -544,5 +549,81 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.gb-dialog-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding-inline-end: 24px;
+}
 
+.gb-platform-form :deep(.el-row) {
+  column-gap: 24px;
+}
+
+.gb-platform-form :deep(.el-col) {
+  flex: 0 0 calc(50% - 12px);
+  max-width: calc(50% - 12px);
+  min-width: 0;
+}
+
+.gb-platform-form :deep(.el-form-item) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-bottom: 22px;
+}
+
+.gb-platform-form :deep(.el-form-item__label) {
+  height: auto;
+  min-height: 22px;
+  line-height: 1.5;
+  margin: 0 0 8px;
+  padding: 0;
+  text-align: start;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.gb-platform-form :deep(.el-form-item__content) {
+  min-width: 0;
+  margin-inline-start: 0 !important;
+}
+
+.gb-platform-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  width: 100%;
+}
+
+.gb-platform-options :deep(.el-checkbox) {
+  height: auto;
+  min-width: 0;
+  margin: 0;
+  align-items: flex-start;
+}
+
+.gb-platform-options :deep(.el-checkbox__input) {
+  margin-block-start: 3px;
+}
+
+.gb-platform-options :deep(.el-checkbox__label) {
+  line-height: 1.5;
+  white-space: normal;
+  word-break: normal;
+}
+
+@media (max-width: 768px) {
+  .gb-platform-form :deep(.el-col) {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+
+  .gb-platform-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 </style>

@@ -1,8 +1,9 @@
 import request from '@/utils/request';
 
-export function WSDiscovery(){
+export function WSDiscovery(params = {}){
     return request({
         url: '/onvif/device/WSDiscovery',
+        params,
         method: 'get',
         timeout: 10000 * 6
     })
@@ -143,6 +144,15 @@ export function addPreset(query) {
 
 
 // 云台开始
+export function getPtzCapabilities(query) {
+  return request({
+    url: '/onvif/service/ptzCapabilities',
+    method: 'get',
+    params: query,
+    timeout: 30000
+  })
+}
+
 export function onvifPZTStart(query) {
   return request({
     url: '/onvif/service/onvifPZTStart',

@@ -1,6 +1,6 @@
 <template>
   <DeviceClassificationLayout protocol-type="ISUP" :selected-device-keys="classificationDeviceKeys" @filter-change="handleClassificationFilter" @assigned="getList">
-  <div class="app-container">
+  <div class="app-container device-management-page">
     <div class="toolbar-with-search">
       <div class="toolbar-left">
         <button-group :button-list="toolbarButtons" />
@@ -16,7 +16,7 @@
       </div>
     </div>
 
-    <table-self
+    <table-self scrollbar-always-on
       class="new_table"
       header-cell-class-name="header_tenant_cell"
       stripe
@@ -95,7 +95,7 @@
     />
 
     <!-- 添加或修改isup设备对话框 -->
-    <el-dialog :title="$tp(title)" v-model="open" width="32%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--medium" :title="$tp(title)" v-model="open" append-to-body>
       <el-form ref="lsupDeviceRef" :model="form" :rules="rules" label-width="120px">
         <el-form-item :label="$tp('设备ID')" prop="deviceId">
           <el-input v-model="form.deviceId" disabled :placeholder="$tp('请输入设备ID')"/>
@@ -161,7 +161,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog :title="$tp('播放视频')" v-model="openPlay" width="55%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('播放视频')" v-model="openPlay" append-to-body>
       <div>
         <Hikvision :rtsp="videoUrl" v-if="openPlay && (playType === '1' || playType === '3' || playType === '4') "/>
 
@@ -340,11 +340,11 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="$tp('修改地址')" v-model="showMap" width="50%" append-to-body>
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('修改地址')" v-model="showMap" append-to-body>
       <MapGaoDe ref="MapContainer" @update-value="updateDialogMap" :position="position" :toponym="form.address"/>
     </el-dialog>
 
-    <el-dialog :title="$tp('SDK播放')" v-model="openPlaySDK" width="55%" append-to-body @close="closeSDK">
+    <el-dialog class="locale-dialog locale-dialog--wide" :title="$tp('SDK播放')" v-model="openPlaySDK" append-to-body @close="closeSDK">
       <div>
         <Hikvision :rtsp="videoUrl"/>
       </div>

@@ -74,7 +74,7 @@
       <div class="classification-content-body"><slot /></div>
     </main>
 
-    <el-dialog v-model="categoryDialog.visible" :title="$tp(categoryDialog.mode === 'add' ? `新增${activeLabel}` : `修改${activeLabel}`)" width="30%" append-to-body>
+    <el-dialog v-model="categoryDialog.visible" :title="categoryDialogTitle" class="locale-dialog classification-dialog" append-to-body>
       <el-form ref="categoryFormRef" :model="categoryForm" :rules="categoryRules" label-width="90px">
         <el-form-item :label="$tp('上级节点')" prop="parentId">
           <el-tree-select
@@ -100,7 +100,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-if="showAssignment" v-model="assignmentDialog.visible" :title="$tp('设置设备分类')" width="34%" append-to-body>
+    <el-dialog v-if="showAssignment" v-model="assignmentDialog.visible" :title="$tp('设置设备分类')" class="locale-dialog classification-dialog" append-to-body>
       <el-alert
         v-if="normalizedDeviceKeys.length > 1"
         :title="$tp('批量设置会用本次选择覆盖这些设备原有的区域、分组和标签')"
@@ -132,6 +132,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { Delete, Folder, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { currentLocale, translatePhrase } from '@/i18n'
 import {
   addClassificationCategory,
   deleteClassificationCategory,
@@ -203,6 +204,10 @@ function handleNodeClick(node) {
 }
 
 const categoryDialog = reactive({ visible: false, mode: 'add', saving: false })
+const categoryDialogTitle = computed(() => {
+  const action = translatePhrase(categoryDialog.mode === 'add' ? '新增' : '修改')
+  return currentLocale.value === 'zh-CN' ? `${action}${activeLabel.value}` : `${action} ${activeLabel.value}`
+})
 const categoryFormRef = ref()
 const categoryForm = reactive({ id: undefined, categoryType: 'REGION', parentId: '0', categoryName: '', sortNum: 0 })
 const categoryRules = { categoryName: [{ required: true, get message() { return translatePhrase("请输入分类名称") }, trigger: 'blur' }] }
@@ -328,8 +333,10 @@ onMounted(() => loadTree('REGION'))
 }
 
 .classification-sidebar {
-  width: 300px;
-  padding-right: 20px;
+  width: clamp(210px, 22vw, 300px);
+  padding-inline-end: 16px;
+  border-inline-end: 1px solid var(--el-border-color-lighter);
+  box-sizing: border-box;
   flex-shrink: 0;
   min-height: 0;
   overflow: hidden;
@@ -390,7 +397,7 @@ onMounted(() => loadTree('REGION'))
 .tree-node-main { flex: 1; min-width: 0; gap: 4px; overflow: hidden; }
 .tree-node-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tree-node-label.active { color: var(--el-color-primary); }
-.tree-node-actions { flex-shrink: 0; gap: 8px; margin-left: 8px; }
+.tree-node-actions { flex-shrink: 0; gap: 8px; margin-inline-start: 8px; }
 .tree-action-icon { cursor: pointer; color: var(--el-color-primary); }
 .tree-action-icon.danger { color: var(--el-color-danger); }
 .tree-icon { flex-shrink: 0; color: var(--el-color-primary); font-size: 14px; }
@@ -404,4 +411,10 @@ onMounted(() => loadTree('REGION'))
 .classification-content-body { flex: 1; min-height: 0; overflow: auto; }
 .classification-content-body :deep(.app-container) { padding: 0; }
 .assignment-alert { margin-bottom: 18px; }
+
+@media (max-width: 640px) {
+  .classification-layout { flex-direction: column; gap: 16px; padding: 12px; }
+  .classification-sidebar { width: 100%; max-height: 300px; padding-inline-end: 0; padding-bottom: 12px; border-inline-end: 0; border-bottom: 1px solid var(--el-border-color-lighter); }
+  .classification-tree { min-height: 100px; }
+}
 </style>
