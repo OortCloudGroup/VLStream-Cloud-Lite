@@ -6,7 +6,7 @@
   <p><strong>基于 RuoYi-Vue、WVP 与 ZLMediaKit 的开源视频接入与流媒体管理平台</strong></p>
 
   <p>
-    <a href="https://github.com/OortCloudGroup/apaas-wvp-server"><img src="https://img.shields.io/badge/GitHub-OortCloudGroup%2Fapaas--wvp--server-181717?style=flat-square&logo=github" alt="GitHub"></a>
+    <a href="https://github.com/OortCloudGroup/VLStream-Cloud-Lite"><img src="https://img.shields.io/badge/GitHub-OortCloudGroup%2FVLStream--Cloud--Lite-181717?style=flat-square&logo=github" alt="GitHub"></a>
     <a href="https://gitcode.com/qq_74020751/VLStream-Cloud-Lite"><img src="https://img.shields.io/badge/GitCode-qq__74020751%2FVLStream--Cloud--Lite-C71D23?style=flat-square" alt="GitCode"></a>
     <a href="https://gitee.com/lcqssaa/VLStream-Cloud-Lite"><img src="https://img.shields.io/badge/Gitee-lcqssaa%2FVLStream--Cloud--Lite-C71D23?style=flat-square&logo=gitee" alt="Gitee"></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License"></a>
@@ -102,7 +102,7 @@ ruoyi-admin（Spring Boot 入口）
 ### 后端模块
 
 ```text
-apaas-wvp-server
+VLStream-wvp-lite
 ├── ruoyi-admin          # Spring Boot Web 入口和应用配置
 ├── ruoyi-common         # 公共模型、工具、响应和基础能力
 ├── ruoyi-framework      # 安全、数据源、AOP、监控和 Web 基础设施
@@ -337,19 +337,19 @@ GB28181 注册成功只说明 SIP `REGISTER` 及相关鉴权链路已经建立�
 
 - Docker 新部署使用 [`deploy/release/sql/init/10-ry-wvp.sql`](./deploy/release/sql/init/10-ry-wvp.sql) 初始化空 MySQL 数据卷。
 - 已有数据库的版本升级由 Flyway 管理，迁移文件位于 [`ruoyi-admin/src/main/resources/db/migration/`](./ruoyi-admin/src/main/resources/db/migration/)。已发布迁移文件不得改名、删除或修改。
-- `sql/ry-wvp.sql` 是仓库中的基础数据库快照；`sql/2026-08-13-device-classification.sql`、`sql/2026-08-13-vlstream.sql` 和 `sql/2026-08-17-custom-protocol.sql` 是对应功能的源码/手工初始化脚本。
+- 历史数据库快照不属于公开部署包；新部署使用经过脱敏的初始化 SQL，已有数据库使用不可变 Flyway 迁移。`sql/2026-08-13-device-classification.sql`、`sql/2026-08-13-vlstream.sql` 和 `sql/2026-08-17-custom-protocol.sql` 是对应功能的源码/手工初始化脚本。
 - 生产升级前先备份 MySQL，并阅读 [`DEPLOYMENT.md`](./DEPLOYMENT.md)；不要通过删除 Docker 数据卷来完成升级。
 
 ## 🐳 部署与升级
 
 ### 发布包
 
-仓库的 GitHub Actions 在推送 `v*` 标签时执行后端测试、构建 `linux/amd64` 镜像，并生成带 SHA-256 校验文件的 ZIP 发布包。发布包包含 Compose 文件、环境模板、初始化 SQL、升级说明和 ZLMediaKit 构建文件。
+仓库的 GitHub Actions 在推送 `v*` 标签时执行后端测试、构建 `linux/amd64` 镜像，并生成带 SHA-256 校验文件的 ZIP 发布包。发布包包含 Compose 文件、环境模板、脱敏初始化 SQL、升级说明、可靠性与 EHome 文档、VLStream 租户绑定指南和初始化工具，以及 ZLMediaKit 构建文件。
 
 默认镜像地址为：
 
 ```text
-ghcr.io/oortcloudgroup/apaas-wvp-server:<release-version>
+ghcr.io/oortcloudgroup/vlstream-cloud-lite:<release-version>
 ```
 
 生产环境建议固定到明确的 Release 版本，并在升级前完成数据库备份、端口核对和回滚准备。不要把 `docker compose down -v` 当作普通升级命令，它会删除持久化卷中的数据。
@@ -378,13 +378,13 @@ docker compose up -d
 | [`ruoyi-ui-large/README.md`](./ruoyi-ui-large/README.md) | 数据大屏前端说明 |
 | [`deploy/release/sql/upgrade/README.md`](./deploy/release/sql/upgrade/README.md) | Release 包升级目录说明 |
 | [`RELEASE_NOTES.md`](./RELEASE_NOTES.md) | 当前发布内容和默认部署边界 |
-| [`sql/`](./sql/) | 数据库快照、功能 SQL 和历史迁移脚本 |
+| [`sql/`](./sql/) | 功能 SQL 和历史迁移脚本（历史数据库快照不纳入 Release） |
 | API 文档 | 启动后访问 `doc.html`；机器接口可访问 `v3/api-docs` |
 
 ## 🤝 帮助与支持
 
-- [GitHub 仓库](https://github.com/OortCloudGroup/apaas-wvp-server)
-- [GitHub Issues](https://github.com/OortCloudGroup/apaas-wvp-server/issues)
+- [GitHub 仓库](https://github.com/OortCloudGroup/VLStream-Cloud-Lite)
+- [GitHub Issues](https://github.com/OortCloudGroup/VLStream-Cloud-Lite/issues)
 
 提交问题时请同时说明使用的 Release/commit、部署方式（源码或 Docker）、操作系统、相关端口、脱敏后的配置和关键日志。请勿提交真实密码、Token、设备凭据、完整 RTSP URL 或生产环境数据库导出文件。
 
