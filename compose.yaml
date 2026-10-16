@@ -1,4 +1,4 @@
-name: apaas-wvp-server
+name: vlstream-wvp-lite
 
 services:
   mysql:
@@ -52,7 +52,7 @@ services:
       retries: 30
 
   zlmediakit:
-    image: ${ZLM_RELEASE_IMAGE:-apaas-wvp-zlmediakit:1.0.3}
+    image: ${ZLM_RELEASE_IMAGE:-vlstream-wvp-lite-zlmediakit:1.0.9}
     build:
       context: ./deploy/release/zlm
       args:
@@ -71,13 +71,13 @@ services:
     volumes:
       - zlm-data:/opt/media/www
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/index/api/getServerConfig >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "curl -fsS --get --data-urlencode \"secret=$${ZLM_SECRET}\" http://127.0.0.1:8080/index/api/getServerConfig | grep -q '\"code\" *: *0'"]
       interval: 10s
       timeout: 5s
       retries: 30
 
   wvp-backend:
-    image: ${WVP_IMAGE:-ghcr.io/oortcloudgroup/apaas-wvp-server:1.0.3}
+    image: ${WVP_IMAGE:-ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.9}
     restart: unless-stopped
     extra_hosts: ["host.docker.internal:host-gateway"]
     depends_on:
@@ -106,6 +106,23 @@ services:
       VLSTREAM_WVP_MQTT_CLIENT_ID: ${VLSTREAM_WVP_MQTT_CLIENT_ID:-wvp-vlstream-backend}
       VLSTREAM_DEVICE_DEFAULT_TENANT_ID: ${VLSTREAM_DEVICE_DEFAULT_TENANT_ID:-000000}
       VLSTREAM_DEVICE_TENANT_BINDING_SECRET: ${VLSTREAM_DEVICE_TENANT_BINDING_SECRET:-}
+      VLSTREAM_VERIFY_TOKEN: ${VLSTREAM_VERIFY_TOKEN:-}
+      SSO_VERIFY_TOKEN: ${SSO_VERIFY_TOKEN:-}
+      SSL_KEY_STORE_PASSWORD: ${SSL_KEY_STORE_PASSWORD:-}
+      ISUP_KEY: ${ISUP_KEY:-}
+      GITEE_CLIENT_ID: ${GITEE_CLIENT_ID:-}
+      GITEE_CLIENT_SECRET: ${GITEE_CLIENT_SECRET:-}
+      GITEE_REDIRECT_URI: ${GITEE_REDIRECT_URI:-}
+      FRONT_URL: ${FRONT_URL:-}
+      DRUID_STAT_VIEW_ENABLED: ${DRUID_STAT_VIEW_ENABLED:-false}
+      DRUID_LOGIN_USERNAME: ${DRUID_LOGIN_USERNAME:-}
+      DRUID_LOGIN_PASSWORD: ${DRUID_LOGIN_PASSWORD:-}
+      VLSTREAM_FIRMWARE_MINIO_ENDPOINT: ${VLSTREAM_FIRMWARE_MINIO_ENDPOINT:-}
+      VLSTREAM_FIRMWARE_PUBLIC_ENDPOINT: ${VLSTREAM_FIRMWARE_PUBLIC_ENDPOINT:-}
+      VLSTREAM_FIRMWARE_MINIO_ACCESS_KEY: ${VLSTREAM_FIRMWARE_MINIO_ACCESS_KEY:-}
+      VLSTREAM_FIRMWARE_MINIO_SECRET_KEY: ${VLSTREAM_FIRMWARE_MINIO_SECRET_KEY:-}
+      VLSTREAM_FIRMWARE_MINIO_BUCKET: ${VLSTREAM_FIRMWARE_MINIO_BUCKET:-vls-firmware}
+      VLSTREAM_WVP_PUBLIC_URL: ${VLSTREAM_WVP_PUBLIC_URL:-}
       TOKEN_SECRET: ${TOKEN_SECRET}
       SIP_PORT: ${SIP_PORT:-8116}
       SIP_PASSWORD: ${SIP_PASSWORD}
@@ -116,8 +133,6 @@ services:
       ZLM_SECRET: ${ZLM_SECRET}
       ZLM_RTP_PORT_RANGE: ${RTP_PORT_START:-40000},${RTP_PORT_END:-40300}
       ZLM_RTP_SEND_PORT_RANGE: ${RTP_PORT_START:-40000},${RTP_PORT_END:-40300}
-      VLSTREAM_VERIFY_TOKEN: ${VLSTREAM_VERIFY_TOKEN:-}
-      SSO_VERIFY_TOKEN: ${SSO_VERIFY_TOKEN:-}
       WVP_AUTH_MODE: ${WVP_AUTH_MODE:-LOCAL}
       DAHUA_ENABLED: ${DAHUA_ENABLED:-false}
       JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m -Dfile.encoding=UTF-8}
