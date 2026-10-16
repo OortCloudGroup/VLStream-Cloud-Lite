@@ -21,6 +21,12 @@ public class MediaConfig{
     @Value("${media.id}")
     private String id;
 
+    // Opt-in isolation for a local WVP sharing another deployment's database.
+    @Value("${media.load-configured-only:false}")
+    private boolean loadConfiguredOnly;
+
+    public boolean isLoadConfiguredOnly() { return loadConfiguredOnly; }
+
     @Value("${media.ip}")
     private String ip;
 

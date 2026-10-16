@@ -13,6 +13,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Collections;
 
 /**
  * 启动是从配置文件加载节点信息，以及发送个节点状态管理去控制节点状态
@@ -36,6 +37,16 @@ public class MediaServerConfig implements CommandLineRunner {
     public void run(String... strings) throws Exception {
         // 清理所有在线节点的缓存信息
         mediaServerService.clearMediaServerForOnline();
+        if (mediaConfig.isLoadConfiguredOnly()) {
+            MediaServer configured = mediaConfig.getMediaSerItem();
+            // Keep this local node out of the shared DB pool: legacy deployments load all rows.
+            // Register only in this configured instance's isolated media cache.
+            mediaServerService.update(configured);
+            MediaServerChangeEvent event = new MediaServerChangeEvent(this);
+            event.setMediaServerItemList(Collections.singletonList(configured));
+            applicationEventPublisher.publishEvent(event);
+            return;
+        }
         MediaServer defaultMediaServer = mediaServerService.getDefaultMediaServer();
         MediaServer mediaSerItemInConfig = mediaConfig.getMediaSerItem();
         if (defaultMediaServer != null && mediaSerItemInConfig.getId().equals(defaultMediaServer.getId())) {

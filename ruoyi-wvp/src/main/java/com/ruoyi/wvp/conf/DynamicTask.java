@@ -28,6 +28,7 @@ public class DynamicTask {
 
     private final Map<String, ScheduledFuture<?>> futureMap = new ConcurrentHashMap<>();
     private final Map<String, Runnable> runnableMap = new ConcurrentHashMap<>();
+    private boolean destroyed;
 
     @PostConstruct
     public void DynamicTask() {
@@ -41,11 +42,15 @@ public class DynamicTask {
 
     @PreDestroy
     public void destroy() {
-        for (ScheduledFuture<?> future : futureMap.values()) {
-            future.cancel(false);
+        synchronized (this) {
+            destroyed = true;
+            for (ScheduledFuture<?> future : futureMap.values()) {
+                future.cancel(false);
+            }
+            futureMap.clear();
+            runnableMap.clear();
         }
-        futureMap.clear();
-        runnableMap.clear();
+        // Running callbacks may use this task manager; do not hold its lock while awaiting them.
         if (threadPoolTaskScheduler != null) {
             threadPoolTaskScheduler.shutdown();
         }
@@ -58,19 +63,20 @@ public class DynamicTask {
      * @param cycleForCatalog 间隔 毫秒
      * @return
      */
-    public void startCron(String key, Runnable task, int cycleForCatalog) {
-        if(ObjectUtils.isEmpty(key)) {
+    public synchronized void startCron(String key, Runnable task, int cycleForCatalog) {
+        if(destroyed || ObjectUtils.isEmpty(key)) {
             return;
         }
         ScheduledFuture<?> future = futureMap.get(key);
         if (future != null) {
-            if (future.isCancelled()) {
+            if (future.isCancelled() || future.isDone()) {
                 log.debug("任务【{}】已存在但是关闭状态！！！", key);
             } else {
                 log.debug("任务【{}】已存在且已启动！！！", key);
                 return;
             }
         }
+        stop(key);
         // scheduleWithFixedDelay 必须等待上一个任务结束才开始计时period， cycleForCatalog表示执行的间隔
 
         future = threadPoolTaskScheduler.scheduleAtFixedRate(task, new Date(System.currentTimeMillis() + cycleForCatalog), cycleForCatalog);
@@ -90,8 +96,8 @@ public class DynamicTask {
      * @param delay 延时 /毫秒
      * @return
      */
-    public void startDelay(String key, Runnable task, int delay) {
-        if(ObjectUtils.isEmpty(key)) {
+    public synchronized void startDelay(String key, Runnable task, int delay) {
+        if(destroyed || ObjectUtils.isEmpty(key)) {
             return;
         }
         stop(key);
@@ -99,17 +105,8 @@ public class DynamicTask {
         // 获取执行的时刻
         Instant startInstant = Instant.now().plusMillis(TimeUnit.MILLISECONDS.toMillis(delay));
 
-        ScheduledFuture future = futureMap.get(key);
-        if (future != null) {
-            if (future.isCancelled()) {
-                log.debug("任务【{}】已存在但是关闭状态！！！", key);
-            } else {
-                log.debug("任务【{}】已存在且已启动！！！", key);
-                return;
-            }
-        }
         // scheduleWithFixedDelay 必须等待上一个任务结束才开始计时period， cycleForCatalog表示执行的间隔
-        future = threadPoolTaskScheduler.schedule(task, startInstant);
+        ScheduledFuture<?> future = threadPoolTaskScheduler.schedule(task, startInstant);
         if (future != null){
             futureMap.put(key, future);
             runnableMap.put(key, task);
@@ -119,17 +116,13 @@ public class DynamicTask {
         }
     }
 
-    public boolean stop(String key) {
+    public synchronized boolean stop(String key) {
         if(ObjectUtils.isEmpty(key)) {
             return false;
         }
-        boolean result = false;
-        if (!ObjectUtils.isEmpty(futureMap.get(key)) && !futureMap.get(key).isCancelled() && !futureMap.get(key).isDone()) {
-            result = futureMap.get(key).cancel(false);
-            futureMap.remove(key);
-            runnableMap.remove(key);
-        }
-        return result;
+        ScheduledFuture<?> future = futureMap.remove(key);
+        runnableMap.remove(key);
+        return future != null && future.cancel(false);
     }
 
     public boolean contains(String key) {
@@ -154,7 +147,7 @@ public class DynamicTask {
      * 每五分钟检查失效的任务，并移除
      */
     @Scheduled(cron="0 0/5 * * * ?")
-    public void execute(){
+    public synchronized void execute(){
         if (futureMap.size() > 0) {
             for (String key : futureMap.keySet()) {
                 ScheduledFuture<?> future = futureMap.get(key);
@@ -167,6 +160,7 @@ public class DynamicTask {
     }
 
     public boolean isAlive(String key) {
-        return futureMap.get(key) != null && !futureMap.get(key).isDone() && !futureMap.get(key).isCancelled();
+        ScheduledFuture<?> future = futureMap.get(key);
+        return future != null && !future.isDone() && !future.isCancelled();
     }
 }

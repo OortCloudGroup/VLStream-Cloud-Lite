@@ -151,7 +151,7 @@ public class MediaServerServiceImpl implements IMediaServerService {
                 ssrcFactory.initMediaServerSSRC(mediaServer.getId(), null);
             }
             // 查询redis是否存在此mediaServer
-            String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + userSetting.getServerId();
+            String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + mediaCacheScope();
             Boolean hasKey = redisTemplate.hasKey(key);
             if (hasKey != null && !hasKey) {
                 redisTemplate.opsForHash().put(key, mediaServer.getId(), mediaServer);
@@ -302,18 +302,25 @@ public class MediaServerServiceImpl implements IMediaServerService {
 
     @Override
     public void update(MediaServer mediaSerItem) {
-        mediaServerMapper.update(mediaSerItem);
+        requireConfiguredNode(mediaSerItem.getId());
+        boolean configuredOnly = mediaConfig.isLoadConfiguredOnly();
         MediaServer mediaServerInRedis = getOne(mediaSerItem.getId());
-        // 获取完整数据
-        MediaServer mediaServerInDataBase = mediaServerMapper.getMediaServerById(mediaSerItem.getId());
-        if (mediaServerInDataBase == null) {
-            return;
+        MediaServer mediaServerInDataBase;
+        if (configuredOnly) {
+            mediaServerInDataBase = mediaSerItem;
+            if (mediaServerInDataBase.getCreateTime() == null)
+                mediaServerInDataBase.setCreateTime(DateUtil.getNow());
+            mediaServerInDataBase.setUpdateTime(DateUtil.getNow());
+        } else {
+            mediaServerMapper.update(mediaSerItem);
+            mediaServerInDataBase = mediaServerMapper.getMediaServerById(mediaSerItem.getId());
+            if (mediaServerInDataBase == null) return;
         }
         mediaServerInDataBase.setStatus(mediaSerItem.isStatus());
         if (mediaServerInRedis == null || !ssrcFactory.hasMediaServerSSRC(mediaServerInDataBase.getId())) {
             ssrcFactory.initMediaServerSSRC(mediaServerInDataBase.getId(),null);
         }
-        String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + mediaCacheScope();
         redisTemplate.opsForHash().put(key, mediaServerInDataBase.getId(), mediaServerInDataBase);
         if (mediaServerInDataBase.isStatus()) {
             resetOnlineServerItem(mediaServerInDataBase);
@@ -324,8 +331,8 @@ public class MediaServerServiceImpl implements IMediaServerService {
     @Override
     public List<MediaServer> getAllOnlineList() {
         List<MediaServer> result = new ArrayList<>();
-        String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + userSetting.getServerId();
-        String onlineKey = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + mediaCacheScope();
+        String onlineKey = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + mediaCacheScope();
         List<Object> values = redisTemplate.opsForHash().values(key);
         for (Object value : values) {
             if (Objects.isNull(value)) {
@@ -352,6 +359,7 @@ public class MediaServerServiceImpl implements IMediaServerService {
 
     @Override
     public List<MediaServer> getAll() {
+        if (mediaConfig.isLoadConfiguredOnly()) return Collections.singletonList(getDefaultMediaServer());
         List<MediaServer> mediaServerList = mediaServerMapper.queryAll();
         if (mediaServerList.isEmpty()) {
             return new ArrayList<>();
@@ -368,19 +376,20 @@ public class MediaServerServiceImpl implements IMediaServerService {
 
     @Override
     public List<MediaServer> getAllFromDatabase() {
+        if (mediaConfig.isLoadConfiguredOnly()) return getAll();
         return mediaServerMapper.queryAll();
     }
 
     @Override
     public List<MediaServer> getAllOnline() {
-        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + mediaCacheScope();
         Set<Object> mediaServerIdSet = redisTemplate.opsForZSet().reverseRange(key, 0, -1);
 
         List<MediaServer> result = new ArrayList<>();
         if (mediaServerIdSet != null && !mediaServerIdSet.isEmpty()) {
             for (Object mediaServerId : mediaServerIdSet) {
                 String mediaServerIdStr = (String) mediaServerId;
-                String serverKey = VideoManagerConstants.MEDIA_SERVER_PREFIX + userSetting.getServerId();
+                String serverKey = VideoManagerConstants.MEDIA_SERVER_PREFIX + mediaCacheScope();
                 result.add((MediaServer) redisTemplate.opsForHash().get(serverKey, mediaServerIdStr));
             }
         }
@@ -395,27 +404,49 @@ public class MediaServerServiceImpl implements IMediaServerService {
      */
     @Override
     public MediaServer getOne(String mediaServerId) {
-        if (mediaServerId == null) {
+        if (mediaServerId == null || (mediaConfig.isLoadConfiguredOnly()
+                && !Objects.equals(mediaConfig.getId(), mediaServerId))) {
             return null;
         }
-        String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + mediaCacheScope();
         return (MediaServer) redisTemplate.opsForHash().get(key, mediaServerId);
     }
 
 
+    private String mediaCacheScope() {
+        return mediaConfig.isLoadConfiguredOnly()
+            ? userSetting.getServerId() + ":configured:" + mediaConfig.getId()
+            : userSetting.getServerId();
+    }
+
+    private void requireConfiguredNode(String mediaServerId) {
+        if (mediaConfig.isLoadConfiguredOnly() && !Objects.equals(mediaConfig.getId(), mediaServerId)) {
+            throw new ControllerException(ErrorCode.ERROR100.getCode(), "当前模式仅使用配置的媒体节点");
+        }
+    }
+
     @Override
     public MediaServer getDefaultMediaServer() {
+        if (mediaConfig.isLoadConfiguredOnly()) {
+            MediaServer registered = getOne(mediaConfig.getId());
+            return registered != null ? registered : mediaConfig.getMediaSerItem();
+        }
         return mediaServerMapper.queryDefault();
     }
 
     @Override
     public void clearMediaServerForOnline() {
-        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + mediaCacheScope();
         redisTemplate.delete(key);
     }
 
     @Override
     public void add(MediaServer mediaServer) {
+        requireConfiguredNode(mediaServer.getId());
+        if (mediaConfig.isLoadConfiguredOnly()) {
+            update(mediaServer);
+            return;
+        }
         mediaServer.setCreateTime(DateUtil.getNow());
         mediaServer.setUpdateTime(DateUtil.getNow());
         if (mediaServer.getHookAliveInterval() == null || mediaServer.getHookAliveInterval() == 0F) {
@@ -444,7 +475,7 @@ public class MediaServerServiceImpl implements IMediaServerService {
     @Override
     public void resetOnlineServerItem(MediaServer serverItem) {
         // 更新缓存
-        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + mediaCacheScope();
         // 使用zset的分数作为当前并发量， 默认值设置为0
         if (redisTemplate.opsForZSet().score(key, serverItem.getId()) == null) {  // 不存在则设置默认值 已存在则重置
             redisTemplate.opsForZSet().add(key, serverItem.getId(), 0L);
@@ -467,14 +498,14 @@ public class MediaServerServiceImpl implements IMediaServerService {
         if (mediaServerId == null) {
             return;
         }
-        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + mediaCacheScope();
         redisTemplate.opsForZSet().incrementScore(key, mediaServerId, 1);
 
     }
 
     @Override
     public void removeCount(String mediaServerId) {
-        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + mediaCacheScope();
         redisTemplate.opsForZSet().incrementScore(key, mediaServerId, - 1);
     }
 
@@ -484,7 +515,7 @@ public class MediaServerServiceImpl implements IMediaServerService {
      */
     @Override
     public MediaServer getMediaServerForMinimumLoad(Boolean hasAssist) {
-        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + userSetting.getServerId();
+        String key = VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + mediaCacheScope();
         Long size = redisTemplate.opsForZSet().zCard(key);
         if (size  == null || size == 0) {
             log.info("获取负载最低的节点时无在线节点");
@@ -562,9 +593,12 @@ public class MediaServerServiceImpl implements IMediaServerService {
 
     @Override
     public void delete(MediaServer mediaServer) {
+        if (mediaConfig.isLoadConfiguredOnly()) {
+            throw new ControllerException(ErrorCode.ERROR100.getCode(), "配置媒体节点不能通过管理接口删除");
+        }
         mediaServerMapper.delOne(mediaServer.getId());
-        redisTemplate.opsForZSet().remove(VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + userSetting.getServerId(), mediaServer.getId());
-        String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + userSetting.getServerId() + ":" + mediaServer.getId();
+        redisTemplate.opsForZSet().remove(VideoManagerConstants.ONLINE_MEDIA_SERVERS_PREFIX + mediaCacheScope(), mediaServer.getId());
+        String key = VideoManagerConstants.MEDIA_SERVER_PREFIX + mediaCacheScope() + ":" + mediaServer.getId();
         redisTemplate.delete(key);
         // 发送节点移除通知
         MediaServerDeleteEvent event = new MediaServerDeleteEvent(this);
@@ -574,11 +608,13 @@ public class MediaServerServiceImpl implements IMediaServerService {
 
     @Override
     public MediaServer getOneFromDatabase(String mediaServerId) {
+        if (mediaConfig.isLoadConfiguredOnly()) return getOne(mediaServerId);
         return mediaServerMapper.getMediaServerById(mediaServerId);
     }
 
     @Override
     public void syncCatchFromDatabase() {
+        if (mediaConfig.isLoadConfiguredOnly()) return;
         List<MediaServer> allInCatch = getAllOnlineList();
         List<MediaServer> allInDatabase = mediaServerMapper.queryAll();
         Map<String, MediaServer> mediaServerMap = new HashMap<>();

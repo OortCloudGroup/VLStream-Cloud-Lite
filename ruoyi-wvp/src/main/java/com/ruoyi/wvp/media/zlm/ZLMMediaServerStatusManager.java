@@ -73,10 +73,12 @@ public class ZLMMediaServerStatusManager {
             return;
         }
         for (MediaServer mediaServerItem : event.getMediaServerItemList()) {
-            if (!type.equals(mediaServerItem.getType())) {
+            if (!type.equals(mediaServerItem.getType()) || (mediaConfig.isLoadConfiguredOnly()
+                    && !Objects.equals(mediaConfig.getId(), mediaServerItem.getId()))) {
                 continue;
             }
-            mediaServerItem.setHttpPort(mediaConfig.getHttpPort());
+            if (Objects.equals(mediaServerItem.getId(), mediaConfig.getId()))
+                mediaServerItem.setHttpPort(mediaConfig.getHttpPort());
             log.info("[ZLM-添加待上线节点] ID：" + mediaServerItem.getId());
             offlineZlmPrimaryMap.put(mediaServerItem.getId(), mediaServerItem);
             offlineZlmTimeMap.put(mediaServerItem.getId(), System.currentTimeMillis());
@@ -126,8 +128,11 @@ public class ZLMMediaServerStatusManager {
         offlineZlmTimeMap.remove(event.getMediaServer().getId());
     }
 
-    @Scheduled(fixedDelay = 60*60*1000)   //每隔10秒检查一次
-    public void execute(){
+    @Scheduled(fixedDelayString = "${media.offline-retry-interval-ms:10000}")
+    public void execute(){ execute(System.currentTimeMillis()); }
+
+    // Explicit time makes the 30-minute backoff testable without sleeps or network outages.
+    void execute(long now){
         // 初次加入的离线节点会在30分钟内，每间隔十秒尝试一次，30分钟后如果仍然没有上线，则每隔30分钟尝试一次连接
         if (offlineZlmPrimaryMap.isEmpty() && offlineZlmsecondaryMap.isEmpty()) {
             return;
@@ -135,7 +140,7 @@ public class ZLMMediaServerStatusManager {
         if (!offlineZlmPrimaryMap.isEmpty()) {
             for (MediaServer mediaServerItem : offlineZlmPrimaryMap.values()) {
                 if (offlineZlmTimeMap.get(mediaServerItem.getId()) != null
-                        && offlineZlmTimeMap.get(mediaServerItem.getId()) <  System.currentTimeMillis() - 30*60*1000) {
+                        && offlineZlmTimeMap.get(mediaServerItem.getId()) < now - 30*60*1000) {
                     offlineZlmsecondaryMap.put(mediaServerItem.getId(), mediaServerItem);
                     offlineZlmPrimaryMap.remove(mediaServerItem.getId());
                     continue;
@@ -143,8 +148,8 @@ public class ZLMMediaServerStatusManager {
                 log.info("[ZLM-尝试连接] ID：{}, 地址： {}:{}", mediaServerItem.getId(), mediaServerItem.getIp(), mediaServerItem.getHttpPort());
                 JSONObject responseJson = zlmresTfulUtils.getMediaServerConfig(mediaServerItem);
                 ZLMServerConfig zlmServerConfig = null;
-                if (responseJson == null) {
-                    log.info("[secret: {}, ZLM-尝试连接]失败, ID：{}, 地址： {}:{}", mediaServerItem.getSecret(), mediaServerItem.getId(), mediaServerItem.getIp(), mediaServerItem.getHttpPort());
+                if (responseJson == null || !Integer.valueOf(0).equals(responseJson.getInteger("code"))) {
+                    log.info("[ZLM-尝试连接]失败, ID：{}, 地址： {}:{}", mediaServerItem.getId(), mediaServerItem.getIp(), mediaServerItem.getHttpPort());
                     continue;
                 }
                 JSONArray data = responseJson.getJSONArray("data");
@@ -159,21 +164,21 @@ public class ZLMMediaServerStatusManager {
         }
         if (!offlineZlmsecondaryMap.isEmpty()) {
             for (MediaServer mediaServerItem : offlineZlmsecondaryMap.values()) {
-                if (offlineZlmTimeMap.get(mediaServerItem.getId()) <  System.currentTimeMillis() - 30*60*1000) {
-                    continue;
-                }
+                Long lastAttempt = offlineZlmTimeMap.get(mediaServerItem.getId());
+                if (lastAttempt != null && now - lastAttempt < 30*60*1000) continue;
+                offlineZlmTimeMap.put(mediaServerItem.getId(), now);
                 log.info("[ZLM-尝试连接] ID：{}, 地址： {}:{}", mediaServerItem.getId(), mediaServerItem.getIp(), mediaServerItem.getHttpPort());
                 JSONObject responseJson = zlmresTfulUtils.getMediaServerConfig(mediaServerItem);
                 ZLMServerConfig zlmServerConfig = null;
-                if (responseJson == null) {
+                if (responseJson == null || !Integer.valueOf(0).equals(responseJson.getInteger("code"))) {
                     log.info("[ZLM-尝试连接]失败, ID：{}, 地址： {}:{}", mediaServerItem.getId(), mediaServerItem.getIp(), mediaServerItem.getHttpPort());
-                    offlineZlmTimeMap.put(mediaServerItem.getId(), System.currentTimeMillis());
+                    offlineZlmTimeMap.put(mediaServerItem.getId(), now);
                     continue;
                 }
                 JSONArray data = responseJson.getJSONArray("data");
                 if (data == null || data.isEmpty()) {
                     log.info("[ZLM-尝试连接]失败, ID：{}, 地址： {}:{}", mediaServerItem.getId(), mediaServerItem.getIp(), mediaServerItem.getHttpPort());
-                    offlineZlmTimeMap.put(mediaServerItem.getId(), System.currentTimeMillis());
+                    offlineZlmTimeMap.put(mediaServerItem.getId(), now);
                 }else {
                     zlmServerConfig = JSON.parseObject(JSON.toJSONString(data.get(0)), ZLMServerConfig.class);
                     initPort(mediaServerItem, zlmServerConfig);
