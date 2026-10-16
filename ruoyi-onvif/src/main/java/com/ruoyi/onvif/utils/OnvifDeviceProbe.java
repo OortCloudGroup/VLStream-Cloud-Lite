@@ -4,6 +4,7 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.onvif.domain.FetchMainAndSubStreamUris;
 import com.ruoyi.onvif.domain.OnvifDevice;
 import com.ruoyi.onvif.domain.bo.FetchMainAndSubStreamUrisBo;
+import org.apache.http.HttpEntity;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
@@ -17,11 +18,16 @@ import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /** Read actual ONVIF services and media profiles; identity descriptions may be unreported. */
 public class OnvifDeviceProbe {
@@ -30,9 +36,47 @@ public class OnvifDeviceProbe {
     static final String MEDIA2 = "http://www.onvif.org/ver20/media/wsdl";
     static final String SCHEMA = "http://www.onvif.org/ver10/schema";
     interface Transport { OnvifPtzClient.Response post(String url, String body, FetchMainAndSubStreamUrisBo bo, boolean digest); }
+    private static final int MANAGEMENT_MAX_BYTES = 65536;
+    private static final ScheduledThreadPoolExecutor DEADLINES = deadlines();
     private final Transport transport;
-    public OnvifDeviceProbe() { this(OnvifDeviceProbe::post); }
-    OnvifDeviceProbe(Transport transport) { this.transport = transport; }
+    private final int timeoutMillis;
+    public OnvifDeviceProbe() { this(4000); }
+    public OnvifDeviceProbe(int timeout) { this.transport = null; this.timeoutMillis = Math.max(1, timeout); }
+
+    /** Authenticated, small management response; never reload profiles on a monitoring tick. */
+    public String checkManagement(FetchMainAndSubStreamUrisBo bo) {
+        try {
+            long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+            validate(bo);
+            try { management(bo, false, deadline); }
+            catch (ServiceException error) {
+                if (!authenticationError(error)) throw error;
+                management(bo, true, deadline);
+            }
+            remainingMillis(deadline);
+            return "AVAILABLE";
+        } catch (ServiceException error) {
+            if (authenticationError(error)) return "AUTHENTICATION_FAILED";
+            return error.getMessage().contains("连接") ? "UNREACHABLE" : "MANAGEMENT_UNAVAILABLE";
+        }
+    }
+    private void management(FetchMainAndSubStreamUrisBo bo, boolean digest, long deadline) {
+        remainingMillis(deadline);
+        String url = base(bo)+"/onvif/device_service";
+        String body = "<GetDeviceInformation xmlns=\""+DEVICE+"\"/>";
+        OnvifPtzClient.Response response = transport == null
+            ? post(url, body, bo, digest, remainingMillis(deadline), deadline)
+            : transport.post(url, body, bo, digest);
+        remainingMillis(deadline);
+        OnvifPtzClient.checked(response, "GetDeviceInformation", DEVICE);
+    }
+    private static boolean authenticationError(ServiceException error) {
+        String message = error.getMessage();
+        return message != null && (message.contains("401") || message.contains("403")
+            || message.contains("NotAuthorized") || message.contains("FailedAuthentication") || message.contains("认证"));
+    }
+
+    OnvifDeviceProbe(Transport transport) { this.transport = transport; this.timeoutMillis = 4000; }
 
     public FetchMainAndSubStreamUris read(FetchMainAndSubStreamUrisBo bo, boolean digest) {
         validate(bo);
@@ -102,7 +146,8 @@ public class OnvifDeviceProbe {
         }catch(Exception e){throw new ServiceException("设备返回无效或不属于本设备的 RTSP 播放地址");}
     }
     private Document request(String url,String operation,String namespace,String body,FetchMainAndSubStreamUrisBo bo,boolean digest) {
-        return OnvifPtzClient.checked(transport.post(url,body,bo,digest),operation,namespace);
+        return OnvifPtzClient.checked(transport == null ? post(url,body,bo,digest,timeoutMillis)
+            : transport.post(url,body,bo,digest),operation,namespace);
     }
     static Element response(Document document,String operation,String namespace) {
         return (Element)document.getElementsByTagNameNS(namespace,operation+"Response").item(0);
@@ -117,24 +162,78 @@ public class OnvifDeviceProbe {
         if(bo==null||bo.getIp()==null||bo.getIp().trim().isEmpty()||bo.getUsername()==null||bo.getUsername().trim().isEmpty()
                 ||bo.getPassword()==null||bo.getPassword().trim().isEmpty())throw new ServiceException("请输入完整 ONVIF 地址、用户名和密码");
     }
-    private static OnvifPtzClient.Response post(String url,String body,FetchMainAndSubStreamUrisBo bo,boolean digest) {
+    private static OnvifPtzClient.Response post(String url,String body,FetchMainAndSubStreamUrisBo bo,boolean digest,int timeout) {
+        return post(url, body, bo, digest, timeout, 0);
+    }
+    private static OnvifPtzClient.Response post(String url,String body,FetchMainAndSubStreamUrisBo bo,boolean digest,int timeout,long deadline) {
         try {
             URI uri=new URI(url);
             BasicCredentialsProvider credentials=new BasicCredentialsProvider();
             int port=uri.getPort()<0?("https".equalsIgnoreCase(uri.getScheme())?443:80):uri.getPort();
             if(digest)credentials.setCredentials(new AuthScope(uri.getHost(),port),new UsernamePasswordCredentials(bo.getUsername(),bo.getPassword()));
-            RequestConfig config=RequestConfig.custom().setConnectTimeout(4000).setSocketTimeout(4000).setConnectionRequestTimeout(4000)
+            RequestConfig config=RequestConfig.custom().setConnectTimeout(timeout).setSocketTimeout(timeout).setConnectionRequestTimeout(timeout)
                     .setTargetPreferredAuthSchemes(Arrays.asList("Digest")).setRedirectsEnabled(false).build();
             try(CloseableHttpClient client=HttpClients.custom().setDefaultCredentialsProvider(credentials).setDefaultRequestConfig(config).disableRedirectHandling().build()) {
                 HttpPost post=new HttpPost(url);
                 OnvifDevice device=new OnvifDevice();device.setUserName(bo.getUsername());device.setPassword(bo.getPassword());
                 String soap=digest?"<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\"><s:Body>"+body+"</s:Body></s:Envelope>":OnvifPtzClient.envelope(device,body);
                 post.setEntity(new StringEntity(soap,StandardCharsets.UTF_8));post.setHeader("Content-Type","application/soap+xml; charset=utf-8");
-                try(CloseableHttpResponse response=client.execute(post)) {
-                    return new OnvifPtzClient.Response(response.getStatusLine().getStatusCode(),response.getEntity()==null?"":EntityUtils.toString(response.getEntity(),StandardCharsets.UTF_8));
-                }
+                // Abort the underlying connection, not just a waiting Future. This also interrupts
+                // HTTP Digest retries and blocking header/body reads when a peer drip-feeds data.
+                ScheduledFuture<?> abort = deadline == 0 ? null : DEADLINES.schedule(post::abort,
+                    Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS);
+                try {
+                    if (deadline != 0) remainingMillis(deadline);
+                    try(CloseableHttpResponse response=client.execute(post)) {
+                        String reply = deadline == 0
+                            ? (response.getEntity()==null?"":EntityUtils.toString(response.getEntity(),StandardCharsets.UTF_8))
+                            : boundedBody(response.getEntity(), post, deadline);
+                        return new OnvifPtzClient.Response(response.getStatusLine().getStatusCode(), reply);
+                    }
+                } finally { if (abort != null) abort.cancel(false); }
             }
-        }catch(Exception e){throw new ServiceException("ONVIF 服务连接失败或超时");}
+        }catch(ServiceException e){throw e;}
+        catch(Exception e){throw new ServiceException("ONVIF 服务连接失败或超时");}
+    }
+
+    private static String boundedBody(HttpEntity entity, HttpPost post, long deadline) throws Exception {
+        try {
+            if (entity == null) return "";
+            if (entity.getContentLength() > MANAGEMENT_MAX_BYTES)
+                throw new ServiceException("ONVIF 管理响应超出大小限制");
+            InputStream input = entity.getContent();
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            for (;;) {
+                remainingMillis(deadline);
+                int count = input.read(buffer);
+                remainingMillis(deadline);
+                if (count < 0) return new String(output.toByteArray(), StandardCharsets.UTF_8);
+                if (output.size() + count > MANAGEMENT_MAX_BYTES)
+                    throw new ServiceException("ONVIF 管理响应超出大小限制");
+                output.write(buffer, 0, count);
+            }
+        } finally {
+            // Abort before response cleanup can attempt to drain a slow/oversized entity.
+            // Every management request owns its client, so no connection reuse is lost.
+            post.abort();
+        }
+    }
+
+    private static int remainingMillis(long deadline) {
+        long nanos = deadline - System.nanoTime();
+        if (nanos <= 0) throw new ServiceException("ONVIF 服务连接失败或超时");
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(1, TimeUnit.NANOSECONDS.toMillis(nanos)));
+    }
+
+    private static ScheduledThreadPoolExecutor deadlines() {
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, task -> {
+            Thread thread = new Thread(task, "onvif-probe-deadline");
+            thread.setDaemon(true);
+            return thread;
+        });
+        executor.setRemoveOnCancelPolicy(true);
+        return executor;
     }
     private static class Service { final String url,namespace;Service(String url,String namespace){this.url=url;this.namespace=namespace;} }
 }

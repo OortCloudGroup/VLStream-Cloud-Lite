@@ -12,7 +12,6 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
-import com.ruoyi.common.annotation.DataScope;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.rtsp.config.ODConfig;
 import com.ruoyi.rtsp.constants.StreamTypeConstants;
@@ -47,6 +46,31 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
     @Autowired
     private RtspDeviceMapper rtspDeviceMapper;
 
+    @Autowired
+    private com.ruoyi.rtsp.service.RtspDeviceScopedReader scopedReader;
+
+    private RtspDevice requireDevice(Long id) {
+        if (id == null) throw new com.ruoyi.common.exception.ServiceException("设备不存在或无权访问", 403);
+        RtspDevice query = new RtspDevice();
+        query.setId(id);
+        return scopedReader.forOperation(query, false).stream().filter(row -> id.equals(row.getId())).findFirst()
+                .orElseThrow(() -> new com.ruoyi.common.exception.ServiceException("设备不存在或无权访问", 403));
+    }
+
+    @Autowired
+    private com.ruoyi.common.deviceavailability.ProtocolAvailabilityService availability;
+
+    private RtspDevice decorate(RtspDevice device) {
+        if (device != null) device.setAvailability(availability.get("RTSP", String.valueOf(device.getId())));
+        return device;
+    }
+
+    private List<RtspDevice> decorate(List<RtspDevice> devices) {
+        devices.forEach(this::decorate);
+        return devices;
+    }
+
+
     /**
      * 查询rtsp设备
      *
@@ -55,7 +79,7 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
      */
     @Override
     public RtspDevice selectRtspDeviceById(Long id) {
-        return rtspDeviceMapper.selectRtspDeviceById(id);
+        return decorate(requireDevice(id));
     }
 
     /**
@@ -65,9 +89,8 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
      * @return rtsp设备
      */
     @Override
-    @DataScope(deptAlias = "d")
     public List<RtspDevice> selectRtspDeviceList(RtspDevice rtspDevice) {
-        return rtspDeviceMapper.selectRtspDeviceList(rtspDevice);
+        return decorate(scopedReader.forOperation(rtspDevice, false));
     }
 
     /**
@@ -78,6 +101,7 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
      */
     @Override
     public int insertRtspDevice(RtspDevice rtspDevice) {
+        rtspDevice.setTenantId(scopedReader.currentTenant());
         // 生成rtsp地址
         String rtspUrl = RtspTool.generateRtspUrl(rtspDevice);
         if (rtspDevice != null) {
@@ -95,13 +119,17 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
      */
     @Override
     public int updateRtspDevice(RtspDevice rtspDevice) {
+        requireDevice(rtspDevice.getId());
+        scopedReader.scope(rtspDevice);
         // 生成rtsp地址
         String rtspUrl = RtspTool.generateRtspUrl(rtspDevice);
         if (rtspDevice != null) {
             rtspDevice.setUrl(rtspUrl);
         }
         rtspDevice.setUpdateTime(DateUtils.getNowDate());
-        return rtspDeviceMapper.updateRtspDevice(rtspDevice);
+        int changed = rtspDeviceMapper.updateRtspDevice(rtspDevice);
+        if (changed > 0) availability.invalidate("RTSP", String.valueOf(rtspDevice.getId()));
+        return changed;
     }
 
     /**
@@ -112,7 +140,10 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
      */
     @Override
     public int deleteRtspDeviceByIds(Long[] ids) {
-        return rtspDeviceMapper.deleteRtspDeviceByIds(ids);
+        for (Long id : ids) requireDevice(id);
+        RtspDevice scope = new RtspDevice(); scopedReader.scope(scope);
+        return rtspDeviceMapper.deleteRtspDeviceByIds(ids, (String) scope.getParams().get("tenantId"),
+                (String) scope.getParams().get("defaultTenantId"));
     }
 
     /**
@@ -123,7 +154,10 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
      */
     @Override
     public int deleteRtspDeviceById(Long id) {
-        return rtspDeviceMapper.deleteRtspDeviceById(id);
+        requireDevice(id);
+        RtspDevice scope = new RtspDevice(); scopedReader.scope(scope);
+        return rtspDeviceMapper.deleteRtspDeviceById(id, (String) scope.getParams().get("tenantId"),
+                (String) scope.getParams().get("defaultTenantId"));
     }
 
     /**
@@ -133,6 +167,7 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
      */
     @Override
     public void insertRtspDetection(RtspDeviceBo bo) throws OrtException, IOException {
+        scopedReader.currentTenant();
         if (bo.getType().equals("detection")) {
             CameraDetectionTool.cameraDetection(bo);
             return;
@@ -142,6 +177,7 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
 
     @Override
     public void stopRtspDetection(RtspDeviceBo bo) throws OrtException, IOException {
+        scopedReader.currentTenant();
         if (bo.getType().equals("detection")) {
             CameraDetectionTool.stopCameraDetection();
             return;
@@ -151,7 +187,7 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
 
     @Override
     public String alarmClock(alarmClockBo bo) {
-        RtspDevice device = rtspDeviceMapper.selectRtspDeviceById(bo.getId());
+        RtspDevice device = requireDevice(bo.getId());
         String firm = device.getFirm();
         if (firm.equals(StreamTypeConstants.HIKVISION)) {
             String startTime = this.formatAlarmTimeHIKVISION(bo.getStartTime());
@@ -177,7 +213,7 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
      */
     @Override
     public List<RtspDevice> selectRtspDeviceListMap(RtspDevice rtspDevice) {
-        return rtspDeviceMapper.selectRtspDeviceListMap(rtspDevice);
+        return decorate(scopedReader.forOperation(rtspDevice, true));
     }
 
     /**

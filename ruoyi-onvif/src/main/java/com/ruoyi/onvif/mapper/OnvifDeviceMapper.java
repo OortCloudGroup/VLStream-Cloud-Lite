@@ -1,6 +1,7 @@
 package com.ruoyi.onvif.mapper;
 
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 import com.ruoyi.onvif.domain.OnvifDevice;
 
@@ -49,7 +50,7 @@ public interface OnvifDeviceMapper {
      * @param id onvif 设备主键
      * @return 结果
      */
-    public int deleteOnvifDeviceById(Long id);
+    public int deleteOnvifDeviceById(@Param("id") Long id, @Param("tenantId") String tenantId, @Param("defaultTenantId") String defaultTenantId);
 
     /**
      * 批量删除onvif 设备
@@ -57,7 +58,7 @@ public interface OnvifDeviceMapper {
      * @param ids 需要删除的数据主键集合
      * @return 结果
      */
-    public int deleteOnvifDeviceByIds(Long[] ids);
+    public int deleteOnvifDeviceByIds(@Param("ids") Long[] ids, @Param("tenantId") String tenantId, @Param("defaultTenantId") String defaultTenantId);
 
     /**
      * 根据ip查询设备
@@ -65,7 +66,7 @@ public interface OnvifDeviceMapper {
      * @param ip
      * @return
      */
-    OnvifDevice getOneByIp(String ip);
+    OnvifDevice getOneByIp(OnvifDevice device);
 
     /**
      * 查询地图onvif 设备列表

@@ -27,7 +27,13 @@ import java.util.stream.Collectors;
 public class IOnvifServiceImpl implements IOnvifService {
 
     @Autowired
-    private OnvifDeviceMapper onvifDeviceMapper;
+    private com.ruoyi.onvif.service.OnvifDeviceScopedReader scopedReader;
+
+    private OnvifDevice requireDevice(Long id) {
+        OnvifDevice query = new OnvifDevice(); query.setId(id);
+        return scopedReader.forOperation(query, false).stream().filter(row -> id != null && id.equals(row.getId()))
+                .findFirst().orElseThrow(() -> new com.ruoyi.common.exception.ServiceException("设备不存在或无权访问", 403));
+    }
 
     /**
      * 获取设备信息
@@ -130,7 +136,7 @@ public class IOnvifServiceImpl implements IOnvifService {
      */
     @Override
     public void onvifPZTStart(OnvifPZT onvifPZT) {
-        OnvifDevice onvifDevice = onvifDeviceMapper.selectOnvifDeviceById(onvifPZT.getId());
+        OnvifDevice onvifDevice = requireDevice(onvifPZT.getId());
         OnvifUtil.onvifPZTStart(onvifDevice,onvifPZT);
     }
 
@@ -141,7 +147,7 @@ public class IOnvifServiceImpl implements IOnvifService {
      */
     @Override
     public void onvifPZTEnd(OnvifPZT onvifPZT) {
-        OnvifDevice onvifDevice = onvifDeviceMapper.selectOnvifDeviceById(onvifPZT.getId());
+        OnvifDevice onvifDevice = requireDevice(onvifPZT.getId());
         OnvifUtil.onvifPZTEnd(onvifDevice,onvifPZT);
     }
 

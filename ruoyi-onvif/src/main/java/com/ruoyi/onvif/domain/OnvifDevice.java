@@ -27,6 +27,17 @@ public class OnvifDevice extends BaseEntity {
      */
     private Long id;
 
+    /** Assigned by the authenticated server context; never accepted from JSON. */
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private String tenantId;
+
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private com.ruoyi.common.deviceavailability.AvailabilitySnapshot availability;
+
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    public Boolean getOnline() { return availability == null ? null : availability.getOnline(); }
+
+
     /**
      * 部门ID
      */

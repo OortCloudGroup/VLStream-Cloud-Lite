@@ -78,4 +78,22 @@ public class OnvifDeviceProbeTest {
     @Test public void missingCredentialsAreRejectedBeforeNetworkAccess() {
         FetchMainAndSubStreamUrisBo bo=account();bo.setPassword("");rejected(()->OnvifDeviceProbe.validate(bo),"用户名和密码");
     }
+    @Test public void managementMonitoringOnlyReadsDeviceInformationAndFallsBackOnAuthentication() {
+        List<Boolean> attempts=new ArrayList<>();
+        OnvifDeviceProbe probe=new OnvifDeviceProbe((url,body,bo,digest)->{
+            assertEquals("http://192.168.1.13/onvif/device_service",url);
+            assertTrue(body.contains("GetDeviceInformation"));
+            assertFalse(body.contains("GetProfiles"));
+            attempts.add(digest);
+            return new OnvifPtzClient.Response(digest?200:401,digest?info():"");
+        });
+        assertEquals("AVAILABLE",probe.checkManagement(account()));
+        assertEquals(java.util.Arrays.asList(false,true),attempts);
+    }
+    @Test public void managementAuthFailureAndConnectionFailureRemainDistinct() {
+        assertEquals("AUTHENTICATION_FAILED",new OnvifDeviceProbe((url,body,bo,digest)->new OnvifPtzClient.Response(401,"")).checkManagement(account()));
+        assertEquals("UNREACHABLE",new OnvifDeviceProbe((url,body,bo,digest)->{throw new ServiceException("ONVIF 连接失败");}).checkManagement(account()));
+        assertEquals("MANAGEMENT_UNAVAILABLE",new OnvifDeviceProbe((url,body,bo,digest)->new OnvifPtzClient.Response(503,"")).checkManagement(account()));
+    }
+
 }

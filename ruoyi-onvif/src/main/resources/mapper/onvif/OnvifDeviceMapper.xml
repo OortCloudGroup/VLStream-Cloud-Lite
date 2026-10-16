@@ -6,6 +6,7 @@
 
     <resultMap type="OnvifDevice" id="OnvifDeviceResult">
         <result property="id"    column="id"    />
+        <result property="tenantId" column="tenant_id"/>
         <result property="deptId" column="dept_id"/>
         <result property="ip"    column="ip"    />
         <result property="name"    column="name"    />
@@ -33,6 +34,7 @@
 
     <sql id="selectOnvifDeviceVo">
         select o.id,
+               o.tenant_id,
                o.dept_id,
                o.ip,
                o.name,
@@ -63,6 +65,8 @@
     <select id="selectOnvifDeviceList" parameterType="OnvifDevice" resultMap="OnvifDeviceResult">
         <include refid="selectOnvifDeviceVo"/>
         <where>
+            and (o.tenant_id = #{params.tenantId}<if test="params.tenantId != null and params.tenantId.equals(params.defaultTenantId)"> or o.tenant_id is null or o.tenant_id = ''</if>)
+            <if test="id != null">and o.id = #{id}</if>
             <if test="deptId != null">and (o.dept_id = #{deptId} OR o.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE find_in_set(#{deptId}, ancestors) ))</if>
             <if test="ip != null  and ip != ''"> and o.ip = #{ip}</if>
             <if test="name != null  and name != ''"> and o.name like concat('%', #{name}, '%')</if>
@@ -87,13 +91,17 @@
         where id = #{id}
     </select>
 
-    <select id="getOneByIp" parameterType="String" resultMap="OnvifDeviceResult">
+    <select id="getOneByIp" parameterType="OnvifDevice" resultMap="OnvifDeviceResult">
         <include refid="selectOnvifDeviceVo"/>
-        where ip = #{ip}
+        where o.ip = #{ip}
+          and (o.tenant_id = #{params.tenantId}<if test="params.tenantId != null and params.tenantId.equals(params.defaultTenantId)"> or o.tenant_id is null or o.tenant_id = ''</if>)
+        limit 1
     </select>
     <select id="selectOnvifDeviceListMap" parameterType="OnvifDevice" resultMap="OnvifDeviceResult">
         <include refid="selectOnvifDeviceVo"/>
         <where>
+            and (o.tenant_id = #{params.tenantId}<if test="params.tenantId != null and params.tenantId.equals(params.defaultTenantId)"> or o.tenant_id is null or o.tenant_id = ''</if>)
+            <if test="id != null">and o.id = #{id}</if>
             <if test="deptId != null">and (o.dept_id = #{deptId} OR o.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE find_in_set(#{deptId}, ancestors) ))</if>
             <if test="ip != null  and ip != ''"> and o.ip = #{ip}</if>
             <if test="name != null  and name != ''"> and o.name like concat('%', #{name}, '%')</if>
@@ -116,6 +124,7 @@
     <insert id="insertOnvifDevice" parameterType="OnvifDevice" useGeneratedKeys="true" keyProperty="id">
         insert into onvif_device
         <trim prefix="(" suffix=")" suffixOverrides=",">
+            tenant_id,
             <if test="deptId != null">dept_id,</if>
             <if test="ip != null">ip,</if>
             <if test="name != null">name,</if>
@@ -140,6 +149,7 @@
             <if test="addressMap != null">address_map,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{tenantId},
             <if test="deptId != null">#{deptId},</if>
             <if test="ip != null">#{ip},</if>
             <if test="name != null">#{name},</if>
@@ -192,17 +202,20 @@
             <if test="addressMap != null">address_map = #{addressMap},</if>
         </trim>
         where id = #{id}
+          and (tenant_id = #{params.tenantId}<if test="params.tenantId != null and params.tenantId.equals(params.defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)
     </update>
 
-    <delete id="deleteOnvifDeviceById" parameterType="Long">
+    <delete id="deleteOnvifDeviceById">
         delete from onvif_device where id = #{id}
+          and (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)
     </delete>
 
-    <delete id="deleteOnvifDeviceByIds" parameterType="String">
+    <delete id="deleteOnvifDeviceByIds">
         delete from onvif_device where id in
-        <foreach item="id" collection="array" open="(" separator="," close=")">
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
             #{id}
         </foreach>
+          and (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)
     </delete>
     <sql id="classificationFilter">
         <if test="categoryType != null and categoryType != ''">

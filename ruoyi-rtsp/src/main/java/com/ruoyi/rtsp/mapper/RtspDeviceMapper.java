@@ -1,6 +1,7 @@
 package com.ruoyi.rtsp.mapper;
 
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 import com.ruoyi.rtsp.domain.RtspDevice;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -51,7 +52,7 @@ public interface RtspDeviceMapper
      * @param id rtsp设备主键
      * @return 结果
      */
-    public int deleteRtspDeviceById(Long id);
+    public int deleteRtspDeviceById(@Param("id") Long id, @Param("tenantId") String tenantId, @Param("defaultTenantId") String defaultTenantId);
 
     /**
      * 批量删除rtsp设备
@@ -59,7 +60,7 @@ public interface RtspDeviceMapper
      * @param ids 需要删除的数据主键集合
      * @return 结果
      */
-    public int deleteRtspDeviceByIds(Long[] ids);
+    public int deleteRtspDeviceByIds(@Param("ids") Long[] ids, @Param("tenantId") String tenantId, @Param("defaultTenantId") String defaultTenantId);
 
     /**
      * 查询地图rtsp设备列表

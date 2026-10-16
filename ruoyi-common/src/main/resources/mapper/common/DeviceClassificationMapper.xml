@@ -28,10 +28,22 @@
         select 'EHOME', cast(id as char), trim(device_id) from ehome_device
         union all
         select 'RTSP', cast(id as char), coalesce(nullif(trim(stream_id), ''), cast(id as char))
-        from rtsp_device
+        from rtsp_device where (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)
+        <choose>
+            <when test="rtspDeviceKeys != null and rtspDeviceKeys.size() > 0">
+                and id in <foreach collection="rtspDeviceKeys" item="rtspKey" open="(" separator="," close=")">#{rtspKey}</foreach>
+            </when>
+            <otherwise>and 1=0</otherwise>
+        </choose>
         union all
         select 'ONVIF', cast(id as char), coalesce(nullif(trim(stream_id), ''), cast(id as char))
-        from onvif_device
+        from onvif_device where (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)
+        <choose>
+            <when test="onvifDeviceKeys != null and onvifDeviceKeys.size() > 0">
+                and id in <foreach collection="onvifDeviceKeys" item="onvifKey" open="(" separator="," close=")">#{onvifKey}</foreach>
+            </when>
+            <otherwise>and 1=0</otherwise>
+        </choose>
         union all
         select 'GB28181', cast(id as char), trim(device_id)
         from wvp_device where device_id is not null and trim(device_id) != ''
@@ -80,6 +92,8 @@
     <select id="selectRelations" resultMap="RelationResult">
         select category_id, category_type, protocol_type, device_key, create_by
         from wvp_device_category_relation where protocol_type=#{protocolType} and category_type=#{categoryType}
+        <if test="protocolType == 'RTSP'">and device_key in (select cast(id as char) from rtsp_device where (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>))</if>
+        <if test="protocolType == 'ONVIF'">and device_key in (select cast(id as char) from onvif_device where (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>))</if>
         <if test="protocolType == 'VLSTREAM'">
             and device_key in (select cast(id as char) from wvp_vlstream_device
                 where tenant_id=#{tenantId} or (tenant_id is null and #{tenantId}=#{defaultTenantId}))
@@ -124,8 +138,8 @@
         <choose>
             <when test="protocolType == 'ISUP'">select count(1) from isup_device</when>
             <when test="protocolType == 'EHOME'">select count(1) from ehome_device</when>
-            <when test="protocolType == 'RTSP'">select count(1) from rtsp_device</when>
-            <when test="protocolType == 'ONVIF'">select count(1) from onvif_device</when>
+            <when test="protocolType == 'RTSP'">select count(1) from rtsp_device where (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)</when>
+            <when test="protocolType == 'ONVIF'">select count(1) from onvif_device where (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)</when>
             <when test="protocolType == 'GB28181'">select count(1) from wvp_device</when>
             <when test="protocolType == 'DAHUA'">select count(1) from dahua_device</when>
             <when test="protocolType == 'VLSTREAM'">select count(1) from wvp_vlstream_device

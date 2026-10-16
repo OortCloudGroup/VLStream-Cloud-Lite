@@ -36,6 +36,16 @@ public class DeviceClassificationService {
     @Value("${vlstream.device.default-tenant-id:000000}")
     private String defaultTenantId = "000000";
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private List<DeviceClassificationScope> protocolScopes = Collections.emptyList();
+
+    private Set<String> visibleProtocolKeys(String protocol) {
+        for (DeviceClassificationScope scope : protocolScopes) {
+            if (protocol.equals(scope.protocolType())) return new HashSet<>(scope.visibleDeviceKeys());
+        }
+        return Collections.emptySet();
+    }
+
     public DeviceClassificationService(DeviceClassificationMapper mapper) {
         this.mapper = mapper;
     }
@@ -44,14 +54,18 @@ public class DeviceClassificationService {
         String type = normalizeType(categoryType);
         String protocol = normalizeTreeProtocol(protocolType);
         String tenantId = VlStreamTenantContext.currentTenant(defaultTenantId);
+        List<String> rtspDeviceKeys = ALL_PROTOCOLS.equals(protocol) ? new ArrayList<>(visibleProtocolKeys("RTSP")) : Collections.emptyList();
         List<DeviceCategory> categories = mapper.selectCategoriesByType(type);
         List<DeviceCategoryRelation> relations = ALL_PROTOCOLS.equals(protocol)
-            ? mapper.selectLogicalRelations(type, tenantId, defaultTenantId)
+            ? mapper.selectLogicalRelations(type, tenantId, defaultTenantId, rtspDeviceKeys, new ArrayList<>(visibleProtocolKeys("ONVIF")))
             : mapper.selectRelations(protocol, type, tenantId, defaultTenantId);
+
+        Set<String> visibleRtsp = "RTSP".equals(protocol) || "ONVIF".equals(protocol) ? visibleProtocolKeys(protocol) : null;
 
         Map<Long, Set<String>> directDevices = new HashMap<>();
         Set<String> classifiedDevices = new HashSet<>();
         for (DeviceCategoryRelation relation : relations) {
+            if (visibleRtsp != null && !visibleRtsp.contains(relation.getDeviceKey())) continue;
             directDevices.computeIfAbsent(relation.getCategoryId(), key -> new HashSet<>()).add(relation.getDeviceKey());
             classifiedDevices.add(relation.getDeviceKey());
         }
@@ -73,8 +87,8 @@ public class DeviceClassificationService {
         }
         for (DeviceCategoryTreeNode root : roots) collectDevices(root, directDevices);
 
-        int total = ALL_PROTOCOLS.equals(protocol)
-            ? mapper.countLogicalDevices(tenantId, defaultTenantId)
+        int total = visibleRtsp != null ? visibleRtsp.size() : ALL_PROTOCOLS.equals(protocol)
+            ? mapper.countLogicalDevices(tenantId, defaultTenantId, rtspDeviceKeys, new ArrayList<>(visibleProtocolKeys("ONVIF")))
             : mapper.countProtocolDevices(protocol, tenantId, defaultTenantId);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("tree", roots);
@@ -88,7 +102,7 @@ public class DeviceClassificationService {
         DeviceCategory category = requiredCategory(categoryId);
         if (!type.equals(category.getCategoryType())) throw new ServiceException("分类类型不匹配");
         return mapper.selectLogicalDeviceIds(type, categoryId,
-            VlStreamTenantContext.currentTenant(defaultTenantId), defaultTenantId);
+            VlStreamTenantContext.currentTenant(defaultTenantId), defaultTenantId, new ArrayList<>(visibleProtocolKeys("RTSP")), new ArrayList<>(visibleProtocolKeys("ONVIF")));
     }
 
     private Set<String> collectDevices(DeviceCategoryTreeNode node, Map<Long, Set<String>> directDevices) {
@@ -198,6 +212,9 @@ public class DeviceClassificationService {
     }
 
     private void requireVlStreamOwnership(String protocol, String deviceKey) {
+        if (("RTSP".equals(protocol) || "ONVIF".equals(protocol)) && !visibleProtocolKeys(protocol).contains(deviceKey)) {
+            throw new ServiceException("设备不存在或无权访问", 403);
+        }
         if ("VLSTREAM".equals(protocol) && mapper.countVisibleVlStreamDevice(deviceKey,
                 VlStreamTenantContext.currentTenant(defaultTenantId), defaultTenantId) != 1) {
             throw new ServiceException("设备不存在或不属于当前租户", 403);

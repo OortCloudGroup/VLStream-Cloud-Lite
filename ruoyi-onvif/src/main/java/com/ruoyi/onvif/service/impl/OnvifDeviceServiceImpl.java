@@ -45,6 +45,30 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
     private OnvifDeviceMapper onvifDeviceMapper;
 
     @Autowired
+    private com.ruoyi.onvif.service.OnvifDeviceScopedReader scopedReader;
+
+    private OnvifDevice requireDevice(Long id) {
+        if (id == null) throw new ServiceException("设备不存在或无权访问", 403);
+        OnvifDevice query = new OnvifDevice(); query.setId(id);
+        return scopedReader.forOperation(query, false).stream().filter(row -> id.equals(row.getId())).findFirst()
+                .orElseThrow(() -> new ServiceException("设备不存在或无权访问", 403));
+    }
+
+    @Autowired
+    private com.ruoyi.common.deviceavailability.ProtocolAvailabilityService availability;
+
+    private OnvifDevice decorate(OnvifDevice device) {
+        if (device != null) device.setAvailability(availability.get("ONVIF", String.valueOf(device.getId())));
+        return device;
+    }
+
+    private List<OnvifDevice> decorate(List<OnvifDevice> devices) {
+        devices.forEach(this::decorate);
+        return devices;
+    }
+
+
+    @Autowired
     private IOnvifService service;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -57,7 +81,7 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
      */
     @Override
     public OnvifDevice selectOnvifDeviceById(Long id) {
-        return onvifDeviceMapper.selectOnvifDeviceById(id);
+        return decorate(requireDevice(id));
     }
 
     /**
@@ -67,9 +91,8 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
      * @return onvif 设备
      */
     @Override
-    @DataScope(deptAlias = "d")
     public List<OnvifDevice> selectOnvifDeviceList(OnvifDevice onvifDevice) {
-        return onvifDeviceMapper.selectOnvifDeviceList(onvifDevice);
+        return decorate(scopedReader.forOperation(onvifDevice, false));
     }
 
     /**
@@ -80,7 +103,9 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
      */
     @Override
     public int insertOnvifDevice(OnvifDevice onvifDevice) {
-        OnvifDevice row = onvifDeviceMapper.getOneByIp(onvifDevice.getIp());
+        onvifDevice.setTenantId(scopedReader.currentTenant());
+        scopedReader.scope(onvifDevice);
+        OnvifDevice row = onvifDeviceMapper.getOneByIp(onvifDevice);
         if (row != null) {
             throw new RuntimeException("该设备已存在");
         }
@@ -103,6 +128,8 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
      */
     @Override
     public int updateOnvifDevice(OnvifDevice onvifDevice) {
+        requireDevice(onvifDevice.getId());
+        scopedReader.scope(onvifDevice);
         try {
             if (onvifDevice.getStreamUris() != null) {
                 onvifDevice.setStreamUris(new ObjectMapper().writeValueAsString(onvifDevice.getStreamUris()));
@@ -111,7 +138,9 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
             e.printStackTrace();
         }
         onvifDevice.setUpdateTime(DateUtils.getNowDate());
-        return onvifDeviceMapper.updateOnvifDevice(onvifDevice);
+        int changed = onvifDeviceMapper.updateOnvifDevice(onvifDevice);
+        if (changed > 0) availability.invalidate("ONVIF", String.valueOf(onvifDevice.getId()));
+        return changed;
     }
 
     /**
@@ -122,7 +151,10 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
      */
     @Override
     public int deleteOnvifDeviceByIds(Long[] ids) {
-        return onvifDeviceMapper.deleteOnvifDeviceByIds(ids);
+        for (Long id : ids) requireDevice(id);
+        OnvifDevice scope = new OnvifDevice(); scopedReader.scope(scope);
+        return onvifDeviceMapper.deleteOnvifDeviceByIds(ids, (String) scope.getParams().get("tenantId"),
+                (String) scope.getParams().get("defaultTenantId"));
     }
 
     /**
@@ -133,7 +165,10 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
      */
     @Override
     public int deleteOnvifDeviceById(Long id) {
-        return onvifDeviceMapper.deleteOnvifDeviceById(id);
+        requireDevice(id);
+        OnvifDevice scope = new OnvifDevice(); scopedReader.scope(scope);
+        return onvifDeviceMapper.deleteOnvifDeviceById(id, (String) scope.getParams().get("tenantId"),
+                (String) scope.getParams().get("defaultTenantId"));
     }
 
     /**
@@ -142,10 +177,9 @@ public class OnvifDeviceServiceImpl implements IOnvifDeviceService {
      * @param onvifDevice
      * @return
      */
-    @DataScope(deptAlias = "d")
     @Override
     public List<OnvifDevice> selectOnvifDeviceListMap(OnvifDevice onvifDevice) {
-        return onvifDeviceMapper.selectOnvifDeviceListMap(onvifDevice);
+        return decorate(scopedReader.forOperation(onvifDevice, true));
     }
 
     /**

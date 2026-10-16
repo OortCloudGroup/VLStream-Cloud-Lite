@@ -6,6 +6,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <resultMap type="RtspDevice" id="RtspDeviceResult">
         <result property="id"    column="id"    />
+        <result property="tenantId" column="tenant_id"/>
         <result property="deptId"    column="dept_id"    />
         <result property="ip"    column="ip"    />
         <result property="name"    column="name"    />
@@ -29,6 +30,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <sql id="selectRtspDeviceVo">
         select r.id,
+               r.tenant_id,
                r.dept_id,
                r.ip,
                r.name,
@@ -56,6 +58,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectRtspDeviceList" parameterType="RtspDevice" resultMap="RtspDeviceResult">
         <include refid="selectRtspDeviceVo"/>
         <where>
+            and (r.tenant_id = #{params.tenantId}<if test="params.tenantId != null and params.tenantId.equals(params.defaultTenantId)"> or r.tenant_id is null or r.tenant_id = ''</if>)
+            <if test="id != null">and r.id = #{id}</if>
             <if test="deptId != null">and (r.dept_id = #{deptId} OR r.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE find_in_set(#{deptId}, ancestors) ))</if>
             <if test="ip != null  and ip != ''"> and r.ip = #{ip}</if>
             <if test="name != null  and name != ''"> and r.name like concat('%', #{name}, '%')</if>
@@ -76,6 +80,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectRtspDeviceListMap" parameterType="RtspDevice" resultMap="RtspDeviceResult">
         <include refid="selectRtspDeviceVo"/>
         <where>
+            and (r.tenant_id = #{params.tenantId}<if test="params.tenantId != null and params.tenantId.equals(params.defaultTenantId)"> or r.tenant_id is null or r.tenant_id = ''</if>)
+            <if test="id != null">and r.id = #{id}</if>
             <if test="deptId != null">and (r.dept_id = #{deptId} OR r.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE find_in_set(#{deptId}, ancestors) ))</if>
             <if test="ip != null  and ip != ''"> and r.ip = #{ip}</if>
             <if test="name != null  and name != ''"> and r.name like concat('%', #{name}, '%')</if>
@@ -93,6 +99,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <insert id="insertRtspDevice" parameterType="RtspDevice" useGeneratedKeys="true" keyProperty="id">
         insert into rtsp_device
         <trim prefix="(" suffix=")" suffixOverrides=",">
+            tenant_id,
             <if test="deptId != null">dept_id,</if>
             <if test="ip != null and ip != ''">ip,</if>
             <if test="name != null and name != ''">name,</if>
@@ -114,6 +121,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="remark != null">remark,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{tenantId},
             <if test="deptId != null">#{deptId},</if>
             <if test="ip != null and ip != ''">#{ip},</if>
             <if test="name != null and name != ''">#{name},</if>
@@ -160,17 +168,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="remark != null">remark = #{remark},</if>
         </trim>
         where id = #{id}
+          and (tenant_id = #{params.tenantId}<if test="params.tenantId != null and params.tenantId.equals(params.defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)
     </update>
 
-    <delete id="deleteRtspDeviceById" parameterType="Long">
+    <delete id="deleteRtspDeviceById">
         delete from rtsp_device where id = #{id}
+          and (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)
     </delete>
 
-    <delete id="deleteRtspDeviceByIds" parameterType="String">
+    <delete id="deleteRtspDeviceByIds">
         delete from rtsp_device where id in
-        <foreach item="id" collection="array" open="(" separator="," close=")">
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
             #{id}
         </foreach>
+          and (tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or tenant_id is null or tenant_id = ''</if>)
     </delete>
     <sql id="classificationFilter">
         <if test="categoryType != null and categoryType != ''">

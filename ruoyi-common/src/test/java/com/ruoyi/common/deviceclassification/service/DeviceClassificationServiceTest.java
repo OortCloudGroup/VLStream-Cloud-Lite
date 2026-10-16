@@ -47,13 +47,13 @@ public class DeviceClassificationServiceTest {
         DeviceCategory child = category(2L, 1L, "子区域");
         when(mapper.selectCategoriesByType(DeviceClassificationService.REGION))
             .thenReturn(Arrays.asList(root, child));
-        when(mapper.selectLogicalRelations(DeviceClassificationService.REGION, "tenant-a", "000000"))
+        when(mapper.selectLogicalRelations(DeviceClassificationService.REGION, "tenant-a", "000000", Collections.emptyList(), Collections.emptyList()))
             .thenReturn(Arrays.asList(
                 relation(1L, "ISUP", "device-1"),
                 relation(2L, "VLSTREAM", "device-1"),
                 relation(2L, "VLSTREAM", "device-2")
             ));
-        when(mapper.countLogicalDevices("tenant-a", "000000")).thenReturn(3);
+        when(mapper.countLogicalDevices("tenant-a", "000000", Collections.emptyList(), Collections.emptyList())).thenReturn(3);
 
         Map<String, Object> result = service.tree("region", "all");
 
@@ -63,8 +63,8 @@ public class DeviceClassificationServiceTest {
         assertEquals(2, tree.get(0).getChildren().get(0).getDeviceCount());
         assertEquals(3, result.get("totalCount"));
         assertEquals(1, result.get("unclassifiedCount"));
-        verify(mapper).selectLogicalRelations(DeviceClassificationService.REGION, "tenant-a", "000000");
-        verify(mapper).countLogicalDevices("tenant-a", "000000");
+        verify(mapper).selectLogicalRelations(DeviceClassificationService.REGION, "tenant-a", "000000", Collections.emptyList(), Collections.emptyList());
+        verify(mapper).countLogicalDevices("tenant-a", "000000", Collections.emptyList(), Collections.emptyList());
     }
 
     @Test
@@ -90,7 +90,7 @@ public class DeviceClassificationServiceTest {
     public void logicalDeviceIdsIncludeSelectedCategoryAndItsDescendants() {
         DeviceCategory category = category(2L, 1L, "子区域");
         when(mapper.selectCategoryById(2L)).thenReturn(category);
-        when(mapper.selectLogicalDeviceIds(DeviceClassificationService.REGION, 2L, "tenant-a", "000000"))
+        when(mapper.selectLogicalDeviceIds(DeviceClassificationService.REGION, 2L, "tenant-a", "000000", Collections.emptyList(), Collections.emptyList()))
             .thenReturn(Arrays.asList("device-1", "device-2"));
 
         List<String> result = service.logicalDeviceIds("REGION", 2L);
