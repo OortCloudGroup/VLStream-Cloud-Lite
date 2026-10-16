@@ -1,0 +1,25 @@
+package com.ruoyi.custom.availability;
+
+import com.alibaba.fastjson2.*;
+import org.junit.*;
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.*;
+import java.util.concurrent.*;
+import static org.junit.Assert.*;
+import static com.ruoyi.custom.availability.ProtocolFixture.*;
+
+public class CustomCameraRtcProbeTest {
+    private static byte[] frame(InputStream input)throws IOException{int first=input.read(),second=input.read();if(first<0||second<0)throw new EOFException();int length=second&127;if(length==126)length=new DataInputStream(input).readUnsignedShort();if(length>65536)throw new IOException();byte[] mask=(second&128)!=0?bytes(input,4):new byte[4],body=bytes(input,length);if((second&128)!=0)for(int i=0;i<length;i++)body[i]^=mask[i%4];return concat(new byte[]{(byte)(first&15)},body);}
+    private static void send(OutputStream out,String text)throws IOException{byte[] b=text.getBytes(StandardCharsets.UTF_8);out.write(0x81);if(b.length>=126){out.write(126);out.write(b.length>>8);}out.write(b.length);out.write(b);out.flush();}
+    private static String open(Socket s)throws Exception{String h=header(s.getInputStream());assertFalse(h.toLowerCase().contains("authorization"));assertFalse(h.toLowerCase().contains("cookie"));String key=Arrays.stream(h.split("\r\n")).filter(line->line.startsWith("Sec-WebSocket-Key:")).findFirst().get().split(":",2)[1].trim();String accept=Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1").digest((key+"258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes(StandardCharsets.US_ASCII)));s.getOutputStream().write(("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: "+accept+"\r\n\r\n").getBytes(StandardCharsets.US_ASCII));s.getOutputStream().flush();byte[] f=frame(s.getInputStream());assertEquals(1,f[0]);String message=new String(f,1,f.length-1,StandardCharsets.UTF_8);JSONObject json=JSON.parseObject(message);assertEquals("__connectto",json.getString("eventName"));assertEquals("exact-target",json.getJSONObject("data").getString("to"));assertFalse(message.contains("__call"));return json.getJSONObject("data").getString("sessionId");}
+    private String check(String state,boolean mismatched)throws Exception{try(ProtocolFixture s=new ProtocolFixture(socket->{String session=open(socket);JSONObject data=new JSONObject();data.put("sessionId",mismatched?"different":session);data.put("state",state);JSONObject reply=new JSONObject();reply.put("eventName","_create");reply.put("data",data);send(socket.getOutputStream(),reply.toJSONString());byte[] disconnect=frame(socket.getInputStream());JSONObject json=JSON.parseObject(new String(disconnect,1,disconnect.length-1,StandardCharsets.UTF_8));assertEquals("__disconnect",json.getString("eventName"));assertEquals(session,json.getJSONObject("data").getString("sessionId"));byte[] close=frame(socket.getInputStream());assertEquals(8,close[0]);socket.getOutputStream().write(new byte[]{(byte)0x88,2,3,(byte)0xe8});socket.getOutputStream().flush();})){CustomCameraRtcProbe probe=new CustomCameraRtcProbe("ws://127.0.0.1:"+s.server.getLocalPort());try{String result=probe.check("exact-target",deadline(400));assertTrue(s.disconnected.await(1,TimeUnit.SECONDS));assertTrue(s.errors.toString(),s.errors.isEmpty());return result;}finally{probe.close();}}}
+    @Test public void signalOnlineIsNotVideoProofAndNeverCallsMedia()throws Exception{assertEquals("UNSUPPORTED_SIGNAL_ONLY",check("online",false));}
+    @Test public void signalOfflineAndSleepRemainDistinct()throws Exception{assertEquals("UNREACHABLE",check("offline",false));assertEquals("UNSUPPORTED_STANDBY",check("sleep",false));}
+    @Test public void unrelatedSessionDoesNotGrantOnlineAndTimeoutCloses()throws Exception{assertEquals("STREAM_TIMEOUT",check("online",true));}
+    @Test public void defaultDisabledAndUnsafeTargetDoNotConnect(){CustomCameraRtcProbe p=new CustomCameraRtcProbe("");try{assertEquals("UNSUPPORTED_PRESENCE",p.check("id",deadline(100)));}finally{p.close();}CustomCameraRtcProbe enabled=new CustomCameraRtcProbe("ws://127.0.0.1:1");try{assertEquals("CONFIGURATION_ERROR",enabled.check("id/../another",deadline(100)));}finally{enabled.close();}}
+    @Test public void gatewayCredentialsOrQueryAreRejected(){assertThrows(IllegalArgumentException.class,()->new CustomCameraRtcProbe("ws://user:password@127.0.0.1/gateway"));assertThrows(IllegalArgumentException.class,()->new CustomCameraRtcProbe("ws://127.0.0.1/gateway?token=platform"));}
+    @Test public void gatewayAuthFailureIsDistinct()throws Exception{try(ProtocolFixture s=new ProtocolFixture(socket->{header(socket.getInputStream());socket.getOutputStream().write("HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\n\r\n".getBytes(StandardCharsets.US_ASCII));})){CustomCameraRtcProbe p=new CustomCameraRtcProbe("ws://127.0.0.1:"+s.server.getLocalPort());try{assertEquals("AUTHENTICATION_FAILED",p.check("exact-target",deadline(1000)));}finally{p.close();}}}
+}

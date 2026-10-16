@@ -120,5 +120,37 @@ public class VideoDeviceCatalogTest {
         try { properties.sourceIdentities(); fail("Conflicting source links must not be accepted"); }
         catch (IllegalArgumentException expected) { }
     }
+
+    @Test public void onlineFirstSortingUsesMergedStateAndStableIdsBeforePagination() {
+        Map<String, String> links = new HashMap<>();
+        links.put("VLSTREAM:9", "camera-a"); links.put("RTSP:7", "camera-a");
+        List<VideoDeviceSource> sources = Arrays.asList(
+            source("CUSTOM", "1", "offline", null, null, "OFFLINE"),
+            source("VLSTREAM", "9", "merged", null, null, "OFFLINE"),
+            source("RTSP", "7", null, null, "192.168.1.7", "ONLINE"),
+            source("RTSP", "8", null, null, "192.168.1.7", null),
+            source("GB28181", "3", "online", null, null, "ONLINE"),
+            source("ONVIF", "4", null, null, null, null));
+        List<Map<String, Object>> devices = VideoDeviceCatalog.consolidate(sources, links);
+        assertEquals(4, devices.size());
+        assertEquals(Arrays.asList("GB28181:3", "VLSTREAM:9", "ONVIF:4", "CUSTOM:1"), ids(devices));
+        List<VideoDeviceSource> reversed = new ArrayList<>(sources);
+        Collections.reverse(reversed);
+        assertEquals(ids(devices), ids(VideoDeviceCatalog.consolidate(reversed, links)));
+        Collections.reverse(devices);
+        Map<String, Object> first = VideoDeviceCatalog.page(devices, 1, 2, null);
+        assertEquals(Arrays.asList("GB28181:3", "VLSTREAM:9"), ids((List<Map<String, Object>>) first.get("rows")));
+        assertEquals(4, first.get("total"));
+        assertEquals(2L, ((Map<?, ?>) first.get("stats")).get("online"));
+        assertEquals(Arrays.asList("ONVIF:4", "CUSTOM:1"), ids((List<Map<String, Object>>)
+            VideoDeviceCatalog.page(devices, 2, 2, null).get("rows")));
+        assertEquals("CUSTOM:1", devices.get(0).get("id")); // Input order is not mutated by page().
+    }
+
+    private static List<String> ids(List<Map<String, Object>> devices) {
+        List<String> ids = new ArrayList<>();
+        for (Map<String, Object> device : devices) ids.add(String.valueOf(device.get("id")));
+        return ids;
+    }
 }
 

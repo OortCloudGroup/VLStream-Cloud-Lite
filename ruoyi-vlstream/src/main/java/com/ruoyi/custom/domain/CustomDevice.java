@@ -27,6 +27,10 @@ public class CustomDevice extends BaseEntity {
     private String deviceType;
     @Excel(name = "状态")
     private String status;
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private String configuredStatus;
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private CustomDeviceState availability;
     @Excel(name = "经度")
     private BigDecimal longitude;
     @Excel(name = "纬度")
@@ -52,6 +56,10 @@ public class CustomDevice extends BaseEntity {
     public void setDeviceType(String deviceType) { this.deviceType = deviceType; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getConfiguredStatus() { return configuredStatus; }
+    public void setConfiguredStatus(String value) { configuredStatus = value; }
+    public CustomDeviceState getAvailability() { return availability; }
+    public void setAvailability(CustomDeviceState value) { availability = value; }
     public BigDecimal getLongitude() { return longitude; }
     public void setLongitude(BigDecimal longitude) { this.longitude = longitude; }
     public BigDecimal getLatitude() { return latitude; }

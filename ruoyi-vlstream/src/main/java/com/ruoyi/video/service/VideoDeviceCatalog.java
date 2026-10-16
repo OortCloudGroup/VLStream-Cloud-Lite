@@ -8,6 +8,14 @@ import java.util.stream.Collectors;
 public final class VideoDeviceCatalog {
     private VideoDeviceCatalog() { }
 
+    private static final Comparator<Map<String, Object>> DEVICE_ORDER = Comparator
+        .comparingInt((Map<String, Object> device) -> statusRank(device.get("status")))
+        .thenComparing(device -> String.valueOf(device.get("id")));
+
+    private static int statusRank(Object status) {
+        return "ONLINE".equals(status) ? 0 : "OFFLINE".equals(status) ? 2 : 1;
+    }
+
     public static List<Map<String, Object>> consolidate(List<VideoDeviceSource> sources) {
         return consolidate(sources, Collections.emptyMap());
     }
@@ -50,7 +58,7 @@ public final class VideoDeviceCatalog {
             device.put("sources", group);
             devices.add(device);
         }
-        devices.sort(Comparator.comparing(device -> String.valueOf(device.get("id"))));
+        devices.sort(DEVICE_ORDER);
         return devices;
     }
 
@@ -106,6 +114,9 @@ public final class VideoDeviceCatalog {
             Arrays.asList("deviceName", "deviceId", "ipAddress").stream()
                 .anyMatch(key -> String.valueOf(device.get(key)).toLowerCase(Locale.ROOT).contains(search)))
             .collect(Collectors.toList());
+        // Permission-scoped logical devices have already been consolidated. Sort the
+        // complete filtered set here too, before slicing, so page boundaries stay stable.
+        matches.sort(DEVICE_ORDER);
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("total", matches.size());
         for (String state : Arrays.asList("ONLINE", "OFFLINE", "UNKNOWN")) {

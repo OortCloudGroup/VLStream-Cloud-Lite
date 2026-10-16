@@ -56,7 +56,13 @@ public class VideoDeviceIsolatedApiTest {
             sql.execute("create table " + table + "(id bigint,dept_id bigint,name varchar(100),ip varchar(50),lat varchar(50),lng varchar(50),address_map varchar(100))");
             sql.execute("insert into " + table + " values(1,1,'" + table + " fixture','192.168.1.11','23','115',null)");
         }
+        sql.execute("alter table rtsp_device add play_type varchar(10)");
+        sql.execute("alter table rtsp_device add channel varchar(20)");
+        sql.execute("update rtsp_device set play_type='1', channel='101' where id=1");
         sql.execute("insert into onvif_device values(2,2,'Restricted department','192.168.1.12',null,null,null)");
+        sql.execute("alter table onvif_device add play_type varchar(10)");
+        sql.execute("alter table onvif_device add channel varchar(20)");
+        sql.execute("update onvif_device set play_type='1', channel='CH01' where id=1");
         sql.execute("create table wvp_device(id bigint,dept_id bigint,device_id varchar(100),name varchar(100),ip varchar(50),on_line int,lat varchar(50),lng varchar(50))");
         sql.execute("insert into wvp_device values(1,1,'gb-a','GB fixture',null,0,null,null)");
         sql.execute("create table dahua_device(id bigint,dept_id bigint,device_id varchar(100),name varchar(100),ip varchar(50),lat varchar(50),lng varchar(50),address_map varchar(100))");
@@ -88,13 +94,32 @@ public class VideoDeviceIsolatedApiTest {
         when(tenants.defaultTenant()).thenReturn("default");
         MockMvc api = MockMvcBuilders.standaloneSetup(new VideoDeviceController(
             new VideoDeviceService(reader, tenants, new VideoDeviceIdentityProperties()))).build();
-        api.perform(get("/video/device/list").param("pageNum","2").param("pageSize","2"))
+        api.perform(get("/video/device/list").param("pageNum","1").param("pageSize","2"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data.total").value(10)).andExpect(jsonPath("$.data.rows.length()").value(2))
             .andExpect(jsonPath("$.data.stats.online").value(2))
             .andExpect(jsonPath("$.data.stats.offline").value(3))
             .andExpect(jsonPath("$.data.stats.unknown").value(5))
+            .andExpect(jsonPath("$.data.rows[0].status").value("ONLINE"))
+            .andExpect(jsonPath("$.data.rows[1].status").value("ONLINE"))
             .andExpect(jsonPath("$.data.protocols.length()").value(8));
+    }
+
+    @Test public void rtspSourceCarriesSavedPlaybackTypeAndChannelWithoutStreamUrl() {
+        VideoDeviceQuery query = new VideoDeviceQuery();
+        query.setProtocol("RTSP"); query.setTenantId("default"); query.setDefaultTenantId("default");
+        List<VideoDeviceSource> sources = reader.rtsp(query);
+        assertEquals(1, sources.size());
+        assertEquals("1", sources.get(0).getPlayType());
+        assertEquals("101", sources.get(0).getChannel());
+        assertNull(sources.get(0).getState());
+    }
+
+    @Test public void onvifSourceCarriesActualModeAndChannelWithoutStreamUrl() {
+        VideoDeviceQuery query = new VideoDeviceQuery();
+        query.setProtocol("ONVIF"); query.setTenantId("default"); query.setDefaultTenantId("default");
+        VideoDeviceSource source = reader.onvif(query).get(0);
+        assertEquals("1", source.getPlayType()); assertEquals("CH01", source.getChannel());
     }
 
     @Test public void realSqlHidesForeignAndLegacyRowsByTenant() {

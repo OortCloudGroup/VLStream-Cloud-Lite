@@ -13,13 +13,33 @@ import java.util.List;
 public class VideoDeviceScopedReader {
     private final VideoDeviceMapper mapper;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.ruoyi.common.deviceavailability.ProtocolAvailabilityService availability;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.ruoyi.custom.service.CustomDeviceStateService customStates;
+
+    private List<VideoDeviceSource> availability(List<VideoDeviceSource> sources) {
+        if (availability == null) return sources;
+        for (VideoDeviceSource source : sources) {
+            String state = availability.get(source.getProtocol(), source.getRowId()).getState();
+            source.setState("ONLINE".equals(state) || "OFFLINE".equals(state) ? state : "UNKNOWN");
+        }
+        return sources;
+    }
+
+
     public VideoDeviceScopedReader(VideoDeviceMapper mapper) { this.mapper = mapper; }
 
     @PreAuthorize("@ss.hasPermi('vlstream:device:list')")
     public List<VideoDeviceSource> vlstream(VideoDeviceQuery query) { return mapper.selectSources(query); }
 
     @PreAuthorize("@ss.hasPermi('custom:device:list')")
-    public List<VideoDeviceSource> custom(VideoDeviceQuery query) { return mapper.selectSources(query); }
+    public List<VideoDeviceSource> custom(VideoDeviceQuery query) {
+        List<VideoDeviceSource> sources = mapper.selectSources(query);
+        if (customStates != null) return customStates.enrichSources(sources);
+        for (VideoDeviceSource source : sources) { source.setConfiguredState(source.getState()); source.setState("UNKNOWN"); }
+        return sources;
+    }
 
     @PreAuthorize("@ss.hasPermi('isup:lsupDevice:list')")
     @DataScope(deptAlias = "d", permission = "isup:lsupDevice:list")
@@ -31,11 +51,11 @@ public class VideoDeviceScopedReader {
 
     @PreAuthorize("@ss.hasPermi('rtsp:RtspDevice:list')")
     @DataScope(deptAlias = "d", permission = "rtsp:RtspDevice:list")
-    public List<VideoDeviceSource> rtsp(VideoDeviceQuery query) { return mapper.selectSources(query); }
+    public List<VideoDeviceSource> rtsp(VideoDeviceQuery query) { return availability(mapper.selectSources(query)); }
 
     @PreAuthorize("@ss.hasPermi('onvif:device:list')")
     @DataScope(deptAlias = "d", permission = "onvif:device:list")
-    public List<VideoDeviceSource> onvif(VideoDeviceQuery query) { return mapper.selectSources(query); }
+    public List<VideoDeviceSource> onvif(VideoDeviceQuery query) { return availability(mapper.selectSources(query)); }
 
     @PreAuthorize("@ss.hasPermi('wvp:device:list')")
     @DataScope(deptAlias = "d", permission = "wvp:device:list")

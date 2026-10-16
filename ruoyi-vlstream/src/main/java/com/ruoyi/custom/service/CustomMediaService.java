@@ -16,6 +16,12 @@ import java.util.Date;
 
 @Service
 public class CustomMediaService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private CustomDeviceStateService deviceStates;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.ruoyi.custom.availability.CustomMediaBindings bindings;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.ruoyi.custom.availability.CustomAvailabilityMonitor availabilityMonitor;
     private final CustomDeviceMapper mapper;
     private final IMediaServerService mediaServerService;
 
@@ -25,7 +31,9 @@ public class CustomMediaService {
     }
 
     public StreamContent preview(Long deviceId) {
+        if(deviceStates!=null)deviceStates.requireScope();
         CustomDevice device = requireDevice(deviceId);
+        if(deviceStates!=null)deviceStates.requirePlayable(device);
         if (!supportsZlmPreview(device.getStreamUrl())) {
             throw new ServiceException("仅RTSP/RTMP流需要通过ZLM预览");
         }
@@ -34,13 +42,21 @@ public class CustomMediaService {
         String stream = "device_" + deviceId;
         // Generating StreamInfo only formats URLs; it does not prove the stream exists in ZLM.
         if (mediaServerService.isStreamReady(mediaServer, app, stream)) {
+            if(bindings!=null) {
+                com.ruoyi.custom.availability.CustomStreamSpec source=new com.ruoyi.custom.availability.CustomStreamSpec(device);
+                if(!bindings.known(source,mediaServer.getId(),app,stream)) {
+                    com.ruoyi.wvp.media.bean.MediaInfo origin=mediaServerService.getMediaInfo(mediaServer,app,stream);
+                    if(origin==null||!device.getStreamUrl().trim().equals(origin.getOriginUrl()))throw new ServiceException("视频源地址已变更，请使用独立预览");
+                    bindings.add(source,mediaServer.getId(),app,stream,0);
+                }
+            }
             StreamInfo existing = mediaServerService.getStreamInfoByAppAndStream(mediaServer, app, stream, null, null);
             if (existing != null) return new StreamContent(existing);
         }
         WVPResult<String> result = mediaServerService.addStreamProxy(mediaServer, app, stream,
-                device.getStreamUrl(), true, false, "0", 15);
+                deviceStates==null?device.getStreamUrl():deviceStates.validatedProxyUrl(device), true, false, "0", 15);
         if (result == null || result.getCode() != 0) {
-            throw new ServiceException(result == null ? "ZLM拉流失败" : result.getMsg());
+            throw new ServiceException("视频源拉流失败，请检查地址和认证");
         }
         try {
             long deadline = System.currentTimeMillis() + 10_000;
@@ -54,6 +70,7 @@ public class CustomMediaService {
             }
             StreamInfo info = mediaServerService.getStreamInfoByAppAndStream(mediaServer, app, stream, null, null);
             if (info == null) throw new ServiceException("ZLM未返回可用播放地址");
+            if(bindings!=null)bindings.add(new com.ruoyi.custom.availability.CustomStreamSpec(device),mediaServer.getId(),app,stream,0);
             return new StreamContent(info);
         } catch (RuntimeException error) {
             if (result.getData() != null) mediaServerService.delStreamProxy(mediaServer, result.getData());
@@ -70,9 +87,9 @@ public class CustomMediaService {
         String app = "custom_record";
         String stream = "device_" + deviceId + "_" + System.currentTimeMillis();
         WVPResult<String> result = mediaServerService.addStreamProxy(mediaServer, app, stream,
-                device.getStreamUrl(), true, true, "0", 15);
+                availabilityMonitor==null?device.getStreamUrl():availabilityMonitor.proxyUrl(device), true, true, "0", 15);
         if (result == null || result.getCode() != 0) {
-            throw new ServiceException(result == null ? "启动录像失败" : result.getMsg());
+            throw new ServiceException("启动录像失败，请检查视频源地址和认证");
         }
         CustomRecordingSession session = new CustomRecordingSession();
         session.setDeviceId(deviceId);
@@ -82,7 +99,10 @@ public class CustomMediaService {
         session.setProxyKey(result.getData());
         session.setStatus("RUNNING");
         session.setStartTime(new Date());
-        mapper.insertSession(session);
+        try {
+            mapper.insertSession(session);
+            if(bindings!=null)bindings.add(new com.ruoyi.custom.availability.CustomStreamSpec(device),mediaServer.getId(),app,stream,0);
+        }catch(RuntimeException failed){if(result.getData()!=null)mediaServerService.delStreamProxy(mediaServer,result.getData());throw failed;}
         return session;
     }
 
@@ -90,6 +110,7 @@ public class CustomMediaService {
     public void stopRecording(Long deviceId, String reason) {
         CustomRecordingSession session = mapper.selectActiveSession(deviceId);
         if (session == null) return;
+        if(bindings!=null)bindings.remove(session.getApp(),session.getStream());
         MediaServer mediaServer = mediaServerService.getOne(session.getMediaServerId());
         if (mediaServer != null) {
             if (session.getProxyKey() != null) mediaServerService.delStreamProxy(mediaServer, session.getProxyKey());
@@ -113,6 +134,8 @@ public class CustomMediaService {
     }
 
     private CustomDevice requireDevice(Long id) {
+        // HTTP entry points validate tenant and permission before calling this service.
+        // The existing recording scheduler is trusted default-tenant infrastructure without a user session.
         CustomDevice device = mapper.selectDeviceById(id);
         if (device == null) throw new ServiceException("设备不存在");
         return device;

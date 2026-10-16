@@ -13,6 +13,8 @@
         <result property="longitude" column="longitude"/>
         <result property="deviceType" column="device_type"/>
         <result property="address" column="address"/>
+        <result property="playType" column="play_type"/>
+        <result property="channel" column="channel"/>
     </resultMap>
     <select id="selectSources" resultMap="Source">
         <choose>
@@ -44,19 +46,19 @@
                 order by v.id
             </when>
             <when test="protocol == 'RTSP'">
-                select 'RTSP' protocol, cast(v.id as char) row_id, null device_id, null serial, v.name device_name, v.ip ip_address, null state, v.lat latitude, v.lng longitude, null device_type, v.address_map address
+                select 'RTSP' protocol, cast(v.id as char) row_id, null device_id, null serial, v.name device_name, v.ip ip_address, null state, v.lat latitude, v.lng longitude, null device_type, v.address_map address, v.play_type play_type, v.channel channel
                 from rtsp_device v left join sys_dept d on v.dept_id=d.dept_id
                 <where>
-                    #{tenantId}=#{defaultTenantId}
+                    (v.tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or v.tenant_id is null or v.tenant_id = ''</if>)
                     ${params.dataScope}
                 </where>
                 order by v.id
             </when>
             <when test="protocol == 'ONVIF'">
-                select 'ONVIF' protocol, cast(v.id as char) row_id, null device_id, null serial, v.name device_name, v.ip ip_address, null state, v.lat latitude, v.lng longitude, null device_type, v.address_map address
+                select 'ONVIF' protocol, cast(v.id as char) row_id, null device_id, null serial, v.name device_name, v.ip ip_address, null state, v.lat latitude, v.lng longitude, null device_type, v.address_map address, v.play_type play_type, v.channel channel
                 from onvif_device v left join sys_dept d on v.dept_id=d.dept_id
                 <where>
-                    #{tenantId}=#{defaultTenantId}
+                    (v.tenant_id = #{tenantId}<if test="tenantId != null and tenantId.equals(defaultTenantId)"> or v.tenant_id is null or v.tenant_id = ''</if>)
                     ${params.dataScope}
                 </where>
                 order by v.id
