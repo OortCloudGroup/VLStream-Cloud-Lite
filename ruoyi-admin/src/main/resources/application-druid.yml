@@ -6,9 +6,9 @@ spring:
         druid:
             # 主库数据源
             master:
-                url: jdbc:mysql://${DB_HOST:192.168.60.77}:${DB_PORT:32443}/ry-wvp?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&rewriteBatchedStatements=true&allowMultiQueries=true
-                username: ${DB_USERNAME:root}
-                password: ${DB_PASSWORD:mysql@pass}
+                url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/ry-wvp?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&rewriteBatchedStatements=true&allowMultiQueries=true
+                username: ${DB_USERNAME:}
+                password: ${DB_PASSWORD:}
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭
@@ -42,13 +42,13 @@ spring:
             webStatFilter:
                 enabled: true
             statViewServlet:
-                enabled: true
+                enabled: ${DRUID_STAT_VIEW_ENABLED:false}
                 # 设置白名单，不填则允许所有访问
                 allow:
                 url-pattern: /druid/*
                 # 控制台管理用户名和密码
-                login-username: ruoyi
-                login-password: 123456
+                login-username: ${DRUID_LOGIN_USERNAME:}
+                login-password: ${DRUID_LOGIN_PASSWORD:}
             filter:
                 stat:
                     enabled: true

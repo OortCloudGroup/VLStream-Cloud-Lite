@@ -1,2 +1,4 @@
 # Release shell entrypoints must retain Unix line endings inside Linux containers.
 *.sh text eol=lf
+sql/ry-wvp.sql export-ignore
+ruoyi-isup/win-lib/*.db export-ignore
