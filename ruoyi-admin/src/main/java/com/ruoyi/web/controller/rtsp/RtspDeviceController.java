@@ -57,11 +57,13 @@ public class RtspDeviceController extends BaseController {
     @Autowired
     private com.ruoyi.wvp.media.service.RtspPreviewSessionService previewSessions;
 
+    @Autowired
+    private com.ruoyi.web.service.ProtocolDeviceAccess previewAccess;
+
     @PreAuthorize("@ss.hasPermi('rtsp:RtspDevice:view')")
     @PostMapping("/{id}/preview")
     public AjaxResult preview(@PathVariable Long id) {
-        RtspDevice device = rtspDeviceService.selectRtspDeviceById(id);
-        if (device == null) return error("设备不存在");
+        RtspDevice device = previewAccess.rtsp(id);
         if (!"1".equals(device.getPlayType())) return error("此接口仅用于RTSP本地预览");
         return success(previewSessions.start(id, getUserId(), device.getUrl()));
     }
@@ -69,6 +71,7 @@ public class RtspDeviceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('rtsp:RtspDevice:view')")
     @PutMapping("/{id}/preview/{sessionId}")
     public AjaxResult renewPreview(@PathVariable Long id, @PathVariable String sessionId) {
+        previewAccess.rtsp(id);
         previewSessions.renew(id, getUserId(), sessionId);
         return success();
     }
@@ -76,6 +79,7 @@ public class RtspDeviceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('rtsp:RtspDevice:view')")
     @DeleteMapping("/{id}/preview/{sessionId}")
     public AjaxResult stopPreview(@PathVariable Long id, @PathVariable String sessionId) {
+        previewAccess.rtsp(id);
         previewSessions.stop(id, getUserId(), sessionId);
         return success();
     }

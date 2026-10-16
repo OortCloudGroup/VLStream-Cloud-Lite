@@ -26,6 +26,11 @@ public class RtspPreviewSessionService {
     }
 
     public Map<String, Object> start(Long deviceId, Long userId, String url) {
+        return start("RTSP", deviceId, userId, url);
+    }
+
+    public Map<String, Object> start(String protocol, Long deviceId, Long userId, String url) {
+        if (!("RTSP".equals(protocol) || "ONVIF".equals(protocol))) throw new ServiceException("无效预览协议");
         if (url == null || !url.toLowerCase(java.util.Locale.ROOT).startsWith("rtsp://")) {
             throw new ServiceException("设备未配置有效的RTSP地址");
         }
@@ -34,13 +39,13 @@ public class RtspPreviewSessionService {
         if (server == null || !server.isStatus()) throw new ServiceException("没有可用的ZLM媒体服务器");
         String id = UUID.randomUUID().toString().replace("-", "");
         String app = "rtsp_preview";
-        String stream = "device_" + deviceId + "_" + id;
+        String stream = protocol.toLowerCase(java.util.Locale.ROOT) + "_device_" + deviceId + "_" + id;
         // ZLM defines 0 as TCP, 1 as UDP. TCP also avoids Docker RTP return-port mapping.
         WVPResult<String> proxy = mediaService.addStreamProxy(server, app, stream, url, true, false, "0", 15);
         if (proxy == null || proxy.getCode() != 0 || proxy.getData() == null) {
             throw new ServiceException("ZLM拉流失败，请检查设备地址、账号和网络");
         }
-        Session session = new Session(deviceId, userId, server, proxy.getData());
+        Session session = new Session(protocol, deviceId, userId, server, proxy.getData());
         sessions.put(id, session);
         try {
             long deadline = System.currentTimeMillis() + 10_000;
@@ -59,33 +64,49 @@ public class RtspPreviewSessionService {
             result.put("streamInfo", new StreamContent(info));
             return result;
         } catch (RuntimeException error) {
-            session.expiresAt = 0;
-            try { release(id, session); } catch (RuntimeException ignored) { /* retry expired cleanup */ }
+            synchronized (session) {
+                session.terminating = true;
+                session.expiresAt = 0;
+                try { release(id, session); } catch (RuntimeException ignored) { /* retry expired cleanup */ }
+            }
             throw error;
         }
     }
 
-    public void renew(Long deviceId, Long userId, String id) {
+    public void renew(Long deviceId, Long userId, String id) { renew("RTSP", deviceId, userId, id); }
+
+    public void renew(String protocol, Long deviceId, Long userId, String id) {
         Session session = sessions.get(id);
         if (session == null) throw new ServiceException("预览会话已结束，请重新播放");
         synchronized (session) {
-            requireOwner(session, deviceId, userId);
+            requireOwner(session, protocol, deviceId, userId);
             if (sessions.get(id) != session) throw new ServiceException("预览会话已结束，请重新播放");
-            session.expiresAt = System.currentTimeMillis() + LEASE_MILLIS;
+            long now = System.currentTimeMillis();
+            if (session.terminating || session.expiresAt <= now) {
+                session.terminating = true;
+                session.expiresAt = 0;
+                throw new ServiceException("预览会话已结束，请重新播放");
+            }
+            session.expiresAt = now + LEASE_MILLIS;
         }
     }
 
-    public void stop(Long deviceId, Long userId, String id) {
+    public void stop(Long deviceId, Long userId, String id) { stop("RTSP", deviceId, userId, id); }
+
+    public void stop(String protocol, Long deviceId, Long userId, String id) {
         Session session = sessions.get(id);
         if (session == null) return;
         synchronized (session) {
-            requireOwner(session, deviceId, userId);
+            requireOwner(session, protocol, deviceId, userId);
+            if (sessions.get(id) != session) return;
+            session.terminating = true;
+            session.expiresAt = 0;
             release(id, session);
         }
     }
 
-    private void requireOwner(Session session, Long deviceId, Long userId) {
-        if (!session.deviceId.equals(deviceId) || !session.userId.equals(userId)) {
+    private void requireOwner(Session session, String protocol, Long deviceId, Long userId) {
+        if (!session.protocol.equals(protocol) || !session.deviceId.equals(deviceId) || !session.userId.equals(userId)) {
             throw new ServiceException("无权操作此预览会话");
         }
     }
@@ -101,7 +122,9 @@ public class RtspPreviewSessionService {
     public void expireSessions() {
         sessions.forEach((id, session) -> {
             synchronized (session) {
-                if (session.expiresAt <= System.currentTimeMillis()) {
+                if (sessions.get(id) == session && (session.terminating || session.expiresAt <= System.currentTimeMillis())) {
+                    session.terminating = true;
+                    session.expiresAt = 0;
                     try { release(id, session); } catch (RuntimeException ignored) { /* retry next sweep */ }
                 }
             }
@@ -111,18 +134,28 @@ public class RtspPreviewSessionService {
     @PreDestroy
     public void close() {
         sessions.forEach((id, session) -> {
-            try { release(id, session); } catch (RuntimeException ignored) { /* ZLM no-reader hook remains */ }
+            synchronized (session) {
+                if (sessions.get(id) == session) {
+                    session.terminating = true;
+                    session.expiresAt = 0;
+                    try { release(id, session); } catch (RuntimeException ignored) { /* ZLM no-reader hook remains */ }
+                }
+            }
         });
     }
 
     private static class Session {
+        final String protocol;
         final Long deviceId;
         final Long userId;
         final MediaServer server;
         final String proxyKey;
         long expiresAt = System.currentTimeMillis() + LEASE_MILLIS;
+        // Guarded by this session's monitor; failed proxy deletion cannot reopen a lease.
+        boolean terminating;
 
-        Session(Long deviceId, Long userId, MediaServer server, String proxyKey) {
+        Session(String protocol, Long deviceId, Long userId, MediaServer server, String proxyKey) {
+            this.protocol = protocol;
             this.deviceId = deviceId;
             this.userId = userId;
             this.server = server;
