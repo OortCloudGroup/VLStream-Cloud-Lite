@@ -56,10 +56,12 @@ public class VideoDeviceIsolatedApiTest {
             sql.execute("create table " + table + "(id bigint,dept_id bigint,name varchar(100),ip varchar(50),lat varchar(50),lng varchar(50),address_map varchar(100))");
             sql.execute("insert into " + table + " values(1,1,'" + table + " fixture','192.168.1.11','23','115',null)");
         }
+        sql.execute("alter table rtsp_device add tenant_id varchar(64)");
+        sql.execute("alter table onvif_device add tenant_id varchar(64)");
         sql.execute("alter table rtsp_device add play_type varchar(10)");
         sql.execute("alter table rtsp_device add channel varchar(20)");
         sql.execute("update rtsp_device set play_type='1', channel='101' where id=1");
-        sql.execute("insert into onvif_device values(2,2,'Restricted department','192.168.1.12',null,null,null)");
+        sql.execute("insert into onvif_device(id,dept_id,name,ip,lat,lng,address_map) values(2,2,'Restricted department','192.168.1.12',null,null,null)");
         sql.execute("alter table onvif_device add play_type varchar(10)");
         sql.execute("alter table onvif_device add channel varchar(20)");
         sql.execute("update onvif_device set play_type='1', channel='CH01' where id=1");
@@ -92,8 +94,9 @@ public class VideoDeviceIsolatedApiTest {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList()));
         VlStreamDeviceTenantService tenants = mock(VlStreamDeviceTenantService.class);
         when(tenants.defaultTenant()).thenReturn("default");
-        MockMvc api = MockMvcBuilders.standaloneSetup(new VideoDeviceController(
-            new VideoDeviceService(reader, tenants, new VideoDeviceIdentityProperties()))).build();
+        VideoDeviceService service = new VideoDeviceService(reader, tenants, new VideoDeviceIdentityProperties());
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "protocolDefaultTenant", "default");
+        MockMvc api = MockMvcBuilders.standaloneSetup(new VideoDeviceController(service)).build();
         api.perform(get("/video/device/list").param("pageNum","1").param("pageSize","2"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data.total").value(10)).andExpect(jsonPath("$.data.rows.length()").value(2))
@@ -131,6 +134,43 @@ public class VideoDeviceIsolatedApiTest {
         assertTrue(reader.custom(query).isEmpty());
     }
 
+    @Test public void realSqlScopesOwnedProtocolsByTenantAndDepartment() throws Exception {
+        Statement sql = connection.createStatement();
+        for (String table : Arrays.asList("rtsp_device", "onvif_device")) {
+            sql.execute("insert into " + table + "(id,dept_id,name,tenant_id) values(11,1,'Owned fixture','foreign'),(12,2,'Other department','foreign'),(13,1,'Other tenant','third')");
+            VideoDeviceQuery query = new VideoDeviceQuery();
+            query.setProtocol(table.startsWith("rtsp") ? "RTSP" : "ONVIF");
+            query.setTenantId("foreign"); query.setDefaultTenantId("default");
+            query.getParams().put("dataScope", " AND d.dept_id=1");
+            List<VideoDeviceSource> rows = table.startsWith("rtsp") ? reader.rtsp(query) : reader.onvif(query);
+            assertEquals(1, rows.size()); assertEquals("Owned fixture", rows.get(0).getDeviceName());
+            query.setTenantId("default");
+            rows = table.startsWith("rtsp") ? reader.rtsp(query) : reader.onvif(query);
+            assertEquals(1, rows.size()); assertEquals("1", rows.get(0).getRowId());
+        }
+        sql.close();
+    }
+
+    @Test public void otherTenantCannotReadExplicitTopTenantProtocolRowsInAggregateSql() throws Exception {
+        String top = "0e391fd7-1033-4f09-88c0-187582fee462";
+        try (Statement sql = connection.createStatement()) {
+            for (String table : Arrays.asList("rtsp_device", "onvif_device")) {
+                sql.execute("insert into " + table + "(id,dept_id,name,tenant_id) values(21,1,'Top tenant fixture','" + top + "'),(22,1,'Own tenant fixture','other-tenant')");
+                VideoDeviceQuery query = new VideoDeviceQuery();
+                query.setProtocol(table.startsWith("rtsp") ? "RTSP" : "ONVIF");
+                query.setTenantId("other-tenant"); query.setDefaultTenantId("000000");
+                query.getParams().put("dataScope", " AND d.dept_id=1");
+                List<VideoDeviceSource> rows = table.startsWith("rtsp") ? reader.rtsp(query) : reader.onvif(query);
+                assertEquals(1, rows.size()); assertEquals("Own tenant fixture", rows.get(0).getDeviceName());
+                query.setTenantId(top);
+                rows = table.startsWith("rtsp") ? reader.rtsp(query) : reader.onvif(query);
+                assertEquals(1, rows.size()); assertEquals("Top tenant fixture", rows.get(0).getDeviceName());
+                query.getParams().put("dataScope", " AND d.dept_id=2");
+                rows = table.startsWith("rtsp") ? reader.rtsp(query) : reader.onvif(query);
+                assertTrue(rows.isEmpty());
+            }
+        }
+    }
     @Test public void realSqlAppliesDepartmentPredicateWithoutRemovingUnlocatedDevices() {
         VideoDeviceQuery query = new VideoDeviceQuery();
         query.setProtocol("ONVIF"); query.setTenantId("default"); query.setDefaultTenantId("default");

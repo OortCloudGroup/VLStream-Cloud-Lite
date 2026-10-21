@@ -20,7 +20,37 @@ public class VideoDeviceServiceTest {
         verify(reader).vlstream(query.capture());
         assertEquals("tenant-b", query.getValue().getTenantId());
         assertEquals("default", query.getValue().getDefaultTenantId());
+        verify(reader).rtsp(query.capture());
+        assertEquals("tenant-b", query.getValue().getTenantId());
+        assertEquals("000000", query.getValue().getDefaultTenantId());
+        verify(reader).onvif(query.capture());
+        assertEquals("tenant-b", query.getValue().getTenantId());
+        assertEquals("000000", query.getValue().getDefaultTenantId());
         verifyNoMoreInteractions(reader);
+    }
+
+    @Test public void ownedProtocolDevicesAreCountedForNonDefaultTenant() {
+        VideoDeviceScopedReader reader = mock(VideoDeviceScopedReader.class);
+        when(reader.vlstream(any())).thenReturn(Collections.emptyList());
+        when(reader.rtsp(any())).thenReturn(Collections.singletonList(
+            VideoDeviceCatalogTest.source("RTSP", "11", null, null, "192.168.1.11", "ONLINE")));
+        when(reader.onvif(any())).thenReturn(Collections.singletonList(
+            VideoDeviceCatalogTest.source("ONVIF", "12", null, null, "192.168.1.12", "OFFLINE")));
+        VideoDeviceService service = new VideoDeviceService(reader, mock(VlStreamDeviceTenantService.class), new VideoDeviceIdentityProperties());
+        java.util.Map<String, Object> result = service.list(1, 100, null, "tenant-b", "default");
+        assertEquals(2, result.get("total"));
+        assertEquals(java.util.Arrays.asList("VLSTREAM", "RTSP", "ONVIF"), result.get("protocols"));
+        java.util.Map<?, ?> stats = (java.util.Map<?, ?>) result.get("stats");
+        assertEquals(1L, stats.get("online")); assertEquals(1L, stats.get("offline"));
+        verify(reader, never()).custom(any()); verify(reader, never()).gb(any());
+    }
+
+    @Test public void directoryFailuresAreNotSilentlyReportedAsPartialSuccess() {
+        VideoDeviceScopedReader reader = mock(VideoDeviceScopedReader.class);
+        when(reader.vlstream(any())).thenReturn(Collections.emptyList());
+        when(reader.rtsp(any())).thenThrow(new IllegalStateException("fixture database failure"));
+        VideoDeviceService service = new VideoDeviceService(reader, mock(VlStreamDeviceTenantService.class), new VideoDeviceIdentityProperties());
+        assertThrows(IllegalStateException.class, () -> service.list(1, 100, null, "tenant-b", "default"));
     }
 
     @Test public void defaultTenantStillNeedsEachProtocolPermission() {

@@ -36,6 +36,7 @@ public class CustomPreviewSessionServiceTest {
     private MediaServer server;
     private CustomDevice device;
     private CustomPreviewSessionService service;
+    private com.ruoyi.vlstream.config.VlStreamDeviceProperties tenantProperties;
     private void login(String tenant) {
         LoginUser user = new LoginUser(); user.setTenantId(tenant);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList()));
@@ -52,7 +53,11 @@ public class CustomPreviewSessionServiceTest {
         when(media.isStreamReady(eq(server), eq("custom_preview"), anyString())).thenReturn(true);
         when(media.getStreamInfoByAppAndStream(eq(server), eq("custom_preview"), anyString(), isNull(), isNull())).thenReturn(new StreamInfo());
         when(media.delStreamProxy(eq(server), anyString())).thenReturn(true);
-        service = new CustomPreviewSessionService(mapper, media, "default");
+        tenantProperties = new com.ruoyi.vlstream.config.VlStreamDeviceProperties();
+        tenantProperties.setDefaultTenantId("default");
+        service = new CustomPreviewSessionService(mapper, media,
+            new com.ruoyi.vlstream.service.VlStreamDeviceTenantService(tenantProperties,
+                mock(com.ruoyi.vlstream.mapper.VlStreamDeviceMapper.class)));
     }
     @After public void clear() { SecurityContextHolder.clearContext(); Thread.interrupted(); }
     @Test public void independentViewerLeasesReleaseOnlyTheirOwnProxy() {
@@ -74,6 +79,20 @@ public class CustomPreviewSessionServiceTest {
         Map<String, Object> result = service.start(7L, 1L);
         assertEquals("DIRECT", result.get("playMode")); assertEquals(device.getStreamUrl(), result.get("url"));
         assertFalse(result.containsKey("sessionId")); verifyNoInteractions(media);
+    }
+    @Test public void multiTenantLeaseUsesSameResolvedDefaultAsCustomDirectory() {
+        tenantProperties.setTenantType("multi");
+        login(tenantProperties.getMultiTenantDefaultTenantId());
+        String id = (String) service.start(7L, 1L).get("sessionId");
+        service.renew(7L, 1L, id); service.stop(7L, 1L, id);
+        verify(media).delStreamProxy(server, "owned-1");
+    }
+    @Test public void multiTenantLeaseStillRejectsOtherTenantBeforeDeviceOrMedia() {
+        tenantProperties.setTenantType("multi"); login("foreign"); clearInvocations(mapper, media);
+        assertThrows(ServiceException.class, () -> service.start(7L, 1L));
+        assertThrows(ServiceException.class, () -> service.renew(7L, 1L, "fixture"));
+        assertThrows(ServiceException.class, () -> service.stop(7L, 1L, "fixture"));
+        verifyNoInteractions(mapper, media);
     }
     @Test public void foreignTenantIsDeniedBeforeReadingDeviceOrMedia() {
         login("foreign"); clearInvocations(mapper, media);

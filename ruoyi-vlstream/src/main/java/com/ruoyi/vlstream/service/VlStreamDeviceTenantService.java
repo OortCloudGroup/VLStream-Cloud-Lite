@@ -28,11 +28,7 @@ public class VlStreamDeviceTenantService {
     }
 
     public String defaultTenant() {
-        String tenant = StringUtils.trimToEmpty(properties.getDefaultTenantId());
-        if (!tenant.matches("[A-Za-z0-9_-]{1,64}")) {
-            throw new ServiceException("VLStream设备默认租户配置无效", 503);
-        }
-        return tenant;
+        return properties.getEffectiveDefaultTenantId();
     }
 
     public String deviceTenant(VlStreamDevice device) {

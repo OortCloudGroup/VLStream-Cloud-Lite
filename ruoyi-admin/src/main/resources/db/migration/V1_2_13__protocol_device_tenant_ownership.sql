@@ -1,6 +1,7 @@
 -- Authenticated manual RTSP/ONVIF creation owns its tenant.
--- Assign only NULL/exact-empty legacy ownership to the approved configured default.
--- This candidate has not been released or applied to production. Existing nonempty owners are immutable.
+-- Schema only: preserve every existing owner and legacy NULL/exact-empty value.
+-- Approved legacy data assignment is performed separately after this migration succeeds.
+-- This candidate has not been released or applied to production.
 
 SET @ddl = (SELECT IF(COUNT(*)=0,
     'ALTER TABLE `rtsp_device` ADD COLUMN `tenant_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL', 'SELECT 1')
@@ -31,9 +32,3 @@ SET @ddl = (SELECT IF(COUNT(*)=0,
 PREPARE stmt FROM @ddl;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
-
--- Narrow scope approved by the user: RTSP/ONVIF only; never derive owner from the deploying login.
-UPDATE rtsp_device SET tenant_id = '${protocol_legacy_tenant_id}'
-WHERE tenant_id IS NULL OR OCTET_LENGTH(tenant_id) = 0;
-UPDATE onvif_device SET tenant_id = '${protocol_legacy_tenant_id}'
-WHERE tenant_id IS NULL OR OCTET_LENGTH(tenant_id) = 0;

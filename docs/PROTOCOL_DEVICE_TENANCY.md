@@ -30,11 +30,10 @@ vlstream.native-device.multi-tenant-default-tenant-id。WVP 不从浏览器模�
 推断全局默认归属。双方已有默认设备租户配置须核对；不能把单租户默认值当作多租户播放准入，
 也不能借改默认值把全部历史设备重新解释为当前租户。
 
-Flyway V1_2_13__protocol_device_tenant_ownership.sql 为 rtsp_device/onvif_device 增加可空
-tenant_id 和索引。迁移只把 NULL 或 OCTET_LENGTH=0 的记录赋给部署方明确核准的目标租户；所有非空归属（包括空白、000000 和其他租户）均保留。
-仅作用于 rtsp_device/onvif_device，重复执行不转移已有归属，不按部署账号猜测。
-目标来自 PROTOCOL_DEVICE_LEGACY_TENANT_ID（protocol-device.legacy-tenant-id），通过 Java 配置传给 Flyway 占位符 protocol_legacy_tenant_id；未设置时兼容原 vlstream.device.default-tenant-id，最终单租户默认值为 000000。
-多租户部署必须在发布前核对并显式配置已批准的历史归属目标；不得假定各服务的默认租户相同。升级后新手动记录直接归可信创建租户。本次未部署或执行生产迁移。
+Flyway V1_2_13__protocol_device_tenant_ownership.sql 只为 rtsp_device/onvif_device 增加可空tenant_id和索引；保留已有列、所有归属及历史NULL/空串，重复执行不改变归属。
+用户最终选择普通JAR更新、不新增环境变量。当前候选已移除临时的历史归属参数及Flyway占位符绑定；变量缺失不会触发回填000000，也不在通用代码中写死生产租户。
+用户更新生产WVP后Flyway12/13已成功。经授权，先备份并锁定已批准的NULL/精确空串行，再以幂等条件一次事务补齐RTSP5条、ONVIF2条到核实的多租户默认，保留所有非空归属和原更新时间。未手工修改Flyway历史或执行DDL；证据见相邻VLS codex/wvp-tenant-20261016/production-completion.json。
+新手动记录直接归可信创建租户；single模式仍沿原配置默认最终000000。VLS主动上报与其他业务表不受本次数据处理范围影响。生产补数已提交，12:43 UTC独立只读复核全部7条匹配批准租户且NULL/精确空归属为0。
 
 ## 失败和验证边界
 
@@ -44,4 +43,4 @@ tenant_id 和索引。迁移只把 NULL 或 OCTET_LENGTH=0 的记录赋给部署
 本地真实 MyBatis SQL、DataScope AOP、合成 H2 数据及模拟媒体覆盖同租户新增后的 CRUD、
 预览/续租/停止、跨租户拒绝、客户端伪造、原生 SSO/本地兼容、部门隔离及批量原子授权。
 独立 MySQL 迁移夹具覆盖重复执行、历史空值、已有归属、部分执行、手工已加列和大小写匹配。
-这些不代表生产实播成功；真实 SSO/媒体及用户批准的历史归属仍须发布验收。
+生产已另实测ONVIF24、RTSP8 preview HTTP200/业务200及本次租约DELETE200。现网页后续SDP直连集群内部名失败，未取得answer；此结果不代表浏览器实播或ICE成功，亦未进行生产跨租户双账号或设备CRUD写入验收。

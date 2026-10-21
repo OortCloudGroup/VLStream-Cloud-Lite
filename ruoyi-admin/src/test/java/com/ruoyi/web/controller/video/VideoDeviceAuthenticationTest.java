@@ -135,12 +135,15 @@ public class VideoDeviceAuthenticationTest {
         verifiedTenant.set("foreign");
         api.perform(get("/video/device/list").header("X-WVP-Auth-Source", "vlstream")
                 .header("X-VLStream-Token", "isolated-federation-token").param("tenantId", "default"))
-            .andExpect(jsonPath("$.code").value(200)).andExpect(jsonPath("$.data.total").value(1))
-            .andExpect(jsonPath("$.data.rows[0].deviceName").value("VLSTREAM foreign"))
-            .andExpect(jsonPath("$.data.protocols.length()").value(1));
-        assertEquals(1, queries.size());
-        assertEquals("foreign", queries.get(0).getTenantId());
-        assertEquals("VLSTREAM", queries.get(0).getProtocol());
+            .andExpect(jsonPath("$.code").value(200)).andExpect(jsonPath("$.data.total").value(3))
+            .andExpect(jsonPath("$.data.protocols.length()").value(3));
+        assertEquals(3, queries.size());
+        assertEquals(Arrays.asList("VLSTREAM", "RTSP", "ONVIF"),
+            Arrays.asList(queries.get(0).getProtocol(), queries.get(1).getProtocol(), queries.get(2).getProtocol()));
+        for (VideoDeviceQuery query : queries) {
+            assertEquals("foreign", query.getTenantId());
+            assertEquals("VLSTREAM".equals(query.getProtocol()) ? "default" : "000000", query.getDefaultTenantId());
+        }
     }
 
     @Test public void nativeUserKeepsExactProtocolPermissionAndRealDepartmentScope() throws Exception {

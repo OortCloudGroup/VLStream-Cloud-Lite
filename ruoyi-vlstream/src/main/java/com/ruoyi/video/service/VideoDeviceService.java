@@ -26,6 +26,10 @@ public class VideoDeviceService {
     private final VideoDeviceScopedReader reader;
     private final VlStreamDeviceTenantService tenants;
     private final VideoDeviceIdentityProperties identities;
+    // Existing protocol ownership uses this configured legacy fallback, independently
+    // of the MQTT/custom default selected by single/multi business mode.
+    @org.springframework.beans.factory.annotation.Value("${vlstream.device.default-tenant-id:000000}")
+    private String protocolDefaultTenant = "000000";
 
     public VideoDeviceService(VideoDeviceScopedReader reader, VlStreamDeviceTenantService tenants,
                               VideoDeviceIdentityProperties identities) {
@@ -45,13 +49,15 @@ public class VideoDeviceService {
         List<String> protocols = new ArrayList<>();
         for (Map.Entry<String, String> entry : PERMISSIONS.entrySet()) {
             String protocol = entry.getKey();
-            // Legacy protocol directories have no tenant ownership field.
-            // They belong to the configured default device tenant, never a public market.
-            if (!"VLSTREAM".equals(protocol) && !tenant.equals(defaultTenant)) continue;
+            // RTSP and ONVIF now carry tenant ownership, just like VLSTREAM.
+            // Only directories without ownership remain exclusive to the default tenant.
+            boolean tenantOwned = "VLSTREAM".equals(protocol) || "RTSP".equals(protocol) || "ONVIF".equals(protocol);
+            if (!tenantOwned && !tenant.equals(defaultTenant)) continue;
             VideoDeviceQuery query = new VideoDeviceQuery();
             query.setProtocol(protocol);
             query.setTenantId(tenant);
-            query.setDefaultTenantId(defaultTenant);
+            query.setDefaultTenantId("RTSP".equals(protocol) || "ONVIF".equals(protocol)
+                ? protocolDefaultTenant : defaultTenant);
             try {
                 // Each reader is secured by the same @ss.hasPermi expression as its original API.
                 // In particular, federated protocol access is not a static permission-set lookup.

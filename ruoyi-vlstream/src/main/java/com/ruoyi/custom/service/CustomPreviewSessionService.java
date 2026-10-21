@@ -9,7 +9,7 @@ import com.ruoyi.wvp.media.bean.MediaServer;
 import com.ruoyi.wvp.media.service.IMediaServerService;
 import com.ruoyi.wvp.vmanager.bean.StreamContent;
 import com.ruoyi.wvp.vmanager.bean.WVPResult;
-import org.springframework.beans.factory.annotation.Value;
+import com.ruoyi.vlstream.service.VlStreamDeviceTenantService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import javax.annotation.PreDestroy;
@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CustomPreviewSessionService {
     private final CustomDeviceMapper mapper;
     private final IMediaServerService media;
-    private final String tenant;
+    private final VlStreamDeviceTenantService tenants;
     @org.springframework.beans.factory.annotation.Autowired
     private CustomDeviceStateService deviceStates;
     @org.springframework.beans.factory.annotation.Autowired
@@ -30,10 +30,11 @@ public class CustomPreviewSessionService {
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
 
     public CustomPreviewSessionService(CustomDeviceMapper mapper, IMediaServerService media,
-            @Value("${vlstream.device.default-tenant-id:000000}") String tenant) {
-        this.mapper = mapper; this.media = media; this.tenant = tenant;
+            VlStreamDeviceTenantService tenants) {
+        this.mapper = mapper; this.media = media; this.tenants = tenants;
     }
     private CustomDevice requireDevice(Long id) {
+        String tenant = tenants.defaultTenant();
         if (!tenant.equals(VlStreamTenantContext.currentTenant(tenant))) throw new ServiceException("设备不存在或不属于当前租户", 403);
         CustomDevice device = mapper.selectDeviceById(id);
         if (device == null) throw new ServiceException("设备不存在或无权访问", 403);

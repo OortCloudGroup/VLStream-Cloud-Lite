@@ -166,6 +166,22 @@ public class ProtocolTenantFlowIntegrationTest {
         verifyNoInteractions(previews);
         addOnvif(); // Same network IP in another tenant must neither disclose nor block on tenant A's row.
     }
+    @Test public void otherTenantCannotReadOrPlayExplicitTopTenantDevices() {
+        login("0e391fd7-1033-4f09-88c0-187582fee462",true,"1");
+        RtspDevice r=addRtsp();OnvifDevice o=addOnvif();
+        login("other-tenant",true,"1");
+        assertTrue(rtsp.selectRtspDeviceList(new RtspDevice()).isEmpty());
+        assertTrue(onvif.selectOnvifDeviceList(new OnvifDevice()).isEmpty());
+        assertThrows(ServiceException.class,()->rtsp.selectRtspDeviceById(r.getId()));
+        assertThrows(ServiceException.class,()->onvif.selectOnvifDeviceById(o.getId()));
+        assertThrows(ServiceException.class,()->rtspController.preview(r.getId()));
+        assertThrows(ServiceException.class,()->rtspController.renewPreview(r.getId(),"fixture"));
+        assertThrows(ServiceException.class,()->rtspController.stopPreview(r.getId(),"fixture"));
+        assertThrows(ServiceException.class,()->onvifController.preview(o.getId()));
+        assertThrows(ServiceException.class,()->onvifController.renewPreview(o.getId(),"fixture"));
+        assertThrows(ServiceException.class,()->onvifController.stopPreview(o.getId(),"fixture"));
+        verifyNoInteractions(previews);
+    }
     @Test public void localAndNativeSsoSessionsRetainTheirOwnTenantSemantics() throws Exception {
         try(Statement s=db.createStatement()) {
             s.execute("insert into rtsp_device(name,play_type,url) values('legacy','1','rtsp://203.0.113.1/fixture')");

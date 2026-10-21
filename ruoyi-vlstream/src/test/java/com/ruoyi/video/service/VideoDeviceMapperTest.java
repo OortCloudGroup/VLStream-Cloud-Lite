@@ -22,7 +22,16 @@ public class VideoDeviceMapperTest {
                 .getBoundSql(query).getSql().toLowerCase();
             assertFalse(sql.contains("password")); assertFalse(sql.contains("stream_url"));
             assertFalse(sql.contains("select *")); assertFalse(sql.contains("limit"));
-            if ("VLSTREAM".equals(protocol)) assertTrue(sql.contains("tenant_id"));
+            if (java.util.Arrays.asList("VLSTREAM", "RTSP", "ONVIF").contains(protocol)) {
+                assertTrue(sql.contains("tenant_id"));
+                if (!"VLSTREAM".equals(protocol)) {
+                    assertFalse(sql.contains("tenant_id is null"));
+                    query.setTenantId("default");
+                    String defaultSql = configuration.getMappedStatement("com.ruoyi.video.mapper.VideoDeviceMapper.selectSources")
+                        .getBoundSql(query).getSql().toLowerCase();
+                    assertTrue(defaultSql.contains("tenant_id is null"));
+                }
+            }
             else assertTrue(sql.contains("?=?"));
             if (!"VLSTREAM".equals(protocol) && !"CUSTOM".equals(protocol)) assertTrue(sql.contains("d.dept_id = 123"));
             assertFalse(sql.contains("lat is not null"));

@@ -46,7 +46,7 @@ public class VlStreamInternalDeviceController extends BaseController {
         VlStreamInternalDeviceView view = new VlStreamInternalDeviceView();
         view.setId(device.getId());
         view.setDeviceId(device.getDeviceId());
-        view.setTenantId(StringUtils.defaultIfBlank(device.getTenantId(), properties.getDefaultTenantId()));
+        view.setTenantId(StringUtils.defaultIfBlank(device.getTenantId(), properties.getEffectiveDefaultTenantId()));
         view.setDeviceName(device.getDeviceName());
         view.setDeviceSerial(device.getDeviceSerial());
         view.setDeviceModel(device.getDeviceModel());

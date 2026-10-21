@@ -24,6 +24,56 @@ public class VlStreamDeviceTenantServiceTest {
     public void clearIdentity() { SecurityContextHolder.clearContext(); }
 
     @Test
+    public void multiTenantNewDeviceUsesVlsDefaultAndExistingOwnersRemainUnchanged() {
+        properties.setTenantType("multi");
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"CAM-1\"}");
+        String rootTenant = "0e391fd7-1033-4f09-88c0-187582fee462";
+        assertEquals(rootTenant, service.resolveReportedTenant(message, null));
+        VlStreamDevice existing = new VlStreamDevice();
+        assertEquals(rootTenant, service.resolveReportedTenant(message, existing));
+        existing.setTenantId("000000");
+        assertEquals("000000", service.resolveReportedTenant(message, existing));
+        existing.setTenantId("another-tenant");
+        assertEquals("another-tenant", service.resolveReportedTenant(message, existing));
+    }
+
+    @Test
+    public void modeAndDefaultConfigurationFailClosedInsteadOfFallingBackToSingleTenant() {
+        JSONObject message = JSON.parseObject("{\"deviceId\":\"CAM-1\"}");
+        properties.setTenantType("unknown");
+        assertEquals(Integer.valueOf(503), assertThrows(ServiceException.class,
+            () -> service.resolveReportedTenant(message, null)).getCode());
+        properties.setTenantType(" multi ");
+        properties.setMultiTenantDefaultTenantId("");
+        assertThrows(ServiceException.class, () -> service.resolveReportedTenant(message, null));
+        properties.setMultiTenantDefaultTenantId("000000");
+        assertThrows(ServiceException.class, () -> service.resolveReportedTenant(message, null));
+        properties.setMultiTenantDefaultTenantId("tenant-root");
+        assertEquals("tenant-root", service.resolveReportedTenant(message, null));
+        properties.setTenantType("single");
+        assertEquals("000000", service.resolveReportedTenant(message, null));
+    }
+
+    @Test
+    public void multiTenantScopeAndExplicitReportedTenantKeepExistingIsolationAndProofChecks() {
+        properties.setTenantType("multi");
+        authenticate("member-tenant", true);
+        VlStreamDevice query = new VlStreamDevice();
+        service.scopeQuery(query);
+        assertEquals("member-tenant", query.getTenantId());
+        assertEquals("0e391fd7-1033-4f09-88c0-187582fee462", query.getLegacyTenantId());
+        properties.setTenantBindingSecret("test-only-tenant-key-01234567890123456789");
+        assertEquals("tenant-a", service.resolveReportedTenant(provisionedMessage(), null));
+        JSONObject unsigned = provisionedMessage();
+        unsigned.remove("tenantBindingProof");
+        assertThrows(ServiceException.class, () -> service.resolveReportedTenant(unsigned, null));
+        VlStreamDevice another = new VlStreamDevice();
+        another.setTenantId("another-tenant");
+        when(devices.selectById(1L)).thenReturn(another);
+        assertThrows(ServiceException.class, () -> service.requireDevice(1L));
+    }
+
+    @Test
     public void absentTenantUsesDefaultForNewDeviceAndKeepsExistingOwner() {
         properties.setDefaultTenantId("default-tenant");
         JSONObject message = JSON.parseObject("{\"deviceId\":\"CAM-1\"}");
