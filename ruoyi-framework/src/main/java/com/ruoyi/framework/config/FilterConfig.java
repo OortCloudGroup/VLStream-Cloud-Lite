@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import com.ruoyi.common.filter.RepeatableFilter;
 import com.ruoyi.common.filter.XssFilter;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.framework.security.filter.GatewayUserInfoHeaderFilter;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 
 /**
  * Filter配置
@@ -25,6 +27,17 @@ public class FilterConfig
 
     @Value("${xss.urlPatterns}")
     private String urlPatterns;
+
+    @Bean
+    public FilterRegistrationBean<GatewayUserInfoHeaderFilter> gatewayUserInfoHeaderFilter(SecurityProperties securityProperties)
+    {
+        FilterRegistrationBean<GatewayUserInfoHeaderFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new GatewayUserInfoHeaderFilter());
+        registration.setName("gatewayUserInfoHeaderFilter");
+        registration.addUrlPatterns("/*");
+        registration.setOrder(Math.subtractExact(securityProperties.getFilter().getOrder(), 1));
+        return registration;
+    }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Bean
