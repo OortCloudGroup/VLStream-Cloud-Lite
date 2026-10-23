@@ -18,11 +18,13 @@
         <result property="longitude" column="longitude"/>
         <result property="latitude" column="latitude"/>
         <result property="updateTime" column="update_time"/>
+        <result property="visibility" column="visibility"/>
     </resultMap>
-    <sql id="columns">id,tenant_id,device_id,device_name,device_serial,device_model,firmware_version,face_version,ip_addr,mac,online,
+    <sql id="columns">id,tenant_id,device_id,device_name,device_serial,device_model,firmware_version,face_version,ip_addr,mac,online,visibility,
         online_reason,heartbeat_index,last_message_id,last_reported_at,last_heartbeat_time,last_online_time,capabilities_json,models_json,longitude,latitude,telemetry_json,
         service_status_json,create_time,update_time</sql>
     <select id="selectById" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where id=#{id}</select>
+    <select id="selectByIdForUpdate" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where id=#{id} for update</select>
     <select id="selectByDeviceId" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where device_id=#{deviceId}</select>
     <select id="selectByDeviceIdForUpdate" resultMap="DeviceResult">select <include refid="columns"/> from wvp_vlstream_device where device_id=#{deviceId} for update</select>
     <select id="selectList" resultMap="DeviceResult">

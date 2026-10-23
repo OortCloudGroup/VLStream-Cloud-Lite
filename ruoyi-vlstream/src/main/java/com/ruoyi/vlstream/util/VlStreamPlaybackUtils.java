@@ -27,4 +27,23 @@ public final class VlStreamPlaybackUtils {
             return false;
         }
     }
+
+    /** Extracts only the opaque target identifier from the saved CameraRTC path. */
+    public static String cameraRtcDeviceId(String protocol, String sourceUrl) {
+        if (!isCameraRtc(protocol, sourceUrl)) return null;
+        try {
+            URI uri = URI.create(sourceUrl.trim());
+            // Use the raw path so percent-encoded separators cannot smuggle an extra target segment.
+            String[] segments = StringUtils.defaultString(uri.getRawPath()).split("/");
+            for (int i = segments.length - 2; i >= 0; i--) {
+                if ("videocall".equalsIgnoreCase(segments[i])) {
+                    String target = segments[i + 1];
+                    return target.matches("[A-Za-z0-9_-]{1,100}") ? target : null;
+                }
+            }
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
+        return null;
+    }
 }

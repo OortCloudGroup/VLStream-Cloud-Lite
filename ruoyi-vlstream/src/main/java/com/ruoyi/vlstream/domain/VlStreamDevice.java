@@ -33,6 +33,7 @@ public class VlStreamDevice extends BaseEntity {
     private BigDecimal latitude;
     private String telemetryJson;
     private String serviceStatusJson;
+    private String visibility;
     private String keyword;
     private String categoryType;
     private Long categoryId;
@@ -87,6 +88,8 @@ public class VlStreamDevice extends BaseEntity {
     public void setTelemetryJson(String telemetryJson) { this.telemetryJson = telemetryJson; }
     public String getServiceStatusJson() { return serviceStatusJson; }
     public void setServiceStatusJson(String serviceStatusJson) { this.serviceStatusJson = serviceStatusJson; }
+    public String getVisibility() { return visibility; }
+    public void setVisibility(String visibility) { this.visibility = visibility; }
     public String getKeyword() { return keyword; }
     public void setKeyword(String keyword) { this.keyword = keyword; }
     public String getCategoryType() { return categoryType; }

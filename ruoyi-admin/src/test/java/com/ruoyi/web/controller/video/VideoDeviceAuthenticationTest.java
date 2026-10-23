@@ -19,6 +19,7 @@ import com.ruoyi.video.domain.VideoDeviceSource;
 import com.ruoyi.video.mapper.VideoDeviceMapper;
 import com.ruoyi.video.service.VideoDeviceScopedReader;
 import com.ruoyi.video.service.VideoDeviceService;
+import com.ruoyi.video.service.VideoDeviceSharingCatalogService;
 import com.ruoyi.vlstream.service.VlStreamDeviceTenantService;
 import com.sun.net.httpserver.HttpServer;
 import io.jsonwebtoken.Jwts;
@@ -212,6 +213,10 @@ public class VideoDeviceAuthenticationTest {
         @Bean public VideoDeviceService service(VideoDeviceScopedReader reader, VlStreamDeviceTenantService tenants,
                                                 VideoDeviceIdentityProperties identities) {
             return new VideoDeviceService(reader, tenants, identities);
+        }
+        @Bean public VideoDeviceSharingCatalogService sharingCatalog(VideoDeviceScopedReader reader,
+                                                                     VlStreamDeviceTenantService tenants) {
+            return new VideoDeviceSharingCatalogService(reader, tenants);
         }
         @Bean public VideoDeviceController controller(VideoDeviceService service) { return new VideoDeviceController(service); }
     }

@@ -55,6 +55,9 @@ public final class VideoDeviceCatalog {
             device.put("latitude", coordinates == null ? null : coordinates[0]);
             device.put("longitude", coordinates == null ? null : coordinates[1]);
             device.put("protocols", group.stream().map(VideoDeviceSource::getProtocol).distinct().collect(Collectors.toList()));
+            device.put("visibility", primary.getVisibility());
+            device.put("viewerAccess", primary.getViewerAccess());
+            device.put("myAccessRequestStatus", primary.getMyAccessRequestStatus());
             device.put("sources", group);
             devices.add(device);
         }

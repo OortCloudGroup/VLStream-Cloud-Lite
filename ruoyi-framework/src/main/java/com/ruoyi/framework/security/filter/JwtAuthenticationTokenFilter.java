@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.web.service.TokenService;
@@ -39,14 +40,45 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException
     {
-        LoginUser loginUser = tokenService.getLoginUser(request);
-        if (StringUtils.isNotNull(loginUser) && StringUtils.isNull(SecurityUtils.getAuthentication()))
+        boolean sharedHandshake = SharedCameraRtcAuthenticationRequest.isSharedHandshake(request);
+        if (sharedHandshake)
         {
-            tokenService.verifyToken(loginUser);
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            // A shared RTC ticket must bind to credentials verified for this handshake, never
+            // an authentication left in the context by another filter or an earlier request.
+            SecurityContextHolder.clearContext();
         }
-        chain.doFilter(request, response);
+        SharedCameraRtcAuthenticationRequest.Views views;
+        try
+        {
+            views = SharedCameraRtcAuthenticationRequest.prepare(request);
+            LoginUser loginUser = tokenService.getLoginUser(views.getAuthenticationRequest());
+            if (sharedHandshake && loginUser == null)
+            {
+                rejectSharedHandshake(response);
+                return;
+            }
+            if (StringUtils.isNotNull(loginUser)
+                    && (sharedHandshake || StringUtils.isNull(SecurityUtils.getAuthentication())))
+            {
+                tokenService.verifyToken(loginUser);
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(views.getChainRequest()));
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
+        }
+        catch (ServiceException | IllegalArgumentException e)
+        {
+            if (!sharedHandshake) throw e;
+            rejectSharedHandshake(response);
+            return;
+        }
+        chain.doFilter(views.getChainRequest(), response);
+    }
+
+    private void rejectSharedHandshake(HttpServletResponse response) throws IOException
+    {
+        SecurityContextHolder.clearContext();
+        // Never include protocol contents, credential values or verifier details in the response.
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Shared RTC authentication failed");
     }
 }

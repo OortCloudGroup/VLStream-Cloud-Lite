@@ -81,6 +81,8 @@ public class VlStreamDeviceTenantService {
         query.setLegacyTenantId(defaultTenant());
     }
 
+    public String currentTenantId() { return currentTenant(); }
+
     public VlStreamDevice requireDevice(Long deviceId) {
         VlStreamDevice device = devices.selectById(deviceId);
         if (device == null || !currentTenant().equals(deviceTenant(device))) {

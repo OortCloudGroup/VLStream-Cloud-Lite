@@ -7,6 +7,7 @@ import java.util.Locale;
  *
  * Federated requests are allowed to use the protocol device domains only. The
  * WVP system, monitor, and tool domains continue to use the normal permission checks.
+ * Sharing administration also requires permissions explicitly present in the trusted identity.
  */
 public final class FederatedPermissionUtils
 {
@@ -22,6 +23,11 @@ public final class FederatedPermissionUtils
         }
 
         String normalized = permission.trim().toLowerCase(Locale.ROOT);
+        // Protocol federation must never implicitly grant cross-tenant sharing powers.
+        if (normalized.equals("vlstream:device:share") || normalized.startsWith("vlstream:device:share:"))
+        {
+            return false;
+        }
         return normalized.startsWith("isup:")
                 || normalized.startsWith("ehome:")
                 || normalized.startsWith("rtsp:")

@@ -23,4 +23,12 @@ public class FederatedPermissionUtilsTest
         assertFalse(FederatedPermissionUtils.isProtocolPermission("monitor:server:list"));
         assertFalse(FederatedPermissionUtils.isProtocolPermission(null));
     }
+
+    @Test
+    public void sharingPowersRequireExplicitPermissionsInsteadOfProtocolCompatibility()
+    {
+        assertFalse(FederatedPermissionUtils.isProtocolPermission("vlstream:device:share:manage"));
+        assertFalse(FederatedPermissionUtils.isProtocolPermission("vlstream:device:share:approve"));
+        assertFalse(FederatedPermissionUtils.isProtocolPermission("  VLSTREAM:DEVICE:SHARE:future  "));
+    }
 }

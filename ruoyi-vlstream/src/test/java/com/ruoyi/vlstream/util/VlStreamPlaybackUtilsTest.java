@@ -3,6 +3,8 @@ package com.ruoyi.vlstream.util;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class VlStreamPlaybackUtilsTest {
@@ -20,5 +22,15 @@ public class VlStreamPlaybackUtilsTest {
         assertFalse(VlStreamPlaybackUtils.isCameraRtc("rtsp", "http://camera.example.com/videocall/CAM-1"));
         assertFalse(VlStreamPlaybackUtils.isCameraRtc("http", "https://camera.example.com/videocall/CAM-1"));
         assertFalse(VlStreamPlaybackUtils.isCameraRtc("http", "not-a-url"));
+    }
+
+    @Test
+    public void extractsOnlyValidatedCameraRtcTargetFromSavedPath() {
+        assertEquals("CAM-1", VlStreamPlaybackUtils.cameraRtcDeviceId("https",
+                "https://camera.example.com/gateway/videocall/CAM-1?token=secret"));
+        assertNull(VlStreamPlaybackUtils.cameraRtcDeviceId("https",
+                "https://camera.example.com/videocall/../admin"));
+        assertNull(VlStreamPlaybackUtils.cameraRtcDeviceId("https",
+                "https://camera.example.com/videocall/invalid%2Ftarget"));
     }
 }

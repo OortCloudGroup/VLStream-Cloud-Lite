@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface VideoDeviceMapper {
     List<VideoDeviceSource> selectSources(VideoDeviceQuery query);
+    List<VideoDeviceSource> selectShareableVlstreamSources(VideoDeviceQuery query);
 }
 

@@ -9,6 +9,7 @@ import java.util.List;
 @Mapper
 public interface VlStreamDeviceMapper {
     VlStreamDevice selectById(Long id);
+    VlStreamDevice selectByIdForUpdate(Long id);
     VlStreamDevice selectByDeviceId(String deviceId);
     VlStreamDevice selectByDeviceIdForUpdate(String deviceId);
     List<VlStreamDevice> selectList(VlStreamDevice query);

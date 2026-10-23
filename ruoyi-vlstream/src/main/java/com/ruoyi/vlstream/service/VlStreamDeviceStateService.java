@@ -31,6 +31,8 @@ public class VlStreamDeviceStateService {
     private final VlStreamDeviceStreamMapper streamMapper;
     private final VlStreamMessageMapper messageMapper;
     private final VlStreamDeviceTenantService tenantService;
+    @Autowired(required = false)
+    private VlStreamDeviceAccessRefService accessRefs;
 
     public VlStreamDeviceStateService(VlStreamDeviceMapper deviceMapper,
                                       VlStreamDeviceStreamMapper streamMapper,
@@ -123,7 +125,10 @@ public class VlStreamDeviceStateService {
         device.setTelemetryJson(json(payload.get("telemetry")));
         device.setServiceStatusJson(json(payload.get("serviceStatus")));
         device.setUpdateTime(receivedAt);
-        if (device.getId() == null) deviceMapper.insert(device); else deviceMapper.update(device);
+        if (device.getId() == null) {
+            deviceMapper.insert(device);
+            if (accessRefs != null) accessRefs.ensureRef(device.getId());
+        } else deviceMapper.update(device);
 
         synchronizeStreams(device.getId(), payload.getJSONArray("streams"), receivedAt);
         return VlStreamProtocol.reply(message, 200, "状态已接收");

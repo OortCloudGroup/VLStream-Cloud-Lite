@@ -18,6 +18,9 @@ public class VideoDeviceSource {
     private String channel;
     private String configuredState;
     private com.ruoyi.custom.domain.CustomDeviceState availability;
+    private String visibility;
+    private String viewerAccess;
+    private String myAccessRequestStatus;
 
     public String getProtocol() { return protocol; }
     public void setProtocol(String value) { this.protocol = value; }
@@ -49,5 +52,11 @@ public class VideoDeviceSource {
     public void setConfiguredState(String value) { configuredState = value; }
     public com.ruoyi.custom.domain.CustomDeviceState getAvailability() { return availability; }
     public void setAvailability(com.ruoyi.custom.domain.CustomDeviceState value) { availability = value; }
+    public String getVisibility() { return visibility; }
+    public void setVisibility(String value) { visibility = value; }
+    public String getViewerAccess() { return viewerAccess; }
+    public void setViewerAccess(String value) { viewerAccess = value; }
+    public String getMyAccessRequestStatus() { return myAccessRequestStatus; }
+    public void setMyAccessRequestStatus(String value) { myAccessRequestStatus = value; }
 }
 

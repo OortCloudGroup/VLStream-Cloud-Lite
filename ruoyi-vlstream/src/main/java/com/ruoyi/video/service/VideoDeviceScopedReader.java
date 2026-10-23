@@ -33,6 +33,11 @@ public class VideoDeviceScopedReader {
     @PreAuthorize("@ss.hasPermi('vlstream:device:list')")
     public List<VideoDeviceSource> vlstream(VideoDeviceQuery query) { return mapper.selectSources(query); }
 
+    @PreAuthorize("isAuthenticated()")
+    public List<VideoDeviceSource> shareableVlstream(VideoDeviceQuery query) {
+        return mapper.selectShareableVlstreamSources(query);
+    }
+
     @PreAuthorize("@ss.hasPermi('custom:device:list')")
     public List<VideoDeviceSource> custom(VideoDeviceQuery query) {
         List<VideoDeviceSource> sources = mapper.selectSources(query);

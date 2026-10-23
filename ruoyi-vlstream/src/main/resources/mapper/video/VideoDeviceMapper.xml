@@ -15,14 +15,20 @@
         <result property="address" column="address"/>
         <result property="playType" column="play_type"/>
         <result property="channel" column="channel"/>
+        <result property="visibility" column="visibility"/>
+        <result property="viewerAccess" column="viewer_access"/>
+        <result property="myAccessRequestStatus" column="my_access_request_status"/>
     </resultMap>
+    <sql id="VlstreamOwnerTenant">
+        (case when v.tenant_id is null or trim(v.tenant_id)='' then #{defaultTenantId} else v.tenant_id end)
+    </sql>
     <select id="selectSources" resultMap="Source">
         <choose>
             <when test="protocol == 'VLSTREAM'">
-                select 'VLSTREAM' protocol, cast(v.id as char) row_id, v.device_id device_id, v.device_serial serial, v.device_name device_name, v.ip_addr ip_address, case when online=1 then 'ONLINE' when online=0 then 'OFFLINE' else 'UNKNOWN' end state, v.latitude latitude, v.longitude longitude, null device_type, null address
+                select 'VLSTREAM' protocol, cast(v.id as char) row_id, v.device_id device_id, v.device_serial serial, v.device_name device_name, v.ip_addr ip_address, case when online=1 then 'ONLINE' when online=0 then 'OFFLINE' else 'UNKNOWN' end state, v.latitude latitude, v.longitude longitude, null device_type, null address, v.visibility visibility, 'OWNER' viewer_access, null my_access_request_status
                 from wvp_vlstream_device v
                 <where>
-                    (v.tenant_id=#{tenantId} or (v.tenant_id is null and #{tenantId}=#{defaultTenantId}))
+                    <include refid="VlstreamOwnerTenant"/>=#{tenantId}
 
                 </where>
                 order by v.id
@@ -92,6 +98,40 @@
             </when>
             <otherwise>select null protocol, null row_id where 1=0</otherwise>
         </choose>
+    </select>
+    <select id="selectShareableVlstreamSources" resultMap="Source">
+        select 'VLSTREAM' protocol, ref.access_ref row_id, null device_id, null serial,
+            v.device_name device_name, null ip_address,
+            case when v.visibility='PUBLIC' or g.grant_id is not null
+                then case when v.online=1 then 'ONLINE' when v.online=0 then 'OFFLINE' else 'UNKNOWN' end
+                else null end state,
+            case when v.visibility='PUBLIC' or g.grant_id is not null then v.latitude else null end latitude,
+            case when v.visibility='PUBLIC' or g.grant_id is not null then v.longitude else null end longitude,
+            null device_type, null address, v.visibility visibility,
+            case when v.visibility='PUBLIC' then 'PUBLIC' when g.grant_id is not null then 'GRANTED'
+                when latest_request.status='PENDING' then 'PENDING' else 'NONE' end viewer_access,
+            case when g.grant_id is not null then 'APPROVED'
+                when latest_request.status='APPROVED' and prior_grant.revoked_at is not null then 'REVOKED'
+                when latest_request.status='APPROVED' and prior_grant.expires_at &lt;= NOW() then 'EXPIRED'
+                else latest_request.status end my_access_request_status
+        from wvp_vlstream_device v
+        inner join wvp_vlstream_device_access_ref ref on ref.device_row_id=v.id
+        left join (
+            select device_row_id, max(grant_id) grant_id from wvp_vlstream_access_grant
+            where viewer_tenant_id=#{tenantId} and revoked_at is null and expires_at &gt; NOW()
+            group by device_row_id
+        ) g on g.device_row_id=v.id
+        left join (
+            select device_row_id, max(request_id) request_id from wvp_vlstream_access_request
+            where requester_tenant_id=#{tenantId} group by device_row_id
+        ) r on r.device_row_id=v.id
+        left join wvp_vlstream_access_request latest_request on latest_request.request_id=r.request_id
+        left join wvp_vlstream_access_grant prior_grant on prior_grant.grant_id=latest_request.resolved_grant_id
+        where <include refid="VlstreamOwnerTenant"/> &lt;&gt; #{tenantId}
+        <if test="keyword != null and keyword != ''">
+            and v.device_name like concat('%',#{keyword},'%')
+        </if>
+        order by v.id
     </select>
 </mapper>
 

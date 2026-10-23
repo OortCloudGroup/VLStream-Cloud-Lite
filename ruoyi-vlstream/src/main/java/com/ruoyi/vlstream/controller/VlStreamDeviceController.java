@@ -10,6 +10,8 @@ import com.ruoyi.vlstream.mapper.VlStreamDeviceStreamMapper;
 import com.ruoyi.vlstream.domain.dto.FirmwareDeployRequest;
 import com.ruoyi.vlstream.service.VlStreamFirmwareDeploymentService;
 import com.ruoyi.vlstream.service.VlStreamDeviceTenantService;
+import com.ruoyi.vlstream.service.VlStreamDeviceAccessService;
+import com.ruoyi.vlstream.service.VlStreamDevicePreviewLeaseService;
 import com.ruoyi.vlstream.util.VlStreamPlaybackUtils;
 import com.ruoyi.wvp.common.StreamInfo;
 import com.ruoyi.wvp.media.bean.MediaServer;
@@ -17,6 +19,7 @@ import com.ruoyi.wvp.media.service.IMediaServerService;
 import com.ruoyi.wvp.vmanager.bean.StreamContent;
 import com.ruoyi.wvp.vmanager.bean.WVPResult;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -33,6 +36,10 @@ public class VlStreamDeviceController extends BaseController {
     private final IMediaServerService mediaServerService;
     private final VlStreamFirmwareDeploymentService firmwareDeploymentService;
     private final VlStreamDeviceTenantService tenantService;
+    @Autowired
+    private VlStreamDeviceAccessService accessService;
+    @Autowired
+    private VlStreamDevicePreviewLeaseService previewLeases;
 
     public VlStreamDeviceController(VlStreamDeviceMapper deviceMapper,
                                     VlStreamDeviceStreamMapper streamMapper,
@@ -140,6 +147,88 @@ public class VlStreamDeviceController extends BaseController {
         }
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/shared/{deviceRef}/access")
+    public AjaxResult sharedAccess(@PathVariable String deviceRef) {
+        return success(accessService.access(deviceRef));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/shared/{deviceRef}/access-requests")
+    public AjaxResult requestAccess(@PathVariable String deviceRef, @RequestBody(required = false) AccessRequestBody request) {
+        return success(accessService.request(deviceRef, request == null ? null : request.getReason()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:share:manage')")
+    @PutMapping("/{deviceRowId}/visibility")
+    public AjaxResult visibility(@PathVariable Long deviceRowId, @RequestBody VisibilityRequest request) {
+        return success(accessService.setVisibility(deviceRowId, request == null ? null : request.getVisibility()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:share:approve')")
+    @GetMapping("/{deviceRowId}/access-requests")
+    public AjaxResult ownerRequests(@PathVariable Long deviceRowId) {
+        return success(accessService.ownerRequests(deviceRowId));
+    }
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:share:approve')")
+    @GetMapping("/{deviceRowId}/access-grants")
+    public AjaxResult ownerGrants(@PathVariable Long deviceRowId,
+            @RequestParam(value = "pageNum", required = false) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false) Integer pageSize,
+            @RequestParam(value = "status", required = false) String status) {
+        return success(accessService.ownerGrants(deviceRowId, pageNum, pageSize, status));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/access-requests/mine")
+    public AjaxResult myRequests() {
+        return success(accessService.myRequests());
+    }
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:share:approve')")
+    @PostMapping("/access-requests/{requestId}/approve")
+    public AjaxResult approveRequest(@PathVariable Long requestId, @RequestBody(required = false) ApprovalRequest request) {
+        return success(accessService.approve(requestId, request == null ? null : request.getExpiresInDays()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:share:approve')")
+    @PostMapping("/access-requests/{requestId}/reject")
+    public AjaxResult rejectRequest(@PathVariable Long requestId, @RequestBody(required = false) AccessRequestBody request) {
+        return success(accessService.reject(requestId, request == null ? null : request.getReason()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:share:approve')")
+    @PostMapping("/access-grants/{grantId}/revoke")
+    public AjaxResult revokeGrant(@PathVariable Long grantId) {
+        return success(accessService.revoke(grantId));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/shared/{deviceRef}/preview-sessions")
+    public AjaxResult startSharedPreview(@PathVariable String deviceRef, @RequestBody PreviewRequest request) {
+        return success(previewLeases.start(deviceRef, request == null ? null : request.getStreamId()));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/shared/{deviceRef}/streams")
+    public AjaxResult sharedStreams(@PathVariable String deviceRef) {
+        return success(previewLeases.streams(deviceRef));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/shared/{deviceRef}/preview-sessions/{leaseId}")
+    public AjaxResult renewSharedPreview(@PathVariable String deviceRef, @PathVariable String leaseId) {
+        return success(previewLeases.renew(deviceRef, leaseId));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/shared/{deviceRef}/preview-sessions/{leaseId}")
+    public AjaxResult closeSharedPreview(@PathVariable String deviceRef, @PathVariable String leaseId) {
+        previewLeases.close(deviceRef, leaseId);
+        return success();
+    }
+
     @GetMapping("/media/status")
     public AjaxResult mediaStatus() {
         MediaServer mediaServer = getOnlineDefaultMediaServer();
@@ -160,5 +249,23 @@ public class VlStreamDeviceController extends BaseController {
         private Long streamId;
         public Long getStreamId() { return streamId; }
         public void setStreamId(Long streamId) { this.streamId = streamId; }
+    }
+
+    public static class VisibilityRequest {
+        private String visibility;
+        public String getVisibility() { return visibility; }
+        public void setVisibility(String visibility) { this.visibility = visibility; }
+    }
+
+    public static class AccessRequestBody {
+        private String reason;
+        public String getReason() { return reason; }
+        public void setReason(String reason) { this.reason = reason; }
+    }
+
+    public static class ApprovalRequest {
+        private Integer expiresInDays;
+        public Integer getExpiresInDays() { return expiresInDays; }
+        public void setExpiresInDays(Integer expiresInDays) { this.expiresInDays = expiresInDays; }
     }
 }

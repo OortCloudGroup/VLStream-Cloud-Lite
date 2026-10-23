@@ -65,6 +65,10 @@ public class TokenService
             "isup:*", "ehome:*", "rtsp:*", "onvif:*", "dahua:*", "wvp:*", "gb:*", "custom:*"
     ));
 
+    private static final Set<String> VLSTREAM_SHARING_PERMISSIONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "vlstream:device:share:manage", "vlstream:device:share:approve"
+    )));
+
     // 令牌自定义标识
     @Value("${token.header}")
     private String header;
@@ -194,6 +198,10 @@ public class TokenService
      * 创建不落WVP用户、角色表的VLStream联邦身份。
      */
     private LoginUser createVlstreamLoginUser(PlatformLoginUser platformUser, String accessToken, String userKey) {
+        Set<String> verifiedPermissions = new HashSet<>(VLSTREAM_PROTOCOL_PERMISSIONS);
+        if (platformUser instanceof VerifiedVlstreamIdentity) {
+            verifiedPermissions.addAll(((VerifiedVlstreamIdentity) platformUser).sharingPermissions);
+        }
         SysUser sysUser = new SysUser();
         Long userId = toSyntheticUserId(platformUser.getUserId());
         Long deptId = toLong(vlstreamDefaultDeptId);
@@ -212,10 +220,10 @@ public class TokenService
         federatedRole.setRoleKey("vlstream_federated");
         federatedRole.setDataScope("1");
         federatedRole.setStatus("0");
-        federatedRole.setPermissions(new HashSet<>(VLSTREAM_PROTOCOL_PERMISSIONS));
+        federatedRole.setPermissions(new HashSet<>(verifiedPermissions));
         sysUser.setRoles(Collections.singletonList(federatedRole));
 
-        LoginUser loginUser = new LoginUser(userId, deptId, sysUser, new HashSet<>(VLSTREAM_PROTOCOL_PERMISSIONS));
+        LoginUser loginUser = new LoginUser(userId, deptId, sysUser, verifiedPermissions);
         loginUser.setFederated(true);
         loginUser.setTenantId(platformUser.getTenantId());
         loginUser.setToken(accessToken);
@@ -338,12 +346,36 @@ public class TokenService
             throw new ServiceException("VLStream用户信息缺少用户标识");
         }
 
-        PlatformLoginUser platformLoginUser = new PlatformLoginUser();
+        String verifiedTenant = firstNotBlank(data.getStr("tenantId"), user.getStr("tenantId"));
+        // Only this configured server verification response can construct the permission-bearing identity.
+        // Existing data.permissions is produced by VLS SysPermissionService, never by request headers/claims.
+        PlatformLoginUser platformLoginUser = new VerifiedVlstreamIdentity(StringUtils.isBlank(verifiedTenant)
+            ? Collections.emptySet() : verifiedSharingPermissions(data));
         platformLoginUser.setUserId(userId);
         platformLoginUser.setUserName(userName);
-        platformLoginUser.setTenantId(firstNotBlank(data.getStr("tenantId"), user.getStr("tenantId")));
+        platformLoginUser.setTenantId(verifiedTenant);
         platformLoginUser.setAccessToken(accessToken);
         return platformLoginUser;
+    }
+
+    private Set<String> verifiedSharingPermissions(JSONObject data) {
+        Object raw = data.get("permissions");
+        if (!(raw instanceof cn.hutool.json.JSONArray)) return Collections.emptySet();
+        Set<String> allowed = new HashSet<>();
+        for (Object value : (cn.hutool.json.JSONArray) raw) {
+            // Do not coerce CSV, objects, numbers, nested claims or permission wildcards.
+            if (!(value instanceof String)) return Collections.emptySet();
+            if (VLSTREAM_SHARING_PERMISSIONS.contains(value)) allowed.add((String) value);
+        }
+        return Collections.unmodifiableSet(allowed);
+    }
+
+    private static final class VerifiedVlstreamIdentity extends PlatformLoginUser {
+        private final Set<String> sharingPermissions;
+
+        private VerifiedVlstreamIdentity(Set<String> sharingPermissions) {
+            this.sharingPermissions = sharingPermissions;
+        }
     }
 
     private void forwardHeader(HttpRequest target, HttpServletRequest source, String headerName)
