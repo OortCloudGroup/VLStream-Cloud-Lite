@@ -41,6 +41,8 @@ public class DefaultProperties {
         properties.setProperty("gov.nist.javax.sip.COMPUTE_CONTENT_LENGTH_FROM_MESSAGE_BODY", "true");
         // 线程可重入
         properties.setProperty("gov.nist.javax.sip.REENTRANT_LISTENER", "true");
+        // JAIN-SIP's default (-1) starts a new thread for each UDP packet.
+        properties.setProperty("gov.nist.javax.sip.THREAD_POOL_SIZE", "16");
         // 定义应用程序打算多久审计一次 SIP 堆栈，了解其内部线程的健康状况（该属性指定连续审计之间的时间（以毫秒为单位））
         properties.setProperty("gov.nist.javax.sip.THREAD_AUDIT_INTERVAL_IN_MILLISECS", "30000");
 
@@ -53,6 +55,7 @@ public class DefaultProperties {
         // 始终指定由 slf4j 实现的日志适配器，避免关闭日志时回退到默认的 log4j1 LogWriter 导致 NoClassDefFoundError
         properties.setProperty("gov.nist.javax.sip.STACK_LOGGER", "com.ruoyi.wvp.gb28181.conf.StackLoggerImpl");
         properties.setProperty("gov.nist.javax.sip.SERVER_LOGGER", "com.ruoyi.wvp.gb28181.conf.ServerLoggerImpl");
+        properties.setProperty("gov.nist.javax.sip.TRACE_LEVEL", sipLog ? "DEBUG" : "WARN");
         if (sipLog) {
             properties.setProperty("gov.nist.javax.sip.LOG_MESSAGE_CONTENT", "true");
             log.info("[SIP日志]已开启");
