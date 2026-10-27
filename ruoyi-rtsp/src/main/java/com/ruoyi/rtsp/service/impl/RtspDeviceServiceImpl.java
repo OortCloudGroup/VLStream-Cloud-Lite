@@ -103,9 +103,13 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
     public int insertRtspDevice(RtspDevice rtspDevice) {
         rtspDevice.setTenantId(scopedReader.currentTenant());
         // 生成rtsp地址
-        String rtspUrl = RtspTool.generateRtspUrl(rtspDevice);
+        String rtspUrl = "1".equals(rtspDevice.getPlayType())
+                ? RtspTool.generateRtspUrl(rtspDevice) : rtspDevice.getUrl();
         if (rtspDevice != null) {
             rtspDevice.setUrl(rtspUrl);
+            if ("1".equals(rtspDevice.getPlayType()) && rtspDevice.getPort() != null) {
+                rtspDevice.setIp(RtspTool.normalizeHostPort(rtspDevice.getIp(), rtspDevice.getPort()));
+            }
         }
         rtspDevice.setCreateTime(DateUtils.getNowDate());
         return rtspDeviceMapper.insertRtspDevice(rtspDevice);
@@ -122,9 +126,13 @@ public class RtspDeviceServiceImpl implements IRtspDeviceService {
         requireDevice(rtspDevice.getId());
         scopedReader.scope(rtspDevice);
         // 生成rtsp地址
-        String rtspUrl = RtspTool.generateRtspUrl(rtspDevice);
+        String rtspUrl = "1".equals(rtspDevice.getPlayType())
+                ? RtspTool.generateRtspUrl(rtspDevice) : rtspDevice.getUrl();
         if (rtspDevice != null) {
             rtspDevice.setUrl(rtspUrl);
+            if ("1".equals(rtspDevice.getPlayType()) && rtspDevice.getPort() != null) {
+                rtspDevice.setIp(RtspTool.normalizeHostPort(rtspDevice.getIp(), rtspDevice.getPort()));
+            }
         }
         rtspDevice.setUpdateTime(DateUtils.getNowDate());
         int changed = rtspDeviceMapper.updateRtspDevice(rtspDevice);

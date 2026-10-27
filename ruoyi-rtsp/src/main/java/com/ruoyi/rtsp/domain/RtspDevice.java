@@ -50,6 +50,37 @@ public class RtspDevice extends BaseEntity {
     @Excel(name = "ip")
     private String ip;
 
+    /** Optional request-only port; persisted in the existing host/URL fields. */
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = PortInput.class)
+    private Integer port;
+
+    @com.fasterxml.jackson.annotation.JsonSetter("ip")
+    public void readIp(com.fasterxml.jackson.databind.JsonNode value) {
+        if (value == null || value.isNull()) { this.ip = null; return; }
+        if (!value.isTextual()) throw new IllegalArgumentException("RTSP主机必须为字符串");
+        this.ip = value.textValue();
+    }
+
+    public static class PortInput extends com.fasterxml.jackson.databind.JsonDeserializer<Integer> {
+        @Override
+        public Integer deserialize(com.fasterxml.jackson.core.JsonParser parser,
+                com.fasterxml.jackson.databind.DeserializationContext context) throws java.io.IOException {
+            com.fasterxml.jackson.core.JsonToken token = parser.currentToken();
+            String text = parser.getText();
+            if ((token != com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT
+                    && token != com.fasterxml.jackson.core.JsonToken.VALUE_STRING)
+                    || !text.matches("[0-9]{1,5}")) {
+                throw com.fasterxml.jackson.databind.JsonMappingException.from(parser, "RTSP端口必须为1–65535的整数");
+            }
+            int number = Integer.parseInt(text);
+            if (number < 1 || number > 65535) {
+                throw com.fasterxml.jackson.databind.JsonMappingException.from(parser, "RTSP端口必须为1–65535的整数");
+            }
+            return number;
+        }
+    }
+
     /**
      * 摄像头名称
      */
