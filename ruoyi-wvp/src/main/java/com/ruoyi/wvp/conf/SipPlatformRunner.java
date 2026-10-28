@@ -33,6 +33,14 @@ public class SipPlatformRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        refreshRegistrations();
+    }
+
+    /**
+     * 按当前 SIP 身份重新注册所有启用的上级平台。
+     * 启动时执行一次，界面修改国标身份后也会调用，使新身份立即用于级联注册。
+     */
+    public void refreshRegistrations() {
         // 获取所有启用的平台
         List<Platform> parentPlatforms = platformService.queryEnablePlatformList();
 

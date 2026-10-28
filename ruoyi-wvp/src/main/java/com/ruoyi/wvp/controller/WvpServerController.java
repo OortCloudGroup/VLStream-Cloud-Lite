@@ -9,11 +9,15 @@ import com.ruoyi.wvp.common.SystemAllInfo;
 import com.ruoyi.wvp.common.VersionPo;
 import com.ruoyi.wvp.common.enums.ChannelDataType;
 import com.ruoyi.wvp.conf.SipConfig;
+import com.ruoyi.wvp.conf.SipIdentityConfig;
+import com.ruoyi.wvp.conf.SipPlatformRunner;
 import com.ruoyi.wvp.conf.UserSetting;
 import com.ruoyi.wvp.conf.VersionInfo;
 import com.ruoyi.common.exception.ControllerException;
 import com.ruoyi.wvp.gb28181.service.IDeviceChannelService;
 import com.ruoyi.wvp.gb28181.service.IDeviceService;
+import com.ruoyi.wvp.gb28181.session.SSRCFactory;
+import com.ruoyi.wvp.mapper.SipConfigMapper;
 import com.ruoyi.wvp.media.bean.MediaServer;
 import com.ruoyi.wvp.media.event.mediaServer.MediaServerChangeEvent;
 import com.ruoyi.wvp.media.service.IMediaServerService;
@@ -25,6 +29,7 @@ import com.ruoyi.common.enums.ErrorCode;
 import com.ruoyi.wvp.vmanager.bean.ResourceBaseInfo;
 import com.ruoyi.wvp.vmanager.bean.ResourceInfo;
 import com.ruoyi.wvp.vmanager.bean.SystemConfigInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +52,7 @@ import java.util.*;
  * 服务控制
  */
 @SuppressWarnings("rawtypes")
+@Slf4j
 @RestController
 @RequestMapping("/api/server")
 public class WvpServerController extends BaseController {
@@ -84,6 +90,15 @@ public class WvpServerController extends BaseController {
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private SipConfigMapper sipConfigMapper;
+
+    @Autowired
+    private SipPlatformRunner sipPlatformRunner;
+
+    @Autowired
+    private SSRCFactory ssrcFactory;
 
     /**
      * 获取流媒体服务列表
@@ -249,6 +264,61 @@ public class WvpServerController extends BaseController {
         systemConfigInfo.setAddOn(userSetting);
         systemConfigInfo.setServerPort(serverPort);
         return success(systemConfigInfo);
+    }
+
+    /**
+     * 修改国标 SIP 服务身份（编号/域）。
+     * 保存到数据库后立即更新内存配置，并按新身份重新注册所有启用的上级平台；
+     * 设备侧配置的 SIP 服务器编号/域需要在设备上同步修改。
+     *
+     * @param config 新的编号与域
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermi('wvp:server:configInfo')")
+    @PostMapping(value = "/system/sipIdentity")
+    @ResponseBody
+    public AjaxResult updateSipIdentity(@RequestBody SipIdentityConfig config) {
+        String sipId = config == null ? null : StringUtils.trim(config.getSipId());
+        String sipDomain = config == null ? null : StringUtils.trim(config.getSipDomain());
+        if (sipId == null || !sipId.matches("\\d{20}")) {
+            return error("SIP 编号必须为 20 位数字");
+        }
+        if (sipDomain == null || !sipDomain.matches("\\d{10}")) {
+            return error("SIP 域必须为 10 位数字");
+        }
+        if (sipId.equals(sipConfig.getId()) && sipDomain.equals(sipConfig.getDomain())) {
+            return success("SIP 服务身份未发生变化");
+        }
+
+        boolean domainChanged = !sipDomain.equals(sipConfig.getDomain());
+        sipConfigMapper.upsertDefault(sipId, sipDomain);
+        sipConfig.setId(sipId);
+        sipConfig.setDomain(sipDomain);
+        log.info("[SIP服务] 国标身份已更新：编号={}, 域={}", sipId, sipDomain);
+
+        if (domainChanged) {
+            rebuildSsrcPools();
+        }
+        try {
+            sipPlatformRunner.refreshRegistrations();
+        } catch (Exception e) {
+            log.error("[SIP服务] 按新身份重新注册上级平台失败", e);
+        }
+        return success("已保存并生效，上级平台正在使用新身份重新注册");
+    }
+
+    /**
+     * 域编码参与 SSRC 前缀计算，域变化后按新域重建各流媒体节点的 SSRC 池，
+     * 已经在播放的会话保留原 SSRC，新建会话使用新前缀。
+     */
+    private void rebuildSsrcPools() {
+        try {
+            for (MediaServer mediaServer : mediaServerService.getAll()) {
+                ssrcFactory.initMediaServerSSRC(mediaServer.getId(), null);
+            }
+        } catch (Exception e) {
+            log.error("[SIP服务] 按新域重建 SSRC 池失败，新域将在流媒体重新上线后生效", e);
+        }
     }
 
     @GetMapping(value = "/version")
