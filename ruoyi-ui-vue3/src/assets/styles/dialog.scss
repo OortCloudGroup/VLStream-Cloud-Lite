@@ -143,6 +143,17 @@
     align-items: center;
   }
 
+  .gb-dialog-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
+
+    .el-button + .el-button {
+      margin-left: 0;
+    }
+  }
+
   .gb-help-icon {
     margin-right: 4px;
     font-size: 14px;

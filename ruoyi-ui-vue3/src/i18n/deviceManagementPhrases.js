@@ -1,5 +1,15 @@
 // English fallback for device management phrases not yet in the generated catalog.
 export default {
+  "编辑": "Edit",
+  "修改国标服务身份": "Edit GB28181 service identity",
+  "保存后立即生效：设备上配置的 SIP 服务器编号/域必须同步修改，上级平台会使用新身份重新注册，期间可能出现短暂注册中断。": "Takes effect immediately after saving: the SIP server ID/domain configured on devices must be updated accordingly. Upper-level platforms will re-register with the new identity, which may briefly interrupt registration.",
+  "确认修改国标服务身份？设备上配置的 SIP 服务器编号/域需要同步修改，上级平台会重新注册。": "Change the GB28181 service identity? The SIP server ID/domain configured on devices must be updated accordingly, and upper-level platforms will re-register.",
+  "已保存并生效，上级平台正在重新注册": "Saved and applied. Upper-level platforms are re-registering.",
+  "国标服务身份未发生变化": "No changes to the GB28181 service identity.",
+  "请输入 SIP 编号": "Enter the SIP ID",
+  "SIP 编号必须为 20 位数字": "The SIP ID must be 20 digits",
+  "请输入 SIP 域": "Enter the SIP domain",
+  "SIP 域必须为 10 位数字": "The SIP domain must be 10 digits",
   "设备云台认证未通过，请检查 ONVIF 账号权限或设备时间": "PTZ authentication failed. Check the ONVIF account permissions or the device time.",
   "设备云台能力信息不一致，暂无法确认是否可控": "The device reported inconsistent PTZ capabilities. Control support could not be confirmed.",
   "正在检查云台能力，请稍候": "Checking PTZ capabilities. Please wait.",

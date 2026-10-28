@@ -60,6 +60,15 @@ export function configInfo() {
   })
 }
 
+// 修改国标 SIP 服务身份（编号/域）
+export function updateSipIdentity(data) {
+  return request({
+    url: '/api/server/system/sipIdentity',
+    method: 'post',
+    data: data
+  })
+}
+
 // 获取流媒体服务列表
 export function getOnlineMediaServerList() {
   return request({
