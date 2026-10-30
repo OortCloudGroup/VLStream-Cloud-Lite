@@ -131,11 +131,13 @@ public final class V14MysqlSyntaxProbe {
     static List<String> readMenuInserts(Path migration) {
         try {
             byte[] bytes = Files.readAllBytes(migration);
-            if (!MIGRATION_NAME.equals(migration.getFileName().toString()) || !MIGRATION_SHA256.equals(hex(sha256().digest(bytes)))) {
+            String source = new String(bytes, StandardCharsets.UTF_8).replace("\r\n", "\n").replace('\r', '\n');
+            byte[] canonicalBytes = source.getBytes(StandardCharsets.UTF_8);
+            if (!MIGRATION_NAME.equals(migration.getFileName().toString()) || !MIGRATION_SHA256.equals(hex(sha256().digest(canonicalBytes)))) {
                 throw new ProbeFailure("Migration source name or SHA-256 differs from the reviewed corrected V14.");
             }
             List<String> statements = new ArrayList<>();
-            Matcher matcher = MENU_INSERT.matcher(new String(bytes, StandardCharsets.UTF_8));
+            Matcher matcher = MENU_INSERT.matcher(source);
             while (matcher.find()) statements.add(matcher.group().trim());
             if (statements.size() != 2 || !statements.get(0).contains("'vlstream:device:share:manage'")
                 || !statements.get(1).contains("'vlstream:device:share:approve'")) {
