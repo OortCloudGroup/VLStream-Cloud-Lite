@@ -32,10 +32,10 @@ public class SMS {
     public SMS() {
     }
     public static HCISUPSMS hcISUPSMS = null;
-    public static Map<Integer, HandleStream> concurrentMap = new HashMap<>();
-    public static Map<Integer,Integer> PreviewHandSAndSessionIDandMap=new HashMap<>();
-    public static Map<Integer,Integer> SessionIDAndPreviewHandleMap=new HashMap<>();
-    public static Map<Integer,Integer> LuserIDandSessionMap=new HashMap<>();
+    public static Map<Integer, HandleStream> concurrentMap = new ConcurrentHashMap<>();
+    public static Map<Integer,Integer> PreviewHandSAndSessionIDandMap=new ConcurrentHashMap<>();
+    public static Map<Integer,Integer> SessionIDAndPreviewHandleMap=new ConcurrentHashMap<>();
+    public static Map<Integer,Integer> LuserIDandSessionMap=new ConcurrentHashMap<>();
     static  FPREVIEW_NEWLINK_CB fPREVIEW_NEWLINK_CB;//预览监听回调函数实现
     static  FPREVIEW_DATA_CB_WIN fPREVIEW_DATA_CB_WIN;//预览回调函数实现
     public static int Count=0;
