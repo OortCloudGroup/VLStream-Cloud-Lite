@@ -1,13 +1,14 @@
-# VLStream WVP Lite v1.0.10
+# VLStream WVP Lite v1.0.11
 
 ## Release highlights
 
-- Publish the versioned backend image as `ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.10` and retain the established Compose, Java module, and `ry-wvp` database identifiers.
-- Add tenant-scoped VLStream device sharing with explicit owner approval, short-lived read-only access, and authorization checks when listing or starting a preview. New sharing permissions are not assigned to existing roles automatically.
-- Align device ownership with single- and multi-tenant modes, and strip unused gateway identity metadata before firewall enforcement.
-- Include the immutable Flyway migration for device sharing. Existing databases upgrade through Flyway; fresh installations use the sanitized release SQL.
-- Retain the v1.0.9 improvements: protocol-scoped device catalog and playback, isolated media nodes, hardened ZLMediaKit access, and environment-only deployment secrets.
-- Exclude historical SQL snapshots and the local Windows SDK database from the release tree; keep Druid monitoring disabled by default.
+- Add revocable, multi-protocol source grants for Cloud AI.
+- Add tenant-scoped VLStream event locations and scoped ONVIF device-preset endpoints.
+- Make the GB28181 platform identity configurable at runtime and editable from the WVP UI.
+- Validate RTSP device hosts and ports, bound SIP worker usage, and honor configured SIP log levels.
+- Include immutable Flyway migrations through `V1_2_16` for SIP identity configuration and Cloud AI source grants. Existing databases upgrade through Flyway; fresh installations use the sanitized release SQL.
+- Retain tenant-scoped VLStream device sharing with explicit owner approval, short-lived read-only access, and authorization checks. New sharing permissions are not assigned to existing roles automatically.
+- Keep the VLStream WVP Lite image and archive coordinates consistent. Exclude historical SQL snapshots, the local Windows SDK database, and the anonymous RTSP test endpoint from the public release.
 
 The default administrator is `admin / 123456`; change the password immediately after the first login. The default deployment contains MySQL, Redis, EMQX, ZLMediaKit, and WVP as separate services. Firmware/OTA storage is optional and must be configured with the operator's own MinIO-compatible endpoint and credentials.
 
