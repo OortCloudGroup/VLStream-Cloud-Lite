@@ -16,7 +16,7 @@ import java.util.Map;
 public class SquareOnvifPlaybackController extends BaseController {
     private final ProtocolDeviceAccess access;
     public SquareOnvifPlaybackController(ProtocolDeviceAccess access) { this.access = access; }
-    @PreAuthorize("@ss.hasPermi('onvif:device:play')")
+    @PreAuthorize("@ss.hasPermi('onvif:device:play') or @ss.canUseFederatedVideoSquare()")
     @PostMapping("/{id}/square-playback")
     public AjaxResult playback(@PathVariable Long id) {
         OnvifDevice device = access.onvif(id);

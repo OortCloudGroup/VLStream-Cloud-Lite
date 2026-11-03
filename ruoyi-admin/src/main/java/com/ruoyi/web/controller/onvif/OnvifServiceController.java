@@ -2,6 +2,8 @@ package com.ruoyi.web.controller.onvif;
 
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.onvif.domain.FetchMainAndSubStreamUris;
 import com.ruoyi.onvif.domain.OnvifDevice;
 import com.ruoyi.onvif.domain.bo.AbsoluteMoveBo;
@@ -47,8 +49,10 @@ public class OnvifServiceController extends BaseController {
      *
      * @return
      */
+    @PreAuthorize("isAuthenticated() and @ss.hasPermi('onvif:service:getChannelToken')")
     @GetMapping("/getDigitalChannel")
     public AjaxResult getDigitalChannel(FetchMainAndSubStreamUrisBo bo) {
+        requireNativeForRawControl();
         return success(OnvifUtil.getDigitalChannel(bo));
     }
 
@@ -60,6 +64,7 @@ public class OnvifServiceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('onvif:service:getInfo')")
     @GetMapping("/getInfo")
     public AjaxResult getOnvifDeviceInfo(FetchMainAndSubStreamUrisBo bo) {
+        requireNativeForRawControl();
         FetchMainAndSubStreamUris fetchMainAndSubStreamUris = service.getOnvifDeviceInfo(bo);
         return success(fetchMainAndSubStreamUris);
     }
@@ -70,6 +75,7 @@ public class OnvifServiceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('onvif:service:getChannelToken')")
     @GetMapping("/getChannelToken")
     public AjaxResult getChannelToken(FetchMainAndSubStreamUrisBo bo) {
+        requireNativeForRawControl();
         return success(service.getChannelToken(bo));
     }
 
@@ -120,6 +126,7 @@ public class OnvifServiceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('onvif:service:getPresets')")
     @GetMapping("/getPresets")
     public AjaxResult getPresets(AbsoluteMoveBo bo) {
+        requireNativeForRawControl();
         requirePresets(bo.getIp(), bo.getUsername(), bo.getPassword(), bo.getProfileToken());
         return success(service.getPresetList(bo));
     }
@@ -134,6 +141,7 @@ public class OnvifServiceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('onvif:service:gotoPreset')")
     @GetMapping("/gotoPreset")
     public AjaxResult gotoPreset(PresetsBo bo) {
+        requireNativeForRawControl();
         requirePresets(bo.getIp(), bo.getUsername(), bo.getPassword(), bo.getProfileToken());
         service.gotoPreset(bo);
         return success();
@@ -148,6 +156,7 @@ public class OnvifServiceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('onvif:service:removePreset')")
     @GetMapping("/removePreset")
     public AjaxResult removePreset(PresetsBo bo) {
+        requireNativeForRawControl();
         requirePresets(bo.getIp(), bo.getUsername(), bo.getPassword(), bo.getProfileToken());
         service.removePreset(bo);
         return success();
@@ -162,9 +171,16 @@ public class OnvifServiceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('onvif:service:addPreset')")
     @GetMapping("/addPreset")
     public AjaxResult addPreset(PresetsBo bo) {
+        requireNativeForRawControl();
         requirePresets(bo.getIp(), bo.getUsername(), bo.getPassword(), bo.getProfileToken());
         service.addPreset(bo);
         return success();
+    }
+
+    private void requireNativeForRawControl() {
+        if (SecurityUtils.getLoginUser().isFederated()) {
+            throw new ServiceException("请使用已授权设备的ID控制接口", 403);
+        }
     }
 
     private void requirePresets(String ip, String username, String password, String profile) {

@@ -93,6 +93,56 @@ public class VlStreamDeviceController extends BaseController {
         return success(firmwareDeploymentService.detail(deviceRowId));
     }
 
+    /** Minimal projections for video-square viewers; never expose original source URLs. */
+    @PreAuthorize("@ss.hasPermi('vlstream:device:list') or @ss.canUseFederatedVideoSquare()")
+    @GetMapping("/{deviceRowId}/square-status")
+    public AjaxResult squareStatus(@PathVariable("deviceRowId") Long deviceRowId) {
+        VlStreamDevice device = tenantService.requireDevice(deviceRowId);
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("id", String.valueOf(deviceRowId));
+        summary.put("online", Boolean.TRUE.equals(device.getOnline()));
+        Map<String, Object> result = new LinkedHashMap<>(); result.put("device", summary);
+        return success(result);
+    }
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:list') or @ss.canUseFederatedVideoSquare()")
+    @GetMapping("/{deviceRowId}/square-streams")
+    public AjaxResult squareStreams(@PathVariable("deviceRowId") Long deviceRowId) {
+        tenantService.requireDevice(deviceRowId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (VlStreamDeviceStream stream : streamMapper.selectAvailableByDeviceId(deviceRowId)) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", String.valueOf(stream.getId()));
+            item.put("channelId", stream.getChannelId());
+            item.put("streamName", stream.getStreamName());
+            item.put("defaultStream", stream.getDefaultStream());
+            result.add(item);
+        }
+        return success(result);
+    }
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:play') or @ss.canUseFederatedVideoSquare()")
+    @PostMapping("/{deviceRowId}/square-preview")
+    public AjaxResult squarePreview(@PathVariable("deviceRowId") Long deviceRowId, @RequestBody PreviewRequest request) {
+        VlStreamDevice device = tenantService.requireDevice(deviceRowId);
+        if (device == null || !Boolean.TRUE.equals(device.getOnline())) return error("设备离线，不允许播放");
+        VlStreamDeviceStream stream = request == null ? null : streamMapper.selectById(request.getStreamId());
+        if (stream == null || !deviceRowId.equals(stream.getDeviceRowId()) || !Boolean.TRUE.equals(stream.getAvailable()))
+            return error("设备或视频流不存在");
+        if (VlStreamPlaybackUtils.isCameraRtc(stream.getProtocol(), stream.getSourceUrl())) {
+            String cameraId = VlStreamPlaybackUtils.cameraRtcDeviceId(stream.getProtocol(), stream.getSourceUrl());
+            try {
+                java.net.URI source = java.net.URI.create(stream.getSourceUrl());
+                if (cameraId == null || source.getRawUserInfo() != null || source.getRawFragment() != null)
+                    return error("CameraRTC 设备标识无效");
+            } catch (IllegalArgumentException invalid) { return error("CameraRTC 设备标识无效"); }
+            Map<String, Object> playback = new LinkedHashMap<>();
+            playback.put("playMode", "cameraRTC"); playback.put("cameraId", cameraId);
+            return success(playback);
+        }
+        return preview(deviceRowId, request);
+    }
+
     @PreAuthorize("@ss.hasPermi('vlstream:firmware:deploy')")
     @PostMapping("/{deviceRowId}/firmware-upgrades")
     public AjaxResult deployFirmware(@PathVariable Long deviceRowId, @RequestBody FirmwareDeployRequest request) {
@@ -147,13 +197,13 @@ public class VlStreamDeviceController extends BaseController {
         }
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @ss.canUseVideoSquare()")
     @GetMapping("/shared/{deviceRef}/access")
     public AjaxResult sharedAccess(@PathVariable String deviceRef) {
         return success(accessService.access(deviceRef));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @ss.canUseVideoSquare()")
     @PostMapping("/shared/{deviceRef}/access-requests")
     public AjaxResult requestAccess(@PathVariable String deviceRef, @RequestBody(required = false) AccessRequestBody request) {
         return success(accessService.request(deviceRef, request == null ? null : request.getReason()));
@@ -180,7 +230,7 @@ public class VlStreamDeviceController extends BaseController {
         return success(accessService.ownerGrants(deviceRowId, pageNum, pageSize, status));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @ss.canUseVideoSquare()")
     @GetMapping("/access-requests/mine")
     public AjaxResult myRequests() {
         return success(accessService.myRequests());
@@ -204,25 +254,25 @@ public class VlStreamDeviceController extends BaseController {
         return success(accessService.revoke(grantId));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @ss.canUseVideoSquare()")
     @PostMapping("/shared/{deviceRef}/preview-sessions")
     public AjaxResult startSharedPreview(@PathVariable String deviceRef, @RequestBody PreviewRequest request) {
         return success(previewLeases.start(deviceRef, request == null ? null : request.getStreamId()));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @ss.canUseVideoSquare()")
     @GetMapping("/shared/{deviceRef}/streams")
     public AjaxResult sharedStreams(@PathVariable String deviceRef) {
         return success(previewLeases.streams(deviceRef));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @ss.canUseVideoSquare()")
     @PutMapping("/shared/{deviceRef}/preview-sessions/{leaseId}")
     public AjaxResult renewSharedPreview(@PathVariable String deviceRef, @PathVariable String leaseId) {
         return success(previewLeases.renew(deviceRef, leaseId));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @ss.canUseVideoSquare()")
     @DeleteMapping("/shared/{deviceRef}/preview-sessions/{leaseId}")
     public AjaxResult closeSharedPreview(@PathVariable String deviceRef, @PathVariable String leaseId) {
         previewLeases.close(deviceRef, leaseId);

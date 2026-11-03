@@ -21,6 +21,10 @@ import com.ruoyi.video.service.VideoDeviceScopedReader;
 import com.ruoyi.video.service.VideoDeviceService;
 import com.ruoyi.video.service.VideoDeviceSharingCatalogService;
 import com.ruoyi.vlstream.service.VlStreamDeviceTenantService;
+import com.ruoyi.web.controller.onvif.SquareOnvifPlaybackController;
+import com.ruoyi.web.service.ProtocolDeviceAccess;
+import com.ruoyi.onvif.domain.OnvifDevice;
+import com.ruoyi.common.exception.ServiceException;
 import com.sun.net.httpserver.HttpServer;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -45,6 +49,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /** Real TokenService, JWT filter, PermissionService, method-security and DataScope AOP.
@@ -55,6 +60,7 @@ public class VideoDeviceAuthenticationTest {
     private AnnotationConfigApplicationContext context;
     private HttpServer upstream;
     private final AtomicReference<String> verifiedTenant = new AtomicReference<>("default");
+    private final AtomicReference<String> verifiedPermissions = new AtomicReference<>("[\"vls:menu:video-square\"]");
     private final List<VideoDeviceQuery> queries = new ArrayList<>();
     private RedisCache redis;
     private VideoDeviceMapper mapper;
@@ -63,6 +69,7 @@ public class VideoDeviceAuthenticationTest {
     @Before public void setup() throws Exception {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
         context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+        ReflectionTestUtils.setField(context.getBean(PermissionService.class), "defaultTenant", "default");
         mapper = context.getBean(VideoDeviceMapper.class);
         when(mapper.selectSources(any())).thenAnswer(invocation -> {
             VideoDeviceQuery query = invocation.getArgument(0);
@@ -79,7 +86,7 @@ public class VideoDeviceAuthenticationTest {
         upstream.createContext("/verify", exchange -> {
             byte[] body = ("{\"code\":200,\"success\":true,\"data\":{\"user\":{"
                 + "\"userId\":\"federated-device-user\",\"userName\":\"fixture\",\"tenantId\":\""
-                + verifiedTenant.get() + "\"}}}").getBytes(StandardCharsets.UTF_8);
+                + verifiedTenant.get() + "\"},\"permissions\":" + verifiedPermissions.get() + "}}").getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, body.length);
             exchange.getResponseBody().write(body);
@@ -98,7 +105,7 @@ public class VideoDeviceAuthenticationTest {
         ReflectionTestUtils.setField(tokens, "vlstreamVerifyTokenAddress", "http://127.0.0.1:" + upstream.getAddress().getPort() + "/verify");
         JwtAuthenticationTokenFilter authentication = new JwtAuthenticationTokenFilter();
         ReflectionTestUtils.setField(authentication, "tokenService", tokens);
-        api = MockMvcBuilders.standaloneSetup(context.getBean(VideoDeviceController.class))
+        api = MockMvcBuilders.standaloneSetup(context.getBean(VideoDeviceController.class), context.getBean(SquareOnvifPlaybackController.class))
             .setControllerAdvice(new GlobalExceptionHandler()).addFilters(authentication).build();
         assertTrue(AopUtils.isAopProxy(context.getBean(VideoDeviceController.class)));
         assertTrue(AopUtils.isAopProxy(context.getBean(VideoDeviceScopedReader.class)));
@@ -112,7 +119,7 @@ public class VideoDeviceAuthenticationTest {
     }
 
     @Test public void normalFederatedRequestRetainsVlstreamViaOriginalPermissionAndAopSemantics() throws Exception {
-        api.perform(get("/video/device/list").header("X-WVP-Auth-Source", "vlstream")
+        api.perform(get("/video/device/list").servletPath("/video/device/list").header("X-WVP-Auth-Source", "vlstream")
                 .header("X-VLStream-Token", "isolated-federation-token"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data.total").value(8))
@@ -122,7 +129,7 @@ public class VideoDeviceAuthenticationTest {
         assertFalse(user.getPermissions().contains("*:*:*"));
         assertFalse(user.getPermissions().contains("vlstream:*"));
         assertFalse(com.ruoyi.common.utils.SecurityUtils.hasPermi(user.getPermissions(), "vlstream:device:list"));
-        assertTrue(context.getBean(PermissionService.class).hasPermi("vlstream:device:list"));
+        assertFalse(context.getBean(PermissionService.class).hasPermi("vlstream:device:list"));
         assertEquals(8, queries.size());
         for (VideoDeviceQuery query : queries) {
             assertEquals("default", query.getTenantId());
@@ -134,7 +141,7 @@ public class VideoDeviceAuthenticationTest {
 
     @Test public void verifiedForeignTenantCannotReadLegacySourcesOrSpoofQueryTenant() throws Exception {
         verifiedTenant.set("foreign");
-        api.perform(get("/video/device/list").header("X-WVP-Auth-Source", "vlstream")
+        api.perform(get("/video/device/list").servletPath("/video/device/list").header("X-WVP-Auth-Source", "vlstream")
                 .header("X-VLStream-Token", "isolated-federation-token").param("tenantId", "default"))
             .andExpect(jsonPath("$.code").value(200)).andExpect(jsonPath("$.data.total").value(3))
             .andExpect(jsonPath("$.data.protocols.length()").value(3));
@@ -145,6 +152,44 @@ public class VideoDeviceAuthenticationTest {
             assertEquals("foreign", query.getTenantId());
             assertEquals("VLSTREAM".equals(query.getProtocol()) ? "default" : "000000", query.getDefaultTenantId());
         }
+    }
+
+    @Test public void revokedSquarePermissionDeniesCatalogWithoutReadingDevices() throws Exception {
+        verifiedPermissions.set("[]");
+        api.perform(get("/video/device/list").servletPath("/video/device/list")
+                .header("X-WVP-Auth-Source", "vlstream").header("X-VLStream-Token", "isolated-federation-token"))
+            .andExpect(jsonPath("$.code").value(403));
+        verifyNoInteractions(mapper);
+    }
+
+    @Test public void squareDirectPlaybackRequiresPermissionAndCallsScopedDeviceAccess() throws Exception {
+        ProtocolDeviceAccess access = context.getBean(ProtocolDeviceAccess.class);
+        OnvifDevice device = new OnvifDevice(); device.setPlayType("3");
+        device.setEasyNTSUrl("https://fixture.invalid/live.m3u8?token=fixture#part");
+        when(access.onvif(7L)).thenReturn(device);
+        String path = "/onvif/device/7/square-playback";
+        api.perform(post(path).servletPath(path).header("X-WVP-Auth-Source", "vlstream")
+                .header("X-VLStream-Token", "isolated-federation-token"))
+            .andExpect(jsonPath("$.code").value(200)).andExpect(jsonPath("$.data.url").value(device.getEasyNTSUrl()));
+        verify(access).onvif(7L);
+        reset(access);
+        // Standalone MockMvc lacks the web security filter that clears context after a request.
+        SecurityContextHolder.clearContext();
+        verifiedPermissions.set("[]");
+        api.perform(post(path).servletPath(path).header("X-WVP-Auth-Source", "vlstream")
+                .header("X-VLStream-Token", "isolated-federation-token"))
+            .andExpect(jsonPath("$.code").value(403));
+        verifyNoInteractions(access);
+    }
+
+    @Test public void squareDirectPlaybackPropagatesScopedDeviceDenial() throws Exception {
+        ProtocolDeviceAccess access = context.getBean(ProtocolDeviceAccess.class);
+        when(access.onvif(7L)).thenThrow(new ServiceException("foreign tenant", 403));
+        String path = "/onvif/device/7/square-playback";
+        api.perform(post(path).servletPath(path).header("X-WVP-Auth-Source", "vlstream")
+                .header("X-VLStream-Token", "isolated-federation-token"))
+            .andExpect(jsonPath("$.code").value(403));
+        verify(access).onvif(7L);
     }
 
     @Test public void nativeUserKeepsExactProtocolPermissionAndRealDepartmentScope() throws Exception {
@@ -201,7 +246,11 @@ public class VideoDeviceAuthenticationTest {
     @EnableAspectJAutoProxy
     @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
     public static class TestConfiguration {
-        @Bean(name = "ss") public PermissionService permissions() { return new PermissionService(); }
+        @Bean(name = "ss") public PermissionService permissions() {
+            PermissionService result = new PermissionService();
+            ReflectionTestUtils.setField(result, "defaultTenant", "default");
+            return result;
+        }
         @Bean public DataScopeAspect dataScope() { return new DataScopeAspect(); }
         @Bean public VideoDeviceMapper mapper() { return mock(VideoDeviceMapper.class); }
         @Bean public VideoDeviceIdentityProperties identities() { return new VideoDeviceIdentityProperties(); }
@@ -219,5 +268,7 @@ public class VideoDeviceAuthenticationTest {
             return new VideoDeviceSharingCatalogService(reader, tenants);
         }
         @Bean public VideoDeviceController controller(VideoDeviceService service) { return new VideoDeviceController(service); }
+        @Bean public ProtocolDeviceAccess protocolDeviceAccess() { return mock(ProtocolDeviceAccess.class); }
+        @Bean public SquareOnvifPlaybackController squarePlayback(ProtocolDeviceAccess access) { return new SquareOnvifPlaybackController(access); }
     }
 }

@@ -3,6 +3,7 @@ package com.ruoyi.vlstream.util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
+import java.util.Locale;
 
 public final class VlStreamPlaybackUtils {
     private static final String CAMERA_RTC_PATH = "/videocall/";
@@ -21,7 +22,7 @@ public final class VlStreamPlaybackUtils {
                 return false;
             }
             String path = StringUtils.defaultString(uri.getPath());
-            int marker = path.toLowerCase().lastIndexOf(CAMERA_RTC_PATH);
+            int marker = path.toLowerCase(Locale.ROOT).lastIndexOf(CAMERA_RTC_PATH);
             return marker >= 0 && path.length() > marker + CAMERA_RTC_PATH.length();
         } catch (IllegalArgumentException ignored) {
             return false;
@@ -33,17 +34,34 @@ public final class VlStreamPlaybackUtils {
         if (!isCameraRtc(protocol, sourceUrl)) return null;
         try {
             URI uri = URI.create(sourceUrl.trim());
-            // Use the raw path so percent-encoded separators cannot smuggle an extra target segment.
-            String[] segments = StringUtils.defaultString(uri.getRawPath()).split("/");
-            for (int i = segments.length - 2; i >= 0; i--) {
+            if (uri.getRawUserInfo() != null || uri.getRawFragment() != null) return null;
+            // Check the unnormalised path, before either browser or URI can interpret escapes or dot segments.
+            String path = StringUtils.defaultString(uri.getRawPath());
+            if (path.indexOf('\\') >= 0) return null;
+            String[] segments = path.split("/");
+            String[] decodedSegments = StringUtils.defaultString(uri.getPath()).split("/", -1);
+            String[] rawSegments = path.split("/", -1);
+            if (decodedSegments.length != rawSegments.length) return null;
+            for (int i = 0; i < rawSegments.length; i++) {
+                String decoded = decodedSegments[i];
+                if (".".equals(decoded) || "..".equals(decoded) || decoded.indexOf('\\') >= 0
+                        || decoded.indexOf('%') >= 0 || decoded.indexOf('\ufffd') >= 0
+                        || (!rawSegments[i].equalsIgnoreCase(decoded) && "videocall".equalsIgnoreCase(decoded))) return null;
+            }
+            String target = null;
+            int markers = 0;
+            for (int i = 0; i < segments.length; i++) {
+                if (".".equals(segments[i]) || "..".equals(segments[i])) return null;
                 if ("videocall".equalsIgnoreCase(segments[i])) {
-                    String target = segments[i + 1];
-                    return target.matches("[A-Za-z0-9_-]{1,100}") ? target : null;
+                    markers++;
+                    int next = i + 1;
+                    while (next < segments.length && segments[next].isEmpty()) next++;
+                    if (next < segments.length) target = segments[next];
                 }
             }
+            return markers == 1 && target != null && target.matches("[A-Za-z0-9_-]{1,100}") ? target : null;
         } catch (IllegalArgumentException ignored) {
             return null;
         }
-        return null;
     }
 }

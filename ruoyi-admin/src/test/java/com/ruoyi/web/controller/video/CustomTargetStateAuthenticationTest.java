@@ -50,8 +50,10 @@ public class CustomTargetStateAuthenticationTest {
         login(false, "vlstream:device:list"); assertNotNull(reader.read("exact", "default", "default"));
         verify(mapper).selectCameraTarget("exact", "default", "default");
     }
-    @Test public void normalFederatedProtocolAuthorizationStillUsesNativeSsSemantics() {
-        login(true); assertNotNull(reader.read("exact", "default", "default"));
+    @Test public void federatedProtocolAuthorizationRequiresTheTrustedPageGrant() {
+        login(true); assertThrows(AccessDeniedException.class, () -> reader.read("exact", "default", "default"));
+        verifyNoInteractions(mapper);
+        login(true, "vls:menu:vlstream:device"); assertNotNull(reader.read("exact", "default", "default"));
         verify(mapper).selectCameraTarget("exact", "default", "default");
     }
 }

@@ -20,6 +20,7 @@ import com.ruoyi.common.utils.ip.IpUtils;
 import com.ruoyi.common.utils.uuid.IdUtils;
 import com.ruoyi.framework.dto.PlatformLoginUser;
 import com.ruoyi.framework.config.properties.AuthModeProperties;
+import com.ruoyi.framework.security.context.FederatedMenuPermissions;
 import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
@@ -60,14 +61,6 @@ public class TokenService
     private static final String HEADER_VLSTREAM_TOKEN = "X-VLStream-Token";
 
     private static final String AUTH_SOURCE_VLSTREAM = "vlstream";
-
-    private static final Set<String> VLSTREAM_PROTOCOL_PERMISSIONS = new HashSet<>(Arrays.asList(
-            "isup:*", "ehome:*", "rtsp:*", "onvif:*", "dahua:*", "wvp:*", "gb:*", "custom:*"
-    ));
-
-    private static final Set<String> VLSTREAM_SHARING_PERMISSIONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            "vlstream:device:share:manage", "vlstream:device:share:approve"
-    )));
 
     // 令牌自定义标识
     @Value("${token.header}")
@@ -198,9 +191,9 @@ public class TokenService
      * 创建不落WVP用户、角色表的VLStream联邦身份。
      */
     private LoginUser createVlstreamLoginUser(PlatformLoginUser platformUser, String accessToken, String userKey) {
-        Set<String> verifiedPermissions = new HashSet<>(VLSTREAM_PROTOCOL_PERMISSIONS);
+        Set<String> verifiedPermissions = new HashSet<>();
         if (platformUser instanceof VerifiedVlstreamIdentity) {
-            verifiedPermissions.addAll(((VerifiedVlstreamIdentity) platformUser).sharingPermissions);
+            verifiedPermissions.addAll(((VerifiedVlstreamIdentity) platformUser).permissions);
         }
         SysUser sysUser = new SysUser();
         Long userId = toSyntheticUserId(platformUser.getUserId());
@@ -350,7 +343,7 @@ public class TokenService
         // Only this configured server verification response can construct the permission-bearing identity.
         // Existing data.permissions is produced by VLS SysPermissionService, never by request headers/claims.
         PlatformLoginUser platformLoginUser = new VerifiedVlstreamIdentity(StringUtils.isBlank(verifiedTenant)
-            ? Collections.emptySet() : verifiedSharingPermissions(data));
+            ? Collections.emptySet() : verifiedPermissions(data));
         platformLoginUser.setUserId(userId);
         platformLoginUser.setUserName(userName);
         platformLoginUser.setTenantId(verifiedTenant);
@@ -358,23 +351,23 @@ public class TokenService
         return platformLoginUser;
     }
 
-    private Set<String> verifiedSharingPermissions(JSONObject data) {
+    private Set<String> verifiedPermissions(JSONObject data) {
         Object raw = data.get("permissions");
         if (!(raw instanceof cn.hutool.json.JSONArray)) return Collections.emptySet();
         Set<String> allowed = new HashSet<>();
         for (Object value : (cn.hutool.json.JSONArray) raw) {
-            // Do not coerce CSV, objects, numbers, nested claims or permission wildcards.
+            // Do not coerce CSV, objects, numbers, nested claims or arbitrary permission strings.
             if (!(value instanceof String)) return Collections.emptySet();
-            if (VLSTREAM_SHARING_PERMISSIONS.contains(value)) allowed.add((String) value);
+            if (FederatedMenuPermissions.isTrustedPermission((String) value)) allowed.add((String) value);
         }
         return Collections.unmodifiableSet(allowed);
     }
 
     private static final class VerifiedVlstreamIdentity extends PlatformLoginUser {
-        private final Set<String> sharingPermissions;
+        private final Set<String> permissions;
 
-        private VerifiedVlstreamIdentity(Set<String> sharingPermissions) {
-            this.sharingPermissions = sharingPermissions;
+        private VerifiedVlstreamIdentity(Set<String> permissions) {
+            this.permissions = permissions;
         }
     }
 

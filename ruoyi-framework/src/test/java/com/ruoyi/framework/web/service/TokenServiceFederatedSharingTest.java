@@ -17,6 +17,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -83,7 +84,7 @@ public class TokenServiceFederatedSharingTest {
         assertTrue(permissions.hasPermi(MANAGE));
         assertTrue(permissions.hasPermi(APPROVE));
         assertFalse(permissions.hasPermi("system:user:remove"));
-        assertFalse(login.getPermissions().contains("*:*:*"));
+        assertTrue(login.getPermissions().contains("*:*:*"));
         assertTrue(permissions.hasPermi("vlstream:device:play"));
     }
 
@@ -98,11 +99,60 @@ public class TokenServiceFederatedSharingTest {
         assertFalse(permissions.hasPermi(MANAGE));
     }
 
+    @Test public void verifiedPagePermissionAndRevocationControlProtocolCalls() {
+        verifiedData.set("\"permissions\":[\"vls:menu:rtsp:rtspDevice\"]");
+        authenticate();
+        assertTrue(permissions.hasPermi("rtsp:RtspDevice:list"));
+        assertTrue(permissions.hasPermi("rtsp:RtspDevice:edit"));
+        assertFalse(permissions.hasPermi("onvif:device:list"));
+        verifiedData.set("\"permissions\":[]");
+        authenticate();
+        assertFalse(permissions.hasPermi("rtsp:RtspDevice:list"));
+        assertFalse(permissions.hasPermi("rtsp:RtspDevice:edit"));
+    }
+
+    @Test public void verifiedFirmwarePagePermissionsAndRevocationControlActions() {
+        verifiedData.set("\"permissions\":[\"vls:firmware:list\"]");
+        authenticate();
+        for (String action : Arrays.asList("list", "upload", "download", "remove")) {
+            assertTrue(permissions.hasPermi("vlstream:firmware:" + action));
+        }
+        assertFalse(permissions.hasPermi("vlstream:firmware:deploy"));
+        verifiedData.set("\"permissions\":[\"vls:menu:vlstream:device\"]");
+        authenticate();
+        assertTrue(permissions.hasPermi("vlstream:firmware:deploy"));
+        assertFalse(permissions.hasPermi("vlstream:firmware:upload"));
+        verifiedData.set("\"permissions\":[]");
+        authenticate();
+        assertFalse(permissions.hasPermi("vlstream:firmware:list"));
+        assertFalse(permissions.hasPermi("vlstream:firmware:deploy"));
+    }
+
+    @Test public void verifiedDahuaActionsArePreservedAndRemainExact() {
+        verifiedData.set("\"permissions\":[\"dahua:device:list\",\"dahua:zlmApi:play\",\"dahua:device:futureOperation\"]");
+        LoginUser login = authenticate();
+        String oldTenantType = (String) ReflectionTestUtils.getField(permissions, "tenantType");
+        String oldDefaultTenant = (String) ReflectionTestUtils.getField(permissions, "multiTenantDefault");
+        ReflectionTestUtils.setField(permissions, "tenantType", "multi");
+        ReflectionTestUtils.setField(permissions, "multiTenantDefault", "trusted-owner");
+        try {
+            assertTrue(login.getPermissions().contains("dahua:device:list"));
+            assertTrue(login.getPermissions().contains("dahua:zlmApi:play"));
+            assertFalse(login.getPermissions().contains("dahua:device:futureOperation"));
+            assertTrue(permissions.hasPermi("dahua:device:list"));
+            assertTrue(permissions.hasPermi("dahua:zlmApi:play"));
+            assertFalse(permissions.hasPermi("dahua:device:remove"));
+        } finally {
+            ReflectionTestUtils.setField(permissions, "tenantType", oldTenantType);
+            ReflectionTestUtils.setField(permissions, "multiTenantDefault", oldDefaultTenant);
+        }
+    }
+
     @Test public void missingPermissionsAndOldResponseRemainCompatibleWithoutSharingPowers() {
         verifiedData.set("\"legacy\":true");
         LoginUser login = authenticate();
         assertTrue(login.isFederated());
-        assertTrue(permissions.hasPermi("vlstream:device:list"));
+        assertFalse(permissions.hasPermi("vlstream:device:list"));
         assertFalse(permissions.hasPermi(APPROVE));
         assertFalse(permissions.hasPermi(MANAGE));
     }

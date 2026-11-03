@@ -13,12 +13,50 @@ import org.junit.Test;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 public class VlStreamDeviceControllerTest {
+    @Test public void squareProjectionKeepsOnlyOnlineAndNonSecretStreamFields() {
+        VlStreamDevice device = new VlStreamDevice(); device.setId(10L); device.setOnline(true);
+        VlStreamDeviceTenantService tenants = mock(VlStreamDeviceTenantService.class);
+        when(tenants.requireDevice(10L)).thenReturn(device);
+        VlStreamDeviceStream stream = new VlStreamDeviceStream(); stream.setId(20L); stream.setDeviceRowId(10L);
+        stream.setSourceUrl("https://fixture.invalid/videocall/camera-1?secret=fixture");
+        stream.setZlmProxyKey("fixture-private-proxy"); stream.setAvailable(true); stream.setProtocol("https");
+        VlStreamDeviceStreamMapper streams = mock(VlStreamDeviceStreamMapper.class);
+        when(streams.selectAvailableByDeviceId(10L)).thenReturn(java.util.Collections.singletonList(stream));
+        when(streams.selectById(20L)).thenReturn(stream);
+        VlStreamDeviceController controller = new VlStreamDeviceController(mock(VlStreamDeviceMapper.class), streams,
+            mock(IMediaServerService.class), mock(VlStreamFirmwareDeploymentService.class), tenants);
+        Map<?, ?> status = (Map<?, ?>) controller.squareStatus(10L).get(AjaxResult.DATA_TAG);
+        assertEquals(Boolean.TRUE, ((Map<?, ?>) status.get("device")).get("online"));
+        Map<?, ?> row = (Map<?, ?>) ((java.util.List<?>) controller.squareStreams(10L).get(AjaxResult.DATA_TAG)).get(0);
+        assertEquals("20", row.get("id")); assertFalse(row.containsKey("sourceUrl")); assertFalse(row.containsKey("zlmProxyKey"));
+        VlStreamDeviceController.PreviewRequest request = new VlStreamDeviceController.PreviewRequest(); request.setStreamId(20L);
+        Map<?, ?> preview = (Map<?, ?>) controller.squarePreview(10L, request).get(AjaxResult.DATA_TAG);
+        assertEquals("cameraRTC", preview.get("playMode")); assertEquals("camera-1", preview.get("cameraId"));
+        assertFalse(preview.containsKey("url")); verify(tenants, times(3)).requireDevice(10L);
+    }
+
+    @Test public void squarePreviewRejectsOfflineAndStreamsBelongingToAnotherDevice() {
+        VlStreamDevice device = new VlStreamDevice(); device.setOnline(true);
+        VlStreamDeviceTenantService tenants = mock(VlStreamDeviceTenantService.class);
+        when(tenants.requireDevice(10L)).thenReturn(device);
+        VlStreamDeviceStream stream = new VlStreamDeviceStream(); stream.setId(20L); stream.setDeviceRowId(11L); stream.setAvailable(true);
+        VlStreamDeviceStreamMapper streams = mock(VlStreamDeviceStreamMapper.class); when(streams.selectById(20L)).thenReturn(stream);
+        VlStreamDeviceController controller = new VlStreamDeviceController(mock(VlStreamDeviceMapper.class), streams,
+            mock(IMediaServerService.class), mock(VlStreamFirmwareDeploymentService.class), tenants);
+        VlStreamDeviceController.PreviewRequest request = new VlStreamDeviceController.PreviewRequest(); request.setStreamId(20L);
+        assertEquals(500, controller.squarePreview(10L, request).get(AjaxResult.CODE_TAG));
+        device.setOnline(false);
+        assertEquals(500, controller.squarePreview(10L, request).get(AjaxResult.CODE_TAG));
+        verify(streams, times(1)).selectById(20L);
+    }
     @Test
     public void streamDetailsReturnReportedSourceWithoutProxySecret() throws Exception {
         VlStreamDeviceStreamMapper mapper = mock(VlStreamDeviceStreamMapper.class);

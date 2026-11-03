@@ -169,7 +169,7 @@ public class VlStreamFederatedSharingIdentityTest {
         assertEquals("owner", user.getTenantId());
         assertTrue(permissions.hasPermi(APPROVE));
         assertFalse(permissions.hasPermi(MANAGE));
-        assertFalse(user.getPermissions().contains("*:*:*"));
+        assertTrue(user.getPermissions().contains("*:*:*"));
         assertEquals(1, verificationCalls.get());
     }
 
@@ -205,7 +205,7 @@ public class VlStreamFederatedSharingIdentityTest {
         verifiedPermissions.set(Arrays.asList("*:*:*", "vlstream:*", "vlstream:device:share:*", "system:user:list"));
         api.perform(federated(get("/vlstream/device/7/access-grants")))
             .andExpect(jsonPath("$.code").value(403));
-        assertFalse(SecurityUtils.getLoginUser().getPermissions().contains("*:*:*"));
+        assertTrue(SecurityUtils.getLoginUser().getPermissions().contains("*:*:*"));
         assertFalse(SecurityUtils.getLoginUser().getPermissions().contains("vlstream:*"));
         assertFalse(permissions.hasPermi(APPROVE));
         assertFalse(permissions.hasPermi(MANAGE));

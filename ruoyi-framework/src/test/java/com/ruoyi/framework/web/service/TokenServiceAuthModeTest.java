@@ -18,6 +18,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -116,10 +118,10 @@ public class TokenServiceAuthModeTest
     @Test
     public void federatedProtocolPermissionsIncludeEhome()
     {
-        @SuppressWarnings("unchecked")
-        Set<String> permissions = (Set<String>) ReflectionTestUtils.getField(tokenService,
-                "VLSTREAM_PROTOCOL_PERMISSIONS");
-        assertTrue(permissions.contains("ehome:*"));
+        assertTrue(com.ruoyi.framework.security.context.FederatedMenuPermissions.allows(
+            Collections.singleton("vls:menu:ehome:device"), "ehome:device:preview"));
+        assertFalse(com.ruoyi.framework.security.context.FederatedMenuPermissions.allows(
+            Collections.emptySet(), "ehome:device:preview"));
     }
 
     @Test

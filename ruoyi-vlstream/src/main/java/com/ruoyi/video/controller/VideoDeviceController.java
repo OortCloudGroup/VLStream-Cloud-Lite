@@ -24,7 +24,7 @@ public class VideoDeviceController {
         return AjaxResult.success(service.list(pageNum, pageSize, keyword));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @ss.canUseVideoSquare()")
     @GetMapping("/shared-list")
     public AjaxResult sharedList(@RequestParam(defaultValue = "1") int pageNum,
                                  @RequestParam(defaultValue = "100") int pageSize,
