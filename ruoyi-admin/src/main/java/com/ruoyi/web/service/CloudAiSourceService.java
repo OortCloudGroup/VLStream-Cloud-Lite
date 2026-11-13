@@ -76,7 +76,7 @@ public class CloudAiSourceService {
         if(protocols.supports(protocol))return protocols.choices(protocol,rowId);
         List<Map<String, Object>> result = new ArrayList<>();
         if ("VLSTREAM".equals(protocol)) {
-            tenants.requireDevice(rowId);
+            requireOnline(tenants.requireDevice(rowId));
             for (VlStreamDeviceStream stream : streams.selectAvailableByDeviceId(rowId)) {
                 String type = sourceType(stream.getProtocol(), stream.getSourceUrl());
                 Map<String, Object> item = new LinkedHashMap<>();
@@ -170,6 +170,7 @@ public class CloudAiSourceService {
             if (device == null || !tenant.equals(tenants.deviceTenant(device)) || stream == null
                     || !rowId.equals(stream.getDeviceRowId()) || !Boolean.TRUE.equals(stream.getAvailable()))
                 throw new ServiceException("已授权的设备或视频源不可用", 403);
+            requireOnline(device);
             url = stream.getSourceUrl(); streamProtocol = stream.getProtocol(); name = device.getDeviceName();
             identity = device.getDeviceId(); address = null; result.put("online", device.getOnline());
             result.put("latitude", device.getLatitude()); result.put("longitude", device.getLongitude());
@@ -206,6 +207,11 @@ public class CloudAiSourceService {
         } else if(!"PLATFORM".equals(type))result.put("url", url);
         return result;
     }
+    private static void requireOnline(VlStreamDevice device) {
+        if (device == null || !Boolean.TRUE.equals(device.getOnline()))
+            throw new ServiceException("VLStream设备离线，请待设备管理显示在线后重新选择视频源", 409);
+    }
+
     private void attachRtc(Map<String,Object> result,String streamProtocol,String url) {
             String signal = rtc.getCameraRtcSignalUrl();
             try {

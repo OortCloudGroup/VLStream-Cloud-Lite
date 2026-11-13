@@ -23,12 +23,14 @@ public class CloudAiSourceServiceTest {
     private final VlStreamDeviceTenantService tenants=mock(VlStreamDeviceTenantService.class);
     private final CustomDeviceMapper custom=mock(CustomDeviceMapper.class);
     private final CloudAiProtocolSources protocols=mock(CloudAiProtocolSources.class);
+    private final VlStreamDeviceMapper vlDevices=mock(VlStreamDeviceMapper.class);
+    private final VlStreamDeviceStreamMapper vlStreams=mock(VlStreamDeviceStreamMapper.class);
     private CloudAiSourceService service;
     private Map<String,Object> grant;
     private final String token=String.join("",Collections.nCopies(43,"a"));
     @Before public void setup() {
-        service=new CloudAiSourceService(jdbc,permissions,mock(ProtocolDeviceAccess.class),tenants,mock(VlStreamDeviceMapper.class),
-            mock(VlStreamDeviceStreamMapper.class),mock(RtspDeviceMapper.class),mock(OnvifDeviceMapper.class),new VlStreamCameraRtcProperties(),custom,mock(CustomDeviceStateService.class),protocols);
+        service=new CloudAiSourceService(jdbc,permissions,mock(ProtocolDeviceAccess.class),tenants,vlDevices,
+            vlStreams,mock(RtspDeviceMapper.class),mock(OnvifDeviceMapper.class),new VlStreamCameraRtcProperties(),custom,mock(CustomDeviceStateService.class),protocols);
         when(tenants.defaultTenant()).thenReturn("owner");
         grant=new LinkedHashMap<>();grant.put("id",UUID.randomUUID().toString());grant.put("tenant_id","owner");grant.put("actor_id","actor");
         grant.put("protocol","CUSTOM");grant.put("device_row_id",2L);grant.put("source_identity","CUSTOM:12");
@@ -43,6 +45,29 @@ public class CloudAiSourceServiceTest {
         assertEquals("MEDIA",CloudAiSourceService.sourceType(null,"srt://camera.invalid:9000"));
         assertEquals("CAMERA_RTC",CloudAiSourceService.sourceType(null,"http://camera.invalid/videocall/TARGET-1"));
         for(String url:new String[]{"file:///etc/passwd","concat:http://camera/a|file:/a","http://camera/live\r\n","http://camera/live#bad"})assertNull(CloudAiSourceService.sourceType(null,url));
+    }
+    @Test public void offlineVlstreamCannotUsePreviouslySavedChannels() {
+        when(permissions.hasPermi("vlstream:device:play")).thenReturn(true);
+        com.ruoyi.vlstream.domain.VlStreamDevice device=new com.ruoyi.vlstream.domain.VlStreamDevice();
+        device.setOnline(false);when(tenants.requireDevice(9L)).thenReturn(device);
+        assertThrows(ServiceException.class,()->service.choices("VLSTREAM",9L));
+        verifyNoInteractions(vlStreams);
+        device.setOnline(true);when(vlStreams.selectAvailableByDeviceId(9L)).thenReturn(Collections.emptyList());
+        assertTrue(service.choices("VLSTREAM",9L).isEmpty());
+        verify(vlStreams).selectAvailableByDeviceId(9L);
+    }
+    @Test public void offlineTransitionInvalidatesExistingDelegationAndRecoveryRechecks() {
+        com.ruoyi.vlstream.domain.VlStreamDevice device=new com.ruoyi.vlstream.domain.VlStreamDevice();
+        device.setId(9L);device.setDeviceId("VL-9");device.setOnline(false);
+        com.ruoyi.vlstream.domain.VlStreamDeviceStream stream=new com.ruoyi.vlstream.domain.VlStreamDeviceStream();
+        stream.setId(90L);stream.setDeviceRowId(9L);stream.setAvailable(true);stream.setSourceUrl("rtsp://camera.invalid/live");
+        when(vlDevices.selectById(9L)).thenReturn(device);when(vlStreams.selectById(90L)).thenReturn(stream);
+        when(tenants.deviceTenant(device)).thenReturn("owner");
+        grant.put("protocol","VLSTREAM");grant.put("device_row_id",9L);grant.put("stream_id",90L);grant.put("source_identity","VL-9");
+        assertThrows(ServiceException.class,()->service.resolve(token,UUID.randomUUID().toString()));
+        verify(protocols,never()).acquire(anyMap(),anyString(),anyString());
+        device.setOnline(true);assertEquals("VL-9",service.resolve(token,null).get("deviceId"));
+        device.setOnline(null);assertThrows(ServiceException.class,()->service.resolve(token,null));
     }
     @Test public void allEightDirectoriesRequireTheirOwnPlaybackPermissionBeforeReading() {
         for(String protocol:new String[]{"VLSTREAM","RTSP","ONVIF","ISUP","EHOME","GB28181","DAHUA","CUSTOM"})
