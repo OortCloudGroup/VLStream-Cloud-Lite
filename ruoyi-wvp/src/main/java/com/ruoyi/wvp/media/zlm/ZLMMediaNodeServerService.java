@@ -11,6 +11,7 @@ import com.ruoyi.wvp.gb28181.bean.SendRtpInfo;
 import com.ruoyi.wvp.media.bean.MediaInfo;
 import com.ruoyi.wvp.media.bean.MediaServer;
 import com.ruoyi.wvp.media.service.IMediaNodeServerService;
+import com.ruoyi.wvp.media.service.StreamProxyFailure;
 import com.ruoyi.wvp.media.zlm.dto.ZLMServerConfig;
 import com.ruoyi.wvp.streamProxy.bean.StreamProxy;
 import com.ruoyi.common.enums.ErrorCode;
@@ -292,12 +293,13 @@ public class ZLMMediaNodeServerService implements IMediaNodeServerService {
     public WVPResult<String> addStreamProxy(MediaServer mediaServer, String app, String stream, String url,
                                             boolean enableAudio, boolean enableMp4, String rtpType, Integer timeout) {
         JSONObject jsonObject = zlmresTfulUtils.addStreamProxy(mediaServer, app, stream, url, enableAudio, enableMp4, rtpType, timeout);
-        if (jsonObject.getInteger("code") != 0) {
-            return WVPResult.fail(ErrorCode.ERROR100.getCode(), "添加代理失败");
+        if (jsonObject == null || !Integer.valueOf(0).equals(jsonObject.getInteger("code"))) {
+            return WVPResult.fail(ErrorCode.ERROR100.getCode(), StreamProxyFailure.fromZlmMessage(
+                    jsonObject == null ? null : jsonObject.getString("msg")).getMessage());
         } else {
             JSONObject data = jsonObject.getJSONObject("data");
-            if (data == null) {
-                return WVPResult.fail(ErrorCode.ERROR100.getCode(), "代理结果异常： " + jsonObject);
+            if (data == null || data.getString("key") == null || data.getString("key").trim().isEmpty()) {
+                return WVPResult.fail(ErrorCode.ERROR100.getCode(), StreamProxyFailure.UNKNOWN.getMessage());
             } else {
                 return WVPResult.success(data.getString("key"));
             }

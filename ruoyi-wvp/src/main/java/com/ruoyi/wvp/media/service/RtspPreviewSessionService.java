@@ -13,13 +13,18 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.atomic.AtomicReference;
 
-/** Temporary, independently owned RTSP previews; no device or proxy rows are created. */
+/** Independently owned preview leases over a shared per-device, per-source proxy. */
 @Service
 public class RtspPreviewSessionService {
     private static final long LEASE_MILLIS = 120_000;
     private final IMediaServerService mediaService;
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
+    private final Map<String, Upstream> upstreams = new ConcurrentHashMap<>();
 
     public RtspPreviewSessionService(IMediaServerService mediaService) {
         this.mediaService = mediaService;
@@ -37,40 +42,78 @@ public class RtspPreviewSessionService {
         MediaServer configured = mediaService.getDefaultMediaServer();
         MediaServer server = configured == null ? null : mediaService.getOne(configured.getId());
         if (server == null || !server.isStatus()) throw new ServiceException("没有可用的ZLM媒体服务器");
+        // IDs belong to the device's protocol table. Controllers still check the caller's
+        // tenant, department and permission on start/renew/stop; sharing grants no access.
+        // Exact source credentials are part of the digest, so changing them cannot reuse old proof.
+        String sourceKey = protocol + ":" + deviceId + ":" + server.getId() + ":" + fingerprint(url);
         String id = UUID.randomUUID().toString().replace("-", "");
-        String app = "rtsp_preview";
-        String stream = protocol.toLowerCase(java.util.Locale.ROOT) + "_device_" + deviceId + "_" + id;
-        // ZLM defines 0 as TCP, 1 as UDP. TCP also avoids Docker RTP return-port mapping.
-        WVPResult<String> proxy = mediaService.addStreamProxy(server, app, stream, url, true, false, "0", 15);
-        if (proxy == null || proxy.getCode() != 0 || proxy.getData() == null) {
-            throw new ServiceException("ZLM拉流失败，请检查设备地址、账号和网络");
-        }
-        Session session = new Session(protocol, deviceId, userId, server, proxy.getData());
-        sessions.put(id, session);
-        try {
-            long deadline = System.currentTimeMillis() + 10_000;
-            while (!mediaService.isStreamReady(server, app, stream)) {
-                if (System.currentTimeMillis() >= deadline) throw new ServiceException("ZLM未收到可播放媒体，请检查摄像机出流");
-                try { Thread.sleep(250); }
-                catch (InterruptedException interrupted) {
-                    Thread.currentThread().interrupt();
-                    throw new ServiceException("创建预览已取消");
+        Map<String, Object> result = new LinkedHashMap<>();
+        AtomicReference<RuntimeException> failure = new AtomicReference<>();
+        // Atomic per source, including the initial network pull: simultaneous viewers
+        // cannot race into opening duplicate camera connections. Other sources are independent.
+        upstreams.compute(sourceKey, (key, existing) -> {
+            if (existing != null && existing.viewers == 0) {
+                if (!deleteProxy(existing)) throw new ServiceException("旧预览资源正在释放，请稍后重试");
+                existing = null;
+            }
+            Upstream upstream = existing;
+            if (upstream == null) {
+                String stream = protocol.toLowerCase(java.util.Locale.ROOT) + "_device_" + deviceId + "_" + id;
+                WVPResult<String> proxy = mediaService.addStreamProxy(server, "rtsp_preview", stream, url, true, false, "0", 15);
+                if (proxy == null || proxy.getCode() != 0 || proxy.getData() == null) {
+                    throw new ServiceException(StreamProxyFailure.publicMessage(proxy == null ? null : proxy.getMsg()));
+                }
+                upstream = new Upstream(server, proxy.getData(), stream);
+            }
+            try {
+                if (existing == null) waitForMedia(upstream);
+                else if (!mediaService.isStreamReady(server, "rtsp_preview", upstream.stream)) {
+                    throw new ServiceException("摄像机媒体流已中断，请关闭预览后重试");
+                }
+                StreamInfo info = mediaService.getStreamInfoByAppAndStream(server, "rtsp_preview", upstream.stream, null, null);
+                if (info == null) throw new ServiceException("ZLM未返回可用播放地址");
+                result.put("sessionId", id);
+                result.put("streamInfo", new StreamContent(info));
+                sessions.put(id, new Session(protocol, deviceId, userId, sourceKey, upstream));
+                upstream.viewers++;
+            } catch (RuntimeException error) {
+                failure.set(error);
+                // A failed join must never delete another viewer's active stream.
+                if (upstream.viewers == 0) {
+                    if (deleteProxy(upstream)) return null;
+                    upstream.orphaned = true;
                 }
             }
-            StreamInfo info = mediaService.getStreamInfoByAppAndStream(server, app, stream, null, null);
-            if (info == null) throw new ServiceException("ZLM未返回可用播放地址");
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("sessionId", id);
-            result.put("streamInfo", new StreamContent(info));
-            return result;
-        } catch (RuntimeException error) {
-            synchronized (session) {
-                session.terminating = true;
-                session.expiresAt = 0;
-                try { release(id, session); } catch (RuntimeException ignored) { /* retry expired cleanup */ }
+            return upstream;
+        });
+        if (failure.get() != null) throw failure.get();
+        return result;
+    }
+
+    private void waitForMedia(Upstream upstream) {
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (!mediaService.isStreamReady(upstream.server, "rtsp_preview", upstream.stream)) {
+            if (System.currentTimeMillis() >= deadline) throw new ServiceException("ZLM未收到可播放媒体，请检查摄像机出流");
+            try { Thread.sleep(250); }
+            catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw new ServiceException("创建预览已取消");
             }
-            throw error;
         }
+    }
+
+    private static String fingerprint(String source) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(source.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (byte value : digest) hex.append(String.format("%02x", value & 0xff));
+            return hex.toString();
+        } catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+    }
+
+    private boolean deleteProxy(Upstream upstream) {
+        try { return Boolean.TRUE.equals(mediaService.delStreamProxy(upstream.server, upstream.proxyKey)); }
+        catch (RuntimeException ignored) { return false; }
     }
 
     public void renew(Long deviceId, Long userId, String id) { renew("RTSP", deviceId, userId, id); }
@@ -112,10 +155,27 @@ public class RtspPreviewSessionService {
     }
 
     private void release(String id, Session session) {
-        // Keep failed cleanup for retry; never stop a different viewer's stream.
-        if (Boolean.TRUE.equals(mediaService.delStreamProxy(session.server, session.proxyKey))) {
-            sessions.remove(id, session);
-        }
+        upstreams.computeIfPresent(session.sourceKey, (key, upstream) -> {
+            if (upstream != session.upstream) {
+                sessions.remove(id, session);
+                return upstream;
+            }
+            if (!session.detached) {
+                upstream.viewers--;
+                session.detached = true;
+            }
+            if (upstream.viewers > 0) {
+                sessions.remove(id, session);
+                return upstream;
+            }
+            // Retain a terminal session on failed deletion; retries decrement only once.
+            if (Boolean.TRUE.equals(mediaService.delStreamProxy(upstream.server, upstream.proxyKey))) {
+                sessions.remove(id, session);
+                return null;
+            }
+            return upstream;
+        });
+        if (session.detached && !upstreams.containsKey(session.sourceKey)) sessions.remove(id, session);
     }
 
     @Scheduled(fixedDelay = 30_000)
@@ -129,6 +189,9 @@ public class RtspPreviewSessionService {
                 }
             }
         });
+        // Includes a newly created proxy whose readiness check failed before a lease existed.
+        upstreams.forEach((key, ignored) -> upstreams.computeIfPresent(key,
+                (source, upstream) -> upstream.orphaned && deleteProxy(upstream) ? null : upstream));
     }
 
     @PreDestroy
@@ -142,24 +205,41 @@ public class RtspPreviewSessionService {
                 }
             }
         });
+        upstreams.forEach((key, ignored) -> upstreams.computeIfPresent(key,
+                (source, upstream) -> upstream.orphaned && deleteProxy(upstream) ? null : upstream));
     }
 
     private static class Session {
         final String protocol;
         final Long deviceId;
         final Long userId;
-        final MediaServer server;
-        final String proxyKey;
+        final String sourceKey;
+        final Upstream upstream;
         long expiresAt = System.currentTimeMillis() + LEASE_MILLIS;
         // Guarded by this session's monitor; failed proxy deletion cannot reopen a lease.
         boolean terminating;
+        boolean detached;
 
-        Session(String protocol, Long deviceId, Long userId, MediaServer server, String proxyKey) {
+        Session(String protocol, Long deviceId, Long userId, String sourceKey, Upstream upstream) {
             this.protocol = protocol;
             this.deviceId = deviceId;
             this.userId = userId;
+            this.sourceKey = sourceKey;
+            this.upstream = upstream;
+        }
+    }
+
+    private static class Upstream {
+        final MediaServer server;
+        final String proxyKey;
+        final String stream;
+        // Accessed only inside the per-source compute operation.
+        int viewers;
+        boolean orphaned;
+        Upstream(MediaServer server, String proxyKey, String stream) {
             this.server = server;
             this.proxyKey = proxyKey;
+            this.stream = stream;
         }
     }
 }

@@ -46,16 +46,142 @@ public class RtspPreviewSessionServiceTest {
     }
 
     @Test
-    public void viewersHaveIndependentStreamsAndCleanup() {
+    public void failedPullReportsSafeCauseWithoutStartingSession() {
+        when(media.addStreamProxy(any(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString(), anyInt()))
+                .thenReturn(WVPResult.fail(100, StreamProxyFailure.AUTHENTICATION.getMessage()));
+        ServiceException error = assertThrows(ServiceException.class, this::start);
+        assertEquals(StreamProxyFailure.AUTHENTICATION.getMessage(), error.getMessage());
+        verify(media, never()).isStreamReady(any(), anyString(), anyString());
+        assertTrue(((Map<?, ?>) ReflectionTestUtils.getField(service, "sessions")).isEmpty());
+    }
+
+    @Test
+    public void unrecognizedPullFailureNeverExposesRawMessage() {
+        when(media.addStreamProxy(any(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString(), anyInt()))
+                .thenReturn(WVPResult.fail(100, "rtsp://fixture:fixture-secret@camera/profile"));
+        assertEquals(StreamProxyFailure.UNKNOWN.getMessage(), assertThrows(ServiceException.class, this::start).getMessage());
+    }
+
+    @Test
+    public void viewersShareUpstreamButHaveIndependentLeasesAndCleanup() {
         String first = start();
         String second = start();
         assertNotEquals(first, second);
         service.stop(7L, 1L, first);
-        verify(media).delStreamProxy(server, "key-one");
-        verify(media, never()).delStreamProxy(server, "key-two");
+        verify(media, never()).delStreamProxy(any(), anyString());
         service.renew(7L, 1L, second);
         service.stop(7L, 1L, second);
+        verify(media).delStreamProxy(server, "key-one");
+        verify(media, times(1)).addStreamProxy(any(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString(), anyInt());
+    }
+
+    @Test
+    public void differentUsersShareSourceButCannotReleaseEachOthersLease() {
+        String first = start();
+        String second = (String) service.start(7L, 2L, "rtsp://camera/Streaming/Channels/101").get("sessionId");
+        assertThrows(ServiceException.class, () -> service.stop(7L, 2L, first));
+        service.stop(7L, 1L, first);
+        verify(media, never()).delStreamProxy(any(), anyString());
+        service.renew(7L, 2L, second);
+        service.stop(7L, 2L, second);
+        verify(media).delStreamProxy(server, "key-one");
+    }
+
+    @Test
+    public void differentDeviceProtocolChannelOrCredentialsDoNotShare() {
+        start();
+        service.start(8L, 1L, "rtsp://camera/Streaming/Channels/101");
+        service.start("ONVIF", 7L, 1L, "rtsp://camera/Streaming/Channels/101");
+        service.start(7L, 1L, "rtsp://camera/Streaming/Channels/102");
+        service.start(7L, 1L, "rtsp://user:changed@camera/Streaming/Channels/101");
+        verify(media, times(5)).addStreamProxy(any(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString(), anyInt());
+    }
+
+    @Test
+    public void expiredViewerDoesNotStopRemainingViewer() {
+        String first = start(), second = start();
+        ReflectionTestUtils.setField(session(first), "expiresAt", System.currentTimeMillis() - 1);
+        service.expireSessions();
+        assertNull(session(first));
+        verify(media, never()).delStreamProxy(any(), anyString());
+        service.renew(7L, 1L, second);
+        service.stop(7L, 1L, second);
+        verify(media).delStreamProxy(server, "key-one");
+    }
+
+    @Test
+    public void concurrentCreationPullsOnlyOnce() throws Exception {
+        CountDownLatch pulling = new CountDownLatch(1), finishPull = new CountDownLatch(1);
+        when(media.addStreamProxy(any(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString(), anyInt()))
+                .thenAnswer(call -> {
+                    pulling.countDown();
+                    assertTrue(finishPull.await(5, TimeUnit.SECONDS));
+                    return WVPResult.success("shared-key");
+                });
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<String> first = executor.submit(this::start);
+            assertTrue(pulling.await(5, TimeUnit.SECONDS));
+            Future<String> second = executor.submit(this::start);
+            finishPull.countDown();
+            String one = first.get(5, TimeUnit.SECONDS), two = second.get(5, TimeUnit.SECONDS);
+            assertNotEquals(one, two);
+            verify(media, times(1)).addStreamProxy(any(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString(), anyInt());
+            service.stop(7L, 1L, one);
+            verify(media, never()).delStreamProxy(any(), anyString());
+            service.stop(7L, 1L, two);
+            verify(media).delStreamProxy(server, "shared-key");
+        } finally { finishPull.countDown(); executor.shutdownNow(); }
+    }
+
+    @Test
+    public void failedJoinDoesNotDeleteExistingViewersStream() {
+        String first = start();
+        when(media.getStreamInfoByAppAndStream(any(), anyString(), anyString(), isNull(), isNull())).thenReturn(null);
+        assertThrows(ServiceException.class, this::start);
+        verify(media, never()).delStreamProxy(any(), anyString());
+        service.renew(7L, 1L, first);
+        service.stop(7L, 1L, first);
+        verify(media).delStreamProxy(server, "key-one");
+    }
+
+    @Test
+    public void interruptedSourceDoesNotOpenAnotherConnectionWhileViewersRemain() {
+        String first = start();
+        when(media.isStreamReady(any(), anyString(), anyString())).thenReturn(false);
+        assertThrows(ServiceException.class, this::start);
+        verify(media, times(1)).addStreamProxy(any(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString(), anyInt());
+        verify(media, never()).delStreamProxy(any(), anyString());
+        service.stop(7L, 1L, first);
+    }
+
+    @Test
+    public void failedLastDeletionBlocksDuplicatePullAndCanRecover() {
+        String first = start(), second = start();
+        when(media.delStreamProxy(server, "key-one")).thenReturn(false, false, true);
+        service.stop(7L, 1L, first);
+        service.stop(7L, 1L, second);
+        assertThrows(ServiceException.class, this::start);
+        verify(media, times(1)).addStreamProxy(any(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString(), anyInt());
+        String third = start();
+        service.expireSessions();
+        assertNull(session(second));
+        service.renew(7L, 1L, third);
+        service.stop(7L, 1L, third);
         verify(media).delStreamProxy(server, "key-two");
+    }
+
+    @Test
+    public void failedInitialReadinessIsNotReusedAndKeysDoNotContainCredentials() {
+        when(media.getStreamInfoByAppAndStream(any(), anyString(), anyString(), isNull(), isNull())).thenReturn(null);
+        when(media.delStreamProxy(server, "key-one")).thenReturn(false, true);
+        assertThrows(ServiceException.class, () -> service.start(7L, 1L, "rtsp://user:secret@camera/profile"));
+        Map<?, ?> upstreams = (Map<?, ?>) ReflectionTestUtils.getField(service, "upstreams");
+        assertEquals(1, upstreams.size());
+        assertFalse(upstreams.keySet().toString().contains("secret"));
+        assertFalse(upstreams.keySet().toString().contains("camera"));
+        service.expireSessions();
+        assertTrue(upstreams.isEmpty());
     }
 
     @Test
