@@ -10,13 +10,13 @@ import java.lang.reflect.Field;
 import static org.mockito.Mockito.*;
 
 public class EhomeLinuxStartupTest {
-    @Test public void linuxEhomeStartsTheUnifiedStreamAndCmsOnly() throws Exception {
+    @Test public void linuxEhomeStartsTheUnifiedStreamAndCmsByDefault() throws Exception {
         String os = System.getProperty("os.name");
         try {
             System.setProperty("os.name", "Linux");
             HaikangCommandLineRunnerImpl runner = new HaikangCommandLineRunnerImpl();
             CMS cms = mock(CMS.class); SMS sms = mock(SMS.class); CmsService legacy = mock(CmsService.class);
-            EhomeConfig config = new EhomeConfig(); config.setLinuxEnabled(true);
+            EhomeConfig config = new EhomeConfig();
             IsupLinuxConfig old = new IsupLinuxConfig(); old.setEnabled(true);
             set(runner,"cms",cms); set(runner,"sms",sms); set(runner,"cmsService",legacy);
             set(runner,"ehomeConfig",config); set(runner,"isupLinuxConfig",old);
@@ -25,6 +25,34 @@ public class EhomeLinuxStartupTest {
             order.verify(sms).SMS_Init(); order.verify(cms).cMS_Init(); order.verify(cms).startCmsListen();
             verifyNoInteractions(legacy);
         } finally { System.setProperty("os.name", os); }
+    }
+    @Test public void explicitLinuxOptOutDoesNotInitializeNativeServices() throws Exception {
+        verifyNativeServicesRemainStopped(false, true);
+    }
+    @Test public void explicitEhomeOptOutDoesNotInitializeNativeServices() throws Exception {
+        verifyNativeServicesRemainStopped(true, false);
+    }
+    private void verifyNativeServicesRemainStopped(boolean linuxEnabled, boolean enabled) throws Exception {
+        String os = System.getProperty("os.name");
+        try {
+            System.setProperty("os.name", "Linux");
+            HaikangCommandLineRunnerImpl runner = new HaikangCommandLineRunnerImpl();
+            CMS cms = mock(CMS.class);
+            SMS sms = mock(SMS.class);
+            CmsService legacy = mock(CmsService.class);
+            EhomeConfig config = new EhomeConfig();
+            config.setLinuxEnabled(linuxEnabled);
+            config.setEnabled(enabled);
+            set(runner, "cms", cms);
+            set(runner, "sms", sms);
+            set(runner, "cmsService", legacy);
+            set(runner, "ehomeConfig", config);
+            set(runner, "isupLinuxConfig", new IsupLinuxConfig());
+            runner.run();
+            verifyNoInteractions(cms, sms, legacy);
+        } finally {
+            System.setProperty("os.name", os);
+        }
     }
     private void set(Object target, String name, Object value) throws Exception {
         Field field=target.getClass().getDeclaredField(name); field.setAccessible(true); field.set(target,value);

@@ -68,6 +68,39 @@ public class EhomePreviewTest {
         try { previews.start(device,33,0,1L); fail(); } catch (ServiceException expected) { }
         verifyNoInteractions(sdk);
     }
+    @Test public void configuredMediaBasePreservesGatewayPathAndRemovesTrailingSlashes() throws Exception {
+        String url = previewUrl("https://gateway.example.invalid:2443/bus/zlm-server///");
+        assertTrue(url.startsWith("https://gateway.example.invalid:2443/bus/zlm-server/haikang/"));
+        assertTrue(url.endsWith(".live.flv"));
+    }
+    @Test public void absentMediaBaseKeepsLegacySchemeHostAndPort() throws Exception {
+        String url = previewUrl("");
+        assertTrue(url.startsWith("http://127.0.0.1:8090/haikang/"));
+        assertTrue(url.endsWith(".live.flv"));
+    }
+    private static String previewUrl(String mediaBaseUrl) throws Exception {
+        EhomeSdk sdk = mock(EhomeSdk.class);
+        when(sdk.channels(9)).thenReturn(Collections.singletonList(new EhomeSdk.Channel(33, "33")));
+        when(sdk.open(9, 33, 0, null)).thenReturn(42);
+        EhomeMediaPipe pipe = mock(EhomeMediaPipe.class);
+        when(pipe.running()).thenReturn(true);
+        EhomePreviews previews = new EhomePreviews(sdk) {
+            @Override EhomeMediaPipe createPipe(String url, CompletableFuture<String> ready) {
+                ready.complete("true");
+                return pipe;
+            }
+        };
+        set(previews, "pushSign", "test-sign");
+        set(previews, "mediaBaseUrl", mediaBaseUrl);
+        set(previews, "mediaPublicHost", "127.0.0.1");
+        set(previews, "httpScheme", "http");
+        set(previews, "httpPort", 8090);
+        try {
+            return (String) previews.start(device(), 33, 0, 1L).get("url");
+        } finally {
+            previews.destroy();
+        }
+    }
     private static EhomeDevice device() {
         EhomeDevice device = new EhomeDevice(); device.setId(1L); device.setDeviceId("test");
         device.setLuserId(9); device.setDevProtocolVersion("4.0"); device.setStatus("ON"); return device;

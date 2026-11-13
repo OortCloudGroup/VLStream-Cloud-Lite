@@ -39,13 +39,14 @@
 ```yaml
 ehome:
   enabled: true
-  linux-enabled: false # Linux 基础接入显式设为 true；Windows 沿用应用初始化
+  linux-enabled: true # Linux 基础接入默认启动，可显式设为 false 关闭
   public-host: "" # 默认按通往设备的路由自动选择本机 IPv4；公网/NAT 时填写设备可达地址
   default-dept-id: 100
   media-public-host: 127.0.0.1 # 浏览器能访问的 ZLMediaKit 地址
   media-rtmp-port: 1935
   media-http-port: 8090 # 浏览器可访问的 ZLM HTTP 端口，默认继承 media.http-port
   media-http-scheme: http
+  media-base-url: "" # 可填写完整浏览器网关地址，例如 https://example.com/bus/zlm-server
   # media-push-sign: 外部 ZLM 的有效推流签名；默认沿用当前项目基于 media.secret 的摘要
 ```
 
@@ -54,7 +55,9 @@ ehome:
 注册端口按部署需要开放 TCP/UDP，取流使用 TCP。NAT 环境须映射同号端口。
 媒体 API 地址、HTTP 端口、密钥继续使用现有 `media.*` 配置。
 
-Windows x86_64 与 Linux x86_64 现在使用相同的 CMS/Stream 初始化、协议分发和预览回调。Linux 通过 `ehome.linux-enabled=true` 启用，优先于历史 `isup-linux64.enabled` 分支，避免重复 CMS 监听；历史报警/存储分支的默认值保持不变。
+HTTPS 控制台通过网关播放时，设置 `ehome.media-base-url`（环境变量 `EHOME_MEDIA_BASE_URL`）为浏览器可达的完整媒体代理地址，包含协议、可选端口与路径前缀。预览响应在该地址后追加 `/haikang/<流标识>.live.flv`，并去掉配置末尾的多余斜杠。留空时继续由 `media-http-scheme`、`media-public-host`、`media-http-port` 组成原播放地址；内部推流仍使用 `media.ip` 与 `ehome.media-rtmp-port`。
+
+Windows x86_64 与 Linux x86_64 使用相同的 CMS/Stream 初始化、协议分发和预览回调。Linux 基础接入默认启动，优先于历史 `isup-linux64.enabled` 分支，避免重复 CMS 监听。部署环境可设置 `EHOME_LINUX_ENABLED=false` 退出 Linux 基础接入，或设置 `EHOME_ENABLED=false` 关闭 EHome 业务及其 Linux 初始化；历史报警/存储分支仍由独立的 `isup-linux64.enabled` 控制，默认关闭。
 
 仓库中的 Windows 与 Linux CMS/Stream 原生库均已实测报告 SDK **2.5.1.35**。SDK 版本不是设备协议版本，不是每个协议版本各放一套库。库已在仓库中，本次没有下载或替换厂商二进制；补齐的是加载方式、Linux 运行路径和镜像携带。
 
@@ -75,7 +78,7 @@ docker compose -f compose.yaml -f compose.ehome.yaml config --quiet
 docker compose -f compose.yaml -f compose.ehome.yaml up -d
 ```
 
-`compose.ehome.yaml` 只增加后端的 EHome 参数及注册 TCP/UDP、取流 TCP 端口映射；ZLM 使用现有部署。发布工作流已将这个可选配置加入未来发行附件。
+主 Compose 透传 EHome 默认启动及显式关闭开关。`compose.ehome.yaml` 用于补充设备可达地址及注册 TCP/UDP、取流 TCP 端口映射，部署维护者配置地址后使用；SDK 已启动与设备从容器外可达须分别核对。ZLM 使用现有部署。发布工作流已将这个可选配置加入未来发行附件。
 
 ### 双平台验证记录（2026-09-17）
 

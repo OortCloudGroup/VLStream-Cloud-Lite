@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "ehome")
 public class EhomeConfig {
     private boolean enabled = true;
-    /** Explicit opt-in for native Linux runtime; unsupported architectures fail before loading. */
-    private boolean linuxEnabled = false;
+    /** Native Linux runtime starts by default; unsupported architectures fail before loading. */
+    private boolean linuxEnabled = true;
     /** Optional NAT/public address. Empty means choose the local source address per device route. */
     private String publicHost = "";
     private Long defaultDeptId = 100L;

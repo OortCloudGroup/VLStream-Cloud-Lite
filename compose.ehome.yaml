@@ -1,10 +1,10 @@
-# Opt-in overlay: docker compose -f compose.yaml -f compose.ehome.yaml up -d
-# Set EHOME_PUBLIC_HOST to the IPv4 address devices can reach before enabling.
+# Device-access overlay: docker compose -f compose.yaml -f compose.ehome.yaml up -d
+# Set EHOME_PUBLIC_HOST to the IPv4 address devices can reach before publishing ports.
 services:
   wvp-backend:
     environment:
-      EHOME_ENABLED: "true"
-      EHOME_LINUX_ENABLED: "true"
+      EHOME_ENABLED: ${EHOME_ENABLED:-true}
+      EHOME_LINUX_ENABLED: ${EHOME_LINUX_ENABLED:-true}
       EHOME_SDK_PATH: /app/ruoyi-isup/linux-lib
       EHOME_PUBLIC_HOST: ${EHOME_PUBLIC_HOST:?Set the device-reachable IPv4 address}
       EHOME_MEDIA_PUBLIC_HOST: ${EHOME_MEDIA_PUBLIC_HOST:-${EHOME_PUBLIC_HOST}}

@@ -22,6 +22,7 @@ public class EhomePreviews {
     @Value("${ehome.media-rtmp-port:1935}") private int rtmpPort;
     @Value("${ehome.media-http-port:${media.http-port}}") private int httpPort;
     @Value("${ehome.media-http-scheme:http}") private String httpScheme;
+    @Value("${ehome.media-base-url:}") private String mediaBaseUrl = "";
     @Value("${ehome.media-push-sign:}") private String pushSign;
     @Value("${media.secret}") private String mediaSecret;
 
@@ -62,7 +63,10 @@ public class EhomePreviews {
             }
             Map<String, Object> response = new LinkedHashMap<>();
             response.put("sessionId", lease.id);
-            response.put("url", httpScheme + "://" + mediaPublicHost + ":" + httpPort + "/haikang/" + stream.mediaId + ".live.flv");
+            String baseUrl = mediaBaseUrl == null || mediaBaseUrl.trim().isEmpty()
+                    ? httpScheme + "://" + mediaPublicHost + ":" + httpPort
+                    : mediaBaseUrl.trim().replaceAll("/+$", "");
+            response.put("url", baseUrl + "/haikang/" + stream.mediaId + ".live.flv");
             return response;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); stop(lease.id, userId);
