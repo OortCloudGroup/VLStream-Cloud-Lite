@@ -45,6 +45,16 @@ public class OnvifDeviceController extends BaseController {
     @Autowired
     private com.ruoyi.web.service.ProtocolDeviceAccess previewAccess;
 
+    @Autowired
+    private com.ruoyi.web.service.OnvifRegistrationService registration;
+
+    /** Authentication mode is request-only; no schema or stored credentials are changed. */
+    public static class RegistrationRequest extends OnvifDevice {
+        private String auth;
+        public String getAuth() { return auth; }
+        public void setAuth(String auth) { this.auth = auth; }
+    }
+
     @PreAuthorize("@ss.hasPermi('onvif:device:play')")
     @PostMapping("/{id}/preview")
     public AjaxResult preview(@PathVariable Long id) {
@@ -134,8 +144,8 @@ public class OnvifDeviceController extends BaseController {
     @PreAuthorize("@ss.hasPermi('onvif:device:add')")
     @Log(title = "onvif 设备", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody OnvifDevice onvifDevice) {
-        return toAjax(onvifDeviceService.insertOnvifDevice(onvifDevice));
+    public AjaxResult add(@RequestBody RegistrationRequest onvifDevice) {
+        return toAjax(registration.register(onvifDevice, onvifDevice.getAuth(), getUserId()));
     }
 
 //    @PreAuthorize("@ss.hasPermi('onvif:device:auth')")
@@ -150,7 +160,7 @@ public class OnvifDeviceController extends BaseController {
     @Log(title = "onvif 设备", businessType = BusinessType.INSERT)
     @PostMapping("/addOnvif")
     public AjaxResult addOnvif(@RequestBody WSDeviceBo bo) {
-        return success(onvifDeviceService.addOnvif(bo));
+        return success(registration.authenticate(bo, getUserId()));
     }
 
     /**
