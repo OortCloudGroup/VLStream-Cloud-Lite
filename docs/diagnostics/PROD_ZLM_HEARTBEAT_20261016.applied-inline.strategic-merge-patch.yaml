@@ -1,0 +1,23 @@
+# Sanitized reference for the command/args applied at 2026-10-16 11:03:39 UTC.
+# Resource names, namespace, and service URL are placeholders; do not apply as-is.
+# Strategic merge patch only; do not replace the complete Deployment with this file.
+# No ConfigMap, volume, image, service, ingress, env or secret changes.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zlm-media-server
+  namespace: example-namespace
+spec:
+  template:
+    spec:
+      containers:
+        - name: zlm-media-server
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              cd /opt/media/bin
+              zlm_previous_umask=$(umask)
+              umask 077
+              { cat /opt/media/conf/config.ini; printf '\n[hook]\nenable=1\nalive_interval=10\non_server_started=http://wvp-service.example.invalid:8080/index/hook/on_server_started\non_server_keepalive=http://wvp-service.example.invalid:8080/index/hook/on_server_keepalive\n'; } > /tmp/zlm-wvp-config.ini
+              umask "$zlm_previous_umask"
+              exec /opt/media/bin/MediaServer -s /opt/media/conf/default.pem -c /tmp/zlm-wvp-config.ini -l 0

@@ -1,0 +1,17 @@
+# Sanitized rollback reference for this heartbeat fix only; placeholders are not apply-ready.
+# Original server-side revision: prior ZLM ReplicaSet (revision 4).
+# Original container had no command/args override, volumes or volumeMounts.
+# Existing image: registry.example.invalid/vendor/zlmediakit:<version>
+# Remove only the command/args introduced by this fix; preserve all other fields.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zlm-media-server
+  namespace: example-namespace
+spec:
+  template:
+    spec:
+      containers:
+        - name: zlm-media-server
+          command: null
+          args: null

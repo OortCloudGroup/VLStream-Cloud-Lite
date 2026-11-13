@@ -1,0 +1,35 @@
+# PAUSED: compare with the working Windows Docker deployment before choosing a fix.
+# Review-only STRATEGIC MERGE PATCH, not a complete Deployment replacement. Do not apply yet.
+# Sanitized example: resource names, namespace, and WVP address are placeholders.
+# Not applied. Merge into the existing zlm-media-server Deployment only after restoring approved values.
+# Keep all existing image/env/ports/resources/probes/Service/Ingress settings.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zlm-media-server
+  namespace: example-namespace
+spec:
+  template:
+    spec:
+      containers:
+        - name: zlm-media-server
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              cd /opt/media/bin
+              zlm_previous_umask=$(umask)
+              umask 077
+              { cat /opt/media/conf/config.ini; printf '\n'; cat /etc/zlm-wvp-hooks/hooks.ini; } > /tmp/zlm-wvp-config.ini
+              umask "$zlm_previous_umask"
+              exec /opt/media/bin/MediaServer -s /opt/media/conf/default.pem -c /tmp/zlm-wvp-config.ini -l 0
+          volumeMounts:
+            - name: wvp-hooks
+              mountPath: /etc/zlm-wvp-hooks
+              readOnly: true
+      volumes:
+        - name: wvp-hooks
+          configMap:
+            name: zlm-hooks-example
+            items:
+              - key: hooks.ini
+                path: hooks.ini

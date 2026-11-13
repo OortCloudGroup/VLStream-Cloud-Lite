@@ -1,0 +1,16 @@
+# PAUSED: compare with the working Windows Docker deployment before choosing a fix.
+# Review-only prepared manifest. Not applied to production. Do not apply yet.
+# Sanitized example: replace resource names, namespace, and WVP address before authorized use.
+# Contains no existing credentials. Preserve the image's original config.ini.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zlm-hooks-example
+  namespace: example-namespace
+data:
+  hooks.ini: |
+    [hook]
+    enable=1
+    alive_interval=10
+    on_server_started=http://wvp-service.example.invalid:8080/index/hook/on_server_started
+    on_server_keepalive=http://wvp-service.example.invalid:8080/index/hook/on_server_keepalive
