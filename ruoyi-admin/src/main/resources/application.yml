@@ -127,6 +127,8 @@ wvp:
     mode: ${WVP_AUTH_MODE:local}
 
 token:
+  # 与配套VLS一致的业务租户模式；不等同于WVP本地/SSO登录模式。single multi
+  tenantType: ${SSO_TENANT_TYPE:single}
   # 令牌自定义标识
   header: accessToken
   # 令牌密钥
@@ -197,6 +199,8 @@ sip:
 ## ZLMediaKit默认服务器配置
 # ${环境变量名:默认值}：优先读取操作系统或容器环境变量，未设置时使用冒号后的默认值。
 media:
+  # Local media must not inherit another WVP deployment's global DB default.
+  load-configured-only: true
   # WVP内部使用的ZLM节点唯一标识，必须与ZLM的general.mediaServerId一致；它不是网络地址。
   id: zlmediakit-local
   # ZLMEDIAKIT_HOST：WVP访问ZLM HTTP API时使用的主机名或IP。
@@ -237,10 +241,15 @@ user-settings:
   # 开启sip日志
   sip-log: true
 
+# EHome 基础接入默认启动，可通过部署环境显式关闭。
+ehome:
+  enabled: ${EHOME_ENABLED:true}
+  linux-enabled: ${EHOME_LINUX_ENABLED:true}
+
 # ISUP配置
 isup:
   #注册服务器监听地址(服务器本地地址)
-  IP: 127.0.0.1
+  IP: ${ISUP_IP:0.0.0.0}
   route: Isup
   cmsServer:
     Port: 7660
@@ -323,7 +332,7 @@ isup-linux64:
 
 # dahua配置
 dahua:
-  enabled: ${DAHUA_ENABLED:false}
+  enabled: ${DAHUA_ENABLED:true}
   # [必须修改] dahua服务器的可以是内网IP也可以是公网IP
   ip: 127.0.0.1
   # [必须修改] dahua服务器的端口
@@ -366,6 +375,7 @@ vlstream:
     connection-timeout-seconds: ${VLSTREAM_MQTT_CONNECTION_TIMEOUT_SECONDS:10}
   device:
     default-tenant-id: ${VLSTREAM_DEVICE_DEFAULT_TENANT_ID:000000}
+    multi-tenant-default-tenant-id: ${VLSTREAM_DEVICE_MULTI_TENANT_DEFAULT_TENANT_ID:0e391fd7-1033-4f09-88c0-187582fee462}
     tenant-binding-secret: ${VLSTREAM_DEVICE_TENANT_BINDING_SECRET:}
     offline-timeout-seconds: ${VLSTREAM_DEVICE_OFFLINE_TIMEOUT_SECONDS:180}
     message-retention-hours: ${VLSTREAM_MQTT_MESSAGE_RETENTION_HOURS:24}
