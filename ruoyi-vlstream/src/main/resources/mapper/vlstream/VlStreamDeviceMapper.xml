@@ -69,4 +69,13 @@
         update wvp_vlstream_device set online=0,online_reason='heartbeat_timeout',update_time=#{updateTime}
         where online=1 and last_heartbeat_time &lt; #{deadline}
     </update>
+    <select id="selectDeviceCategoryPaths" resultType="com.ruoyi.common.deviceclassification.domain.DeviceCategory">
+        SELECT c.id, c.category_type AS categoryType, c.ancestors
+        FROM wvp_device_category_relation r
+        JOIN wvp_device_category c ON c.id=r.category_id AND c.category_type=r.category_type
+        WHERE r.protocol_type='VLSTREAM' AND r.device_key=CAST(#{deviceRowId} AS CHAR)
+    </select>
+    <select id="categoryExists" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM wvp_device_category WHERE category_type=#{type} AND id=#{id})
+    </select>
 </mapper>

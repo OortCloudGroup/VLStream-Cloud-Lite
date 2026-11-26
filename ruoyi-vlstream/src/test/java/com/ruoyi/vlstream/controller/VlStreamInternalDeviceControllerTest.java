@@ -6,6 +6,7 @@ import com.ruoyi.vlstream.domain.dto.VlStreamInternalDeviceView;
 import com.ruoyi.vlstream.mapper.VlStreamDeviceMapper;
 import com.ruoyi.vlstream.config.VlStreamDeviceProperties;
 import org.junit.Test;
+import com.ruoyi.common.deviceclassification.domain.DeviceCategory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,12 +41,18 @@ public class VlStreamInternalDeviceControllerTest {
         device.setOnline(false);
         when(mapper.selectByDeviceId("CAM-1")).thenReturn(device);
 
+        DeviceCategory group = new DeviceCategory();
+        group.setId(2L); group.setCategoryType("GROUP"); group.setAncestors("0,1");
+        DeviceCategory tag = new DeviceCategory();
+        tag.setId(3L); tag.setCategoryType("TAG"); tag.setAncestors("0");
+        when(mapper.selectDeviceCategoryPaths(7L)).thenReturn(java.util.Arrays.asList(group,tag));
         AjaxResult result = new VlStreamInternalDeviceController(mapper).get("CAM-1");
 
         assertEquals(200, result.get(AjaxResult.CODE_TAG));
         VlStreamInternalDeviceView data = (VlStreamInternalDeviceView) result.get(AjaxResult.DATA_TAG);
         assertEquals("CAM-1", data.getDeviceId());
         assertFalse(data.getOnline());
+        assertEquals(java.util.Arrays.asList("GROUP:1", "GROUP:2", "TAG:3"), data.getCategoryKeys());
     }
 
     @Test

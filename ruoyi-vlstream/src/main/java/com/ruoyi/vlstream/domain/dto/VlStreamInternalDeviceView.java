@@ -14,6 +14,9 @@ public class VlStreamInternalDeviceView {
     private String deviceModel;
     private String ipAddr;
     private Boolean online;
+    private java.util.List<String> categoryKeys;
+    public java.util.List<String> getCategoryKeys() { return categoryKeys; }
+    public void setCategoryKeys(java.util.List<String> keys) { categoryKeys = keys; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
