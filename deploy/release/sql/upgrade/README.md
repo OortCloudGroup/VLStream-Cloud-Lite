@@ -13,9 +13,9 @@ for v1.0.0.
 directory and page entries because Lite does not provide their backend APIs.
 It matches route/component paths rather than installation-specific menu IDs.
 Menu records, role assignments, visibility flags and business data are retained.
-Databases without these entries are unchanged. The legacy `sql/ry-wvp.sql`
-bootstrap also seeds these entries as disabled; the release bootstrap already
-omits them.
+Databases without these entries are unchanged. Historical database snapshots
+are excluded from the release; the sanitized release bootstrap already omits
+these entries.
 
 This takes effect when the upgraded backend runs Flyway at startup. Refresh the
 browser or sign in again to fetch the updated routes. To restore the feature

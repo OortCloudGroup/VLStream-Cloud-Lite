@@ -97,6 +97,7 @@ public class VlStreamFederatedSharingIdentityTest {
         context.registerBean(VlStreamDeviceOwnerPlaybackGuard.class, () -> new VlStreamDeviceOwnerPlaybackGuard(tenants));
         context.registerBean(VlStreamDeviceAccessService.class, () -> access);
         context.registerBean(VlStreamDevicePreviewLeaseService.class, () -> mock(VlStreamDevicePreviewLeaseService.class));
+        context.registerBean(VlStreamDeviceClaimService.class, () -> mock(VlStreamDeviceClaimService.class));
         context.registerBean(VlStreamDeviceController.class, () -> new VlStreamDeviceController(devices,
             mock(VlStreamDeviceStreamMapper.class), mock(IMediaServerService.class),
             mock(VlStreamFirmwareDeploymentService.class), tenants));

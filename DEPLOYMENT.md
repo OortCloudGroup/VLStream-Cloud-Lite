@@ -1,4 +1,4 @@
-# APaaS WVP Server deployment
+# VLStream WVP Lite deployment
 
 ## Requirements
 
@@ -22,7 +22,7 @@ The default Compose file starts five independent services: MySQL, Redis, EMQX
 service image. The WVP image
 also contains the compiled browser UI, so no separate frontend service is
 needed. The backend image is
-`ghcr.io/oortcloudgroup/apaas-wvp-server:1.0.3`.
+`ghcr.io/oortcloudgroup/vlstream-cloud-lite:1.0.13`.
 
 Use an existing MySQL, Redis, ZLMediaKit, and MQTT Broker installation with:
 
@@ -40,6 +40,11 @@ from ZLMediaKit; when both services use the same Compose network it is normally
 Edit `.env` before the first start to change passwords and host ports. Do not
 reuse the example passwords. `DB_PASSWORD` is the backend database password;
 it is intentionally separate from `DB_USERNAME`.
+
+OAuth, HTTPS keystore, ISUP, and OTA storage settings are optional and default
+to empty. Supply the matching environment values only when enabling those
+integrations. The Druid monitor page is disabled by default; if you enable it,
+set a dedicated `DRUID_LOGIN_USERNAME` and `DRUID_LOGIN_PASSWORD` first.
 
 `DB_MIGRATION_USERNAME` and `DB_MIGRATION_PASSWORD` are used only by Flyway
 during startup. They need schema-migration privileges. The bundled deployment
@@ -61,6 +66,24 @@ account instead of reusing a production root account where possible.
 Docker host use `http://host.docker.internal:8080/blade-system/user/info`; when
 the two backends share a Compose network, use the VLStream service name, for
 example `http://backend:8080/blade-system/user/info`.
+
+Firmware storage and OTA are optional. Configure `VLSTREAM_FIRMWARE_MINIO_ENDPOINT`,
+`VLSTREAM_FIRMWARE_PUBLIC_ENDPOINT`, `VLSTREAM_FIRMWARE_MINIO_ACCESS_KEY`,
+`VLSTREAM_FIRMWARE_MINIO_SECRET_KEY`, and `VLSTREAM_WVP_PUBLIC_URL` only when
+using a reachable MinIO-compatible service. The release has no built-in MinIO
+address or credentials.
+
+Device ownership is tenant-aware. Set `SSO_TENANT_TYPE` to `single` or `multi`
+to match the VLS platform's business tenant mode, and for multi-tenant
+deployments set `VLSTREAM_DEVICE_MULTI_TENANT_DEFAULT_TENANT_ID` to the real
+top-level tenant ID. Factory device claim codes are optional: share a separate
+random 32-byte-or-longer `VLSTREAM_DEVICE_CLAIM_SECRET` between WVP and the
+trusted issuance tooling, then issue tags with `node tools/create-device-claim.mjs`
+from the release ZIP; see `docs/VLSTREAM_TENANT_BINDING.md`.
+
+Keep `ZLM_SECRET` at or below 50 characters: WVP persists it in the
+`wvp_media_server.secret` column, which is limited to 50 characters. Use the
+same strong random value in both services.
 
 The packaged ZLMediaKit image is configured with the same `ZLM_SECRET` passed
 to WVP. `ZLM_PUBLIC_HOST` must be the DNS name or public IP devices and browsers
@@ -102,11 +125,16 @@ migrations must never be edited, deleted, or renamed.
 
 ## Protocols and native SDKs
 
-GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.3 base deployment.
-ISUP and Dahua integrations are optional/experimental: their native SDK shared
+GB28181, ONVIF, RTSP, ZLMediaKit, and the bundled EMQX Broker are the supported v1.0.13 base deployment.
+EHome CMS/Stream now starts on Linux by default (`EHOME_ENABLED`/`EHOME_LINUX_ENABLED`
+default to true) with the same initialization path on Windows and Linux; set
+`EHOME_ENABLED=false` to opt out. `EHOME_MEDIA_BASE_URL` can point previews at a
+browser-reachable media gateway. See `docs/ehome-integration.md` in the release ZIP.
+ISUP and Dahua integrations remain optional/experimental: their native SDK shared
 libraries, dependency completeness, and redistribution terms have not been
-verified for this public Linux image. They are not enabled by the default
-deployment and must be separately reviewed before use.
+verified for this public Linux image. The default Compose deployment keeps
+`DAHUA_ENABLED=false` and the native ISUP SDK stays off; review them separately
+before enabling.
 
 ## Troubleshooting
 
