@@ -10,6 +10,7 @@ import com.ruoyi.vlstream.mapper.VlStreamDeviceStreamMapper;
 import com.ruoyi.vlstream.domain.dto.FirmwareDeployRequest;
 import com.ruoyi.vlstream.service.VlStreamFirmwareDeploymentService;
 import com.ruoyi.vlstream.service.VlStreamDeviceTenantService;
+import com.ruoyi.vlstream.service.VlStreamDeviceClaimService;
 import com.ruoyi.vlstream.service.VlStreamDeviceAccessService;
 import com.ruoyi.vlstream.service.VlStreamDevicePreviewLeaseService;
 import com.ruoyi.vlstream.util.VlStreamPlaybackUtils;
@@ -51,6 +52,16 @@ public class VlStreamDeviceController extends BaseController {
         this.mediaServerService = mediaServerService;
         this.firmwareDeploymentService = firmwareDeploymentService;
         this.tenantService = tenantService;
+    }
+
+    @Autowired
+    private VlStreamDeviceClaimService claimService;
+
+    @PreAuthorize("@ss.hasPermi('vlstream:device:list')")
+    @PostMapping("/claim")
+    public AjaxResult claim(@RequestBody Map<String, String> body) {
+        if (!"vlstream-claim-v1".equals(body.get("type"))) return error("设备认领码版本无效");
+        return success((Object) claimService.claim(body.get("deviceId"), body.get("claimProof")));
     }
 
     @PreAuthorize("@ss.hasPermi('vlstream:device:list')")
